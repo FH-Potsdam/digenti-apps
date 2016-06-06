@@ -33,16 +33,44 @@
             #map {
               position:relative;
               width: 100%;
-              height: 100%;
+              height: 80%;
               margin: auto auto;
+              overflow: visible;
             }
             svg {
               position: absolute;
               width: 100%;
               height: 100%;
             }
+                svg.map-morphed {
+                    overflow: visible;
+                }
+
             .hidden {
             	display: none;
+            }
+
+            path {
+                stroke: #099;
+                fill: none;
+                stroke-linejoin: round;
+                stroke-linecap: round;
+            }
+
+            .villages {
+                cursor: pointer;
+                fill: #f33;
+                stroke: none;
+                fill-opacity: 0.4;
+            }
+
+            .route-dots {
+                fill: #099;
+                fill-opacity: 0.5;
+            }
+
+            .route-lines {
+                stroke-opacity: 0.6;
             }
 
 
@@ -69,8 +97,9 @@
 
             <label>Select Basemap</label>
             <select id="basemap_select">
+                <option value="fos-outdoor selected">FOS outdoor</option>
                 <option value="basic">basic</option>
-                <option value="streets" selected>streets</option>
+                <option value="streets">streets</option>
                 <option value="emerald">emerald</option>
                 <option value="bright">bright</option>
                 <option value="light">light</option>
@@ -110,6 +139,9 @@
     <div id='map' class='dark'></div>
 
         <script>
+
+            var linePadding = 5;
+
             /*L.mapbox.accessToken = 'pk.eyJ1IjoiZmFiaWFuZWhtZWwiLCJhIjoiNDZiNTI3NGQxNzRiNjgxMGEwYTljYjgzZDU5ZjdjODYifQ.Mu_TWKlvON7j4UAkQ1EXJg';
             var map = L.mapbox.map('map', 'mapbox.satellite')
                 .setView([0, 0], 1);*/
@@ -122,6 +154,7 @@
             var currentPitch = 0;
             var routes_points = [];
             var routes_paths = [];
+            var lines_paths = [];
             var routing_history = [];
             var pathData;
 
@@ -129,11 +162,12 @@
 
             function mapDraw(geojson) {
 
-                mapboxgl.accessToken = 'pk.eyJ1IjoiZmFiaWFuZWhtZWwiLCJhIjoiNDZiNTI3NGQxNzRiNjgxMGEwYTljYjgzZDU5ZjdjODYifQ.Mu_TWKlvON7j4UAkQ1EXJg';
+                mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
 
                 var map = new mapboxgl.Map({
                     container: 'map',
-                    style: 'mapbox://styles/mapbox/streets-v8',
+                    style: 'mapbox://styles/jorditost/cip44ooh90013cjnkmwmwd2ft',
+                    // style: 'mapbox://styles/mapbox/light-v8',
                     zoom: 11,
                     center: [-73.02, 10.410],
                     pitch: currentPitch, // pitch in degrees
@@ -148,7 +182,14 @@
                 var container = map.getCanvasContainer()
 
                 // d3 canvas
-                var svg = d3.select(container).append("svg")
+                var svgMorph = d3.select(container).append("svg").attr("class", "map-morphed"),
+                    svg = d3.select(container).append("svg").attr("class", "map-features");
+
+                var gRoutes = svg.append("g").attr("class", "routes"),
+                    gLines = svgMorph.append("g").attr("class", "route-lines");
+
+                // var svg = d3.select(container).append("svg")
+                            // .attr("id", "map-features")
 
              	var featureElement = svg
                     .append("g")
@@ -156,12 +197,9 @@
                         .selectAll("circle")
                 		.data(geojson.features)
                 		.enter()
-                		.append("svg:circle")
+                		.append("circle")
                     		.attr({
-                                "r": 8,
-                    			"stroke": "none",
-                    			"fill": "#f00",
-                    			"fill-opacity": 0.4
+                                "r": 8
                     		})
                             .on("click", click);
 
@@ -186,41 +224,46 @@
 
                             pathData = response.paths[0].points.coordinates;
 
-                            console.log(pathData);
+                            var routePath = lineFunction(pathData);
 
-                            var lineGraph = svg.append("path")
-                                .attr("d", lineFunction(pathData))
-                                .attr("stroke", "blue")
+                            var lineGraph = gRoutes.append("path")
+                                .attr("d", routePath)
                                 .attr("stroke-width", 1)
-                                .attr("fill", "none");
-
-                                setTimeout(function() {
-                                    console.log("transform");
-                                    var line = morphpath.linify(lineGraph.attr("d"));
-
-                                    lineGraph
-                                        .transition()
-                                        .duration(2000)
-                                        .attr("d", line);
-
-                                }, 1000);
 
                             routes_paths.push(lineGraph);
 
+                            // Add dots over the route
                             var temp = svg
                                 .append("g")
-                                    .attr("class", "routes")
+                                    .attr("class", "route-dots")
                                     .selectAll("circle")
                                     .data(pathData)
                                     .enter()
                                     .append("svg:circle")
                                         .attr({
-                                            "r": 2,
-                                            "fill": "blue",
-                                            "fill-opacity": 0.4
+                                            "r": 2
                                         });
 
                             routes_points.push(temp);
+
+                            // Transform routes into lines
+                            setTimeout(function() {
+
+                                var line = gLines.append("path")
+                                    .attr("d", routePath)
+                                    .attr("stroke-width", 4)
+
+                                var linePath = morphpath.linify(lineGraph.attr("d"), 0, 10, (0.8*window.innerHeight)+10+(lines_paths.length*linePadding));
+
+                                lines_paths.push(linePath);
+
+                                line
+                                    .transition()
+                                    .duration(2000)
+                                    // .attr("transform","translate(0,150)")
+                                    .attr("d", linePath);
+
+                            }, 1000);
 
                             update();
                         });
@@ -310,7 +353,11 @@
                 }
 
                 function switchLayer(layer) {
-                    map.setStyle('mapbox://styles/mapbox/' + layer + '-v8');
+                    if (layer == 'fos-outdoor') {
+                        map.setStyle('mapbox://styles/jorditost/cip44ooh90013cjnkmwmwd2ft');
+                    } else {
+                        map.setStyle('mapbox://styles/mapbox/' + layer + '-v8');
+                    }
                 }
 
 

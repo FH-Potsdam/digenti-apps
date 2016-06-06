@@ -56,6 +56,9 @@
                 stroke-linejoin: round;
                 stroke-linecap: round;
             }
+                path.time {
+                    stroke: #225BB1;
+                }
 
             .villages {
                 cursor: pointer;
@@ -142,7 +145,7 @@
 
         <script>
 
-            var linePadding = 5;
+            var linePadding = 15;
 
             /*L.mapbox.accessToken = 'pk.eyJ1IjoiZmFiaWFuZWhtZWwiLCJhIjoiNDZiNTI3NGQxNzRiNjgxMGEwYTljYjgzZDU5ZjdjODYifQ.Mu_TWKlvON7j4UAkQ1EXJg';
             var map = L.mapbox.map('map', 'mapbox.satellite')
@@ -313,19 +316,36 @@
                             // Transform routes into lines
                             setTimeout(function() {
 
+                                // Distance
                                 var line = gLines.append("path")
+                                    .attr("class", "distance")
                                     .attr("d", routePath)
                                     .attr("stroke-width", 4)
 
-                                var linePath = morphpath.linify(lineGraph.attr("d"), 0, 10, (0.8*window.innerHeight)+10+(lines_paths.length*linePadding));
-
-                                lines_paths.push(linePath);
+                                var linePath = morphpath.linify(routePath, 0, 10, (0.8*window.innerHeight)+10+(lines_paths.length*linePadding));
 
                                 line
                                     .transition()
                                     .duration(2000)
                                     // .attr("transform","translate(0,150)")
                                     .attr("d", linePath);
+
+                                // Time
+                                var time = gLines.append("path")
+                                    .attr("class", "time")
+                                    .attr("d", routePath)
+                                    .attr("stroke-width", 4)
+
+                                var timePath = morphpath.linify(routePath, 0, 10, (0.8*window.innerHeight)+10+(lines_paths.length*linePadding), parseInt(response.paths[0].time,10)/2000);
+
+                                console.log(timePath);
+                                time
+                                    .transition()
+                                    .duration(2000)
+                                    .attr("transform","translate(0,5)")
+                                    .attr("d", timePath);
+
+                                lines_paths.push(linePath);
 
                             }, 1000);
 

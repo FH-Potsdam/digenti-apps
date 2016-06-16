@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset=utf-8 />
+        <title>Routing Test 03</title>
+        <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+        <script src='../../lib/mapbox-gl.js'></script>
+        <link href='../../lib/mapbox-gl.css' rel='stylesheet' />
+        <link rel="stylesheet" href="res/css/examples.css">
+
+        <!-- This example requires d3 for AJAX and the brush, though you can bring your own library. -->
+        <script src='../../lib/d3.min.js' charset="utf-8"></script>
+        <script src='../../lib/turf.min.js' charset='utf-8'></script>
+        <script src='../../lib/polymorph.js' charset='utf-8'></script>
+        <script src='../../lib/morphpath.js' charset='utf-8'></script>
+
+        <script src="libs/jquery-1.7.2.js"></script>
+        <script src="libs/lodash.js"></script>
+        <script src="libs/socket.io.js"></script>
+        <script src="libs/Tuio.min.js"></script>
+
+        <style>
+
+            #menu {
+                position: absolute;
+                background: #fff;
+                padding: 10px;
+                font-family: 'Futura', sans-serif;
+                z-index: 3000;
+            }
+
+            html, body, #wrapper {
+                width: 100%;
+                height: 100%;
+            	padding: 0px;
+            	margin: 0px;
+            }
+            #map {
+              position:relative;
+              width: 100%;
+              height: 85%;
+              margin: auto auto;
+              overflow: visible;
+            }
+            svg {
+              position: absolute;
+              width: 100%;
+              height: 100%;
+            }
+                svg.map-morphed {
+                    overflow: visible;
+                }
+
+            .hidden {
+            	display: none;
+            }
+
+            path {
+                stroke: #099;
+                fill: none;
+                stroke-linejoin: round;
+                stroke-linecap: round;
+            }
+                path.route,
+                path.distance {
+                    stroke: #099;
+                }
+
+                path.foot {
+                    stroke-dasharray: 4, 10;
+                    /*stroke: #50E3C2*/
+                }
+
+                path.time {
+                    stroke: #225BB1;
+                }
+
+            .villages {
+                cursor: pointer;
+                fill: #f33;
+                stroke: none;
+                fill-opacity: 0.4;
+            }
+
+            .route-dots {
+                fill: #099;
+                fill-opacity: 0.5;
+            }
+
+            .route-lines {
+                stroke-opacity: 0.6;
+            }
+
+
+        </style>
+    </head>
+
+    <body>
+        <style>
+        .ui-brush {
+          background:#f8f8f8;
+          position:absolute;
+          bottom:0;right:0;left:0;
+          height:100px;
+          }
+        .brush .extent {
+          stroke:#fff;
+          fill-opacity:0.125;
+          shape-rendering:crispEdges;
+          }
+        </style>
+
+
+        <div id='menu'>
+
+            <label>Select Basemap</label>
+            <select id="basemap_select">
+                <!-- <option value="fos-outdoor selected">FOS outdoor</option> -->
+                <option value="outdoors-v9">outdoors</option>
+                <option value="basic-v9">basic</option>
+                <option value="streets-v9" selected>streets</option>
+                <option value="emerald-v8">emerald</option>
+                <option value="bright-v9">bright</option>
+                <option value="light-v9">light</option>
+                <option value="dark-v9">dark</option>
+                <option value="satellite-v9">satellite</option>
+                <option value="satellite-streets-v9">satellite streets</option>
+            </select>
+
+            <label>Pitch</label>
+            <select id="pitch_select">
+                <option value="0">0</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="40">40</option>
+                <option value="50">50</option>
+                <option value="60">60</option>
+                <option value="70">70</option>
+                <option value="80">80</option>
+                <option value="90">90</option>
+            </select>
+
+            <label>Bearing</label>
+            <select id="bearing_select">
+                <option value="0">0</option>
+                <option value="45">45</option>
+                <option value="90">90</option>
+                <option value="135">135</option>
+                <option value="180">180</option>
+                <option value="225">225</option>
+                <option value="270">270</option>
+                <option value="315">315</option>
+                <option value="360">360</option>
+            </select>
+
+        </div>
+
+    <div id='map' class='dark'></div>
+
+        <script>
+
+            $(function() {
+
+                var map;
+                mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+
+                var linePadding = 15;
+
+                /*L.mapbox.accessToken = 'pk.eyJ1IjoiZmFiaWFuZWhtZWwiLCJhIjoiNDZiNTI3NGQxNzRiNjgxMGEwYTljYjgzZDU5ZjdjODYifQ.Mu_TWKlvON7j4UAkQ1EXJg';
+                var map = L.mapbox.map('map', 'mapbox.satellite')
+                    .setView([0, 0], 1);*/
+
+                d3.json("../../data/places_aoi.json", function(err, data) {
+                    mapDraw(data);
+                });
+
+                var currentBearing = 0;
+                var currentPitch = 0;
+                var routes_points = [];
+                var routes_paths = [];
+                var lines_paths = [];
+                var routes_foot_points = [];
+                var routes_foot_paths = [];
+                var routing_history = [];
+                var pathData, pathFootData;
+
+                //mapDraw("geojson");
+
+                function mapDraw(geojson) {
+
+                    map = new mapboxgl.Map({
+                        container: 'map',
+                        // style: 'mapbox://styles/jorditost/cip44ooh90013cjnkmwmwd2ft',
+                        style: 'mapbox://styles/mapbox/streets-v9',
+                        zoom: 11,
+                        center: [-73.02, 10.410],
+                        interactive: false,
+                        pitch: currentPitch, // pitch in degrees
+                        bearing: currentBearing // bearing in degrees
+                    });
+
+                    map.addControl(new mapboxgl.Navigation());
+
+                    // Disable zoom when scrolling
+                    // map.scrollZoom.disable();
+                    // map["scrollZoom"].disable();
+
+
+                    // map.on('load', function () {
+                    //     drawFOSLines();
+                    // });
+
+                    function drawFOSLines() {
+                        map.addSource('colombia-fos', {
+                            type: 'vector',
+                            url: 'mapbox://jorditost.49a7b9e1'
+                        });
+
+                        map.addLayer({
+                            "id": "fos3",
+                            "type": "line",
+                            "source": "colombia-fos",
+                            "source-layer": "colombia_fos_h1_m0_5_CLASSIFIED_wgs84",
+                            "filter": ["==", "elev", 3],
+                            "layout": {
+                                "line-join": "round",
+                                "line-cap": "round"
+                            },
+                            "paint": {
+                                "line-color": "#e6dc51",
+                                "line-width": 2,
+                                "line-opacity": 0.3
+                            }
+                        });
+                        map.addLayer({
+                            "id": "fos2",
+                            "type": "line",
+                            "source": "colombia-fos",
+                            "source-layer": "colombia_fos_h1_m0_5_CLASSIFIED_wgs84",
+                            "filter": ["==", "elev", 2],
+                            "layout": {
+                                "line-join": "round",
+                                "line-cap": "round"
+                            },
+                            "paint": {
+                                "line-color": "#d9943f",
+                                "line-width": 2,
+                                "line-opacity": 0.3
+                            }
+                        });
+                        map.addLayer({
+                            "id": "fos1",
+                            "type": "line",
+                            "source": "colombia-fos",
+                            "source-layer": "colombia_fos_h1_m0_5_CLASSIFIED_wgs84",
+                            "filter": ["==", "elev", 1],
+                            "layout": {
+                                "line-join": "round",
+                                "line-cap": "round"
+                            },
+                            "paint": {
+                                "line-color": "#c74d4d",
+                                "line-width": 2,
+                                "line-opacity": 0.3
+                            }
+                        });
+                    }
+
+                    // MapboxGL container
+                    var container = map.getCanvasContainer()
+
+                    // d3 canvas
+                    var svgMorph = d3.select(container).append("svg").attr("class", "map-morphed"),
+                        svg = d3.select(container).append("svg").attr("class", "map-features");
+
+                    var gRoutes = svg.append("g").attr("class", "routes"),
+                        gLines = svgMorph.append("g").attr("class", "route-lines");
+
+                    // var svg = d3.select(container).append("svg")
+                                // .attr("id", "map-features")
+
+                 	var featureElement = svg
+                        .append("g")
+                            .attr("class", "villages")
+                            .selectAll("circle")
+                    		.data(geojson.features)
+                    		.enter()
+                    		.append("circle")
+                        		.attr({
+                                    "r": 8
+                        		})
+                                .on("click", click);
+
+                    //This is the accessor function we talked about above
+                    var lineFunction = d3.svg.line()
+                                        .x(function(d) { return project(d).x; })
+                                        .y(function(d) { return project(d).y; })
+                                        .interpolate("linear");
+
+
+                    // This callback is called when clicking on a location
+                    function click(d) {
+                        var coordinates = d.geometry.coordinates;
+
+                        routing_history.push(coordinates[1]+","+coordinates[0]);
+
+                        if (routing_history.length > 1) {
+                            routingCar(coordinates);
+                            routingFoot(coordinates);
+                        }
+                    }
+
+                    function routingCar(coordinates) {
+
+                        var api_request = "https://graphhopper.com/api/1/route?point="+routing_history[routing_history.length-2]+"&point="+routing_history[routing_history.length-1]+"&type=json&key=af189539-9363-4c60-b6af-f6b86294d181&locale=de-DE&vehicle=car&weighting=fastest&elevation=true&points_encoded=false&debug=true";
+
+                        d3.json(api_request, function(error,response) {
+
+                            console.log("car - distance: " + response.paths[0].distance + ", time: " + response.paths[0].time);
+
+                            pathData = response.paths[0].points.coordinates;
+
+                            var routePath = lineFunction(pathData);
+
+                            var lineGraph = gRoutes.append("path")
+                                .attr("class", "route")
+                                .attr("d", routePath)
+                                .attr("stroke-width", 2)
+
+                            routes_paths.push(lineGraph);
+
+                            // Add dots over the route
+                            // var temp = svg
+                            //     .append("g")
+                            //         .attr("class", "route-dots")
+                            //         .selectAll("circle")
+                            //         .data(pathData)
+                            //         .enter()
+                            //         .append("svg:circle")
+                            //             .attr({
+                            //                 "r": 2
+                            //             });
+
+                            // routes_points.push(temp);
+
+                            // Transform routes into lines
+                            setTimeout(function() {
+
+                                // Distance
+                                var line = gLines.append("path")
+                                    .attr("class", "distance")
+                                    .attr("d", routePath)
+                                    .attr("stroke-width", 4)
+
+                                var linePath = morphpath.linify(routePath, 0, 10, (0.85*window.innerHeight)+10+(lines_paths.length*linePadding));
+
+                                line
+                                    .transition()
+                                    .duration(2000)
+                                    // .attr("transform","translate(0,150)")
+                                    .attr("d", linePath);
+
+                                // Time
+                                var time = gLines.append("path")
+                                    .attr("class", "time")
+                                    .attr("d", routePath)
+                                    .attr("stroke-width", 4)
+
+                                var timePath = morphpath.linify(routePath, 0, 10, (0.85*window.innerHeight)+10+(lines_paths.length*linePadding), parseInt(response.paths[0].time,10)/2000);
+
+                                console.log(timePath);
+                                time
+                                    .transition()
+                                    .duration(2000)
+                                    .attr("transform","translate(0,5)")
+                                    .attr("d", timePath);
+
+                                lines_paths.push(linePath);
+
+                            }, 1000);
+
+                            update();
+                        });
+                    }
+
+                    function routingFoot(coordinates) {
+
+                        var api_request = "https://graphhopper.com/api/1/route?point="+routing_history[routing_history.length-2]+"&point="+routing_history[routing_history.length-1]+"&type=json&key=af189539-9363-4c60-b6af-f6b86294d181&locale=de-DE&vehicle=foot&weighting=fastest&elevation=true&points_encoded=false&debug=true";
+
+                        d3.json(api_request, function(error,response) {
+
+                            console.log("foot - distance: " + response.paths[0].distance + ", time: " + response.paths[0].time);
+
+                            pathFootData = response.paths[0].points.coordinates;
+
+                            var routePath = lineFunction(pathFootData);
+
+                            var lineGraph = gRoutes.append("path")
+                                .attr("class", "route foot")
+                                .attr("d", routePath)
+                                .attr("stroke-width", 2)
+
+                            routes_foot_paths.push(lineGraph);
+
+                            // Add dots over the route
+                            // var temp = svg
+                            //     .append("g")
+                            //         .attr("class", "route-dots foot")
+                            //         .selectAll("circle")
+                            //         .data(pathFootData)
+                            //         .enter()
+                            //         .append("svg:circle")
+                            //             .attr({
+                            //                 "r": 2
+                            //             });
+
+                            // routes_foot_points.push(temp);
+
+                            // Transform routes into lines
+                            setTimeout(function() {
+
+                                // Distance
+                                var line = gLines.append("path")
+                                    .attr("class", "distance foot")
+                                    .attr("d", routePath)
+                                    .attr("stroke-width", 4)
+
+                                var linePath = morphpath.linify(routePath, 0, 10, (0.85*window.innerHeight)+10+(lines_paths.length*linePadding));
+
+                                line
+                                    .transition()
+                                    .duration(2000)
+                                    // .attr("transform","translate(0,150)")
+                                    .attr("d", linePath);
+
+                                // Time
+                                var time = gLines.append("path")
+                                    .attr("class", "time foot")
+                                    .attr("d", routePath)
+                                    .attr("stroke-width", 4)
+
+                                var timePath = morphpath.linify(routePath, 0, 10, (0.85*window.innerHeight)+10+(lines_paths.length*linePadding), parseInt(response.paths[0].time,10)/2000);
+
+                                console.log(timePath);
+                                time
+                                    .transition()
+                                    .duration(2000)
+                                    .attr("transform","translate(0,5)")
+                                    .attr("d", timePath);
+
+                                lines_paths.push(linePath);
+
+                            }, 1000);
+
+                            update();
+                        });
+                    }
+
+
+                    var cmdPressed = false;
+                    var mouseX_start;
+
+                    window.onmousedown = function (e) {
+
+                        window.onmousemove = function (e) {
+                            if (!e) e = window.event;
+                            if (e.metaKey) {
+                                if (!cmdPressed) {
+                                    mouseX_start = e.clientX;
+                                }
+                                cmdPressed = true;
+                                console.log(mouseX_start - e.clientX);
+                                currentBearing = currentBearing - (mouseX_start - e.clientX)*0.02;
+                                flyMap();
+                            }
+                        }
+
+                    }
+
+
+                    function update() {
+
+                        for (var i = 0; i < routes_paths.length; i++) {
+                            routes_paths[i]
+                                .attr("d", lineFunction(pathData));
+                        }
+
+                        for (var i = 0; i < routes_points.length; i++) {
+                            routes_points[i]
+                                .attr({
+                                    cx: function(d) { return project(d).x; },
+                                    cy: function(d) { return project(d).y; },
+                                });
+                        }
+
+                        for (var i = 0; i < routes_foot_paths.length; i++) {
+                            routes_foot_paths[i]
+                                .attr("d", lineFunction(pathFootData));
+                        }
+
+                        for (var i = 0; i < routes_foot_points.length; i++) {
+                            routes_foot_points[i]
+                                .attr({
+                                    cx: function(d) { return project(d).x; },
+                                    cy: function(d) { return project(d).y; },
+                                });
+                        }
+
+                        featureElement
+                            .attr({
+                                cx: function(d) { return project(d.geometry.coordinates).x; },
+                                cy: function(d) { return project(d.geometry.coordinates).y; },
+                            });
+                    }
+
+                    //
+                    map.on("viewreset", update);
+
+                    map.on("movestart", function() {
+                		svg.classed("hidden", true);
+                	});
+
+                    map.on("rotate", function() {
+                		svg.classed("hidden", true);
+                	});
+
+                    map.on("moveend", function() {
+                		update();
+                		svg.classed("hidden", false);
+                	});
+
+                    //初期レンダリング
+                    update();
+
+                    // Use MapboxGL projection for d3 features
+                    function project(d) {
+                        return map.project(new mapboxgl.LngLat(+d[0], +d[1]));
+                    }
+                }
+
+                ///////////////////
+                // Map transform
+                ///////////////////
+
+                var basemap_select = document.getElementById('basemap_select');
+                var basemap_select_options = basemap_select.options;
+
+                basemap_select.onchange = function() {
+                    var selectedValue = basemap_select_options[basemap_select.selectedIndex].value;
+                    switchLayer(selectedValue);
+                }
+
+                function switchLayer(layer) {
+                    if (layer == 'fos-outdoor') {
+                        map.setStyle('mapbox://styles/jorditost/cip44ooh90013cjnkmwmwd2ft');
+                    } else {
+                        map.setStyle('mapbox://styles/mapbox/' + layer);
+                    }
+
+                    // map.on('load', function () {
+                    //     drawFOSLines();
+                    // });
+                }
+
+
+                var pitch_select = document.getElementById('pitch_select');
+                var pitch_select_options = pitch_select.options;
+
+                pitch_select.onchange = function() {
+                    var selectedValue = pitch_select_options[pitch_select.selectedIndex].value;
+                    switchPitch(parseFloat(selectedValue));
+                }
+
+                function switchPitch(value) {
+                    currentPitch = value;
+                    flyMap();
+                }
+
+                function offsetPitch(offset) {
+                    var tempPitch = currentPitch + offset;
+                    if (tempPitch < 0) tempPitch = 0;
+                    if (tempPitch > 90) tempPitch = 90;
+
+                    console.log("offset: " + offset + ", pitch: " + tempPitch);
+                    switchPitch(tempPitch);
+                }
+
+
+                var bearing_select = document.getElementById('bearing_select');
+                var bearing_select_options = bearing_select.options;
+
+                bearing_select.onchange = function() {
+                    var selectedValue = bearing_select_options[bearing_select.selectedIndex].value;
+                    switchBearing(parseFloat(selectedValue));
+                }
+
+                function switchBearing(value) {
+                    currentBearing = value;
+                    flyMap();
+                }
+
+                function flyMap() {
+                    map.flyTo({
+                        // These options control the ending camera position: centered at
+                        // the target, at zoom level 9, and north up.
+                        bearing: currentBearing,
+                        pitch: currentPitch,
+
+                        // These options control the flight curve, making it move
+                        // slowly and zoom out almost completely before starting
+                        // to pan.
+                        speed: 1, // make the flying slow
+                        curve: 1, // change the speed at which it zooms out
+
+                        // This can be any easing function: it takes a number between
+                        // 0 and 1 and returns another number between 0 and 1.
+                        easing: function (t) {
+                            return t;
+                        }
+                    });
+                }
+
+
+                ////////////////
+                // TUIO
+                ////////////////
+
+                var client = new Tuio.Client({
+                    host: "http://localhost:5000"
+                }),
+                screenW = $(document).width(),
+                screenH = $(document).height()
+
+                cursors = {},
+                initCursors = {},
+
+                onConnect = function() {
+                    console.log("onConnect");
+                },
+
+                onAddTuioCursor = function(addCursor) {
+                    console.log("--- TUIO CURSOR ADDED WITH ID: " + addCursor.getCursorId() + ", init Y position: " + addCursor.getScreenY(screenH));
+                    var $addCursor = $('<div class="tuioCursor"></div>');
+                    $("body").append($addCursor);
+                    cursors[addCursor.getCursorId()] = $addCursor;
+
+                    // Clone object for consistency
+                    initCursors[addCursor.getCursorId()] = $.extend({}, addCursor);
+                    // initCursors[addCursor.getCursorId()] = addCursor;
+                    onUpdateTuioCursor(addCursor);
+                },
+
+                onUpdateTuioCursor = function(updateCursor) {
+                    var $updateCursor = cursors[updateCursor.getCursorId()];
+                    $updateCursor.css({
+                        left: updateCursor.getScreenX(screenW),
+                        top: updateCursor.getScreenY(screenH)
+                    });
+
+                    // Check difference
+                    var initCursor = initCursors[updateCursor.getCursorId()];
+                    var offsetY = updateCursor.getY(screenH) - initCursor.getY(screenH)
+
+                    offsetY = offsetY.map(-1.0, 1.0, -45, 45);
+                    offsetPitch(offsetY)
+
+                    // offsetY = (offsetY >= 0.0) ? offsetY.map(0, screenH, 0, 90) : 0;
+                    // switchPitch(offsetY)
+
+                    // console.log("cursor id: " + updateCursor.getCursorId() + ", init y: " + initCursor.getScreenY(screenH) + ", current y: " + updateCursor.getScreenY(screenH) + ", offset y: " + offsetY);
+
+                },
+
+                onRemoveTuioCursor = function(removeCursor) {
+                    var $removeCursor = cursors[removeCursor.getCursorId()];
+                    $removeCursor.remove();
+                    delete[removeCursor.getCursorId()];
+                },
+
+                onAddTuioObject = function(addObject) {
+                    console.log(addObject);
+                },
+
+                onUpdateTuioObject = function(updateObject) {
+                    console.log(updateObject);
+                },
+
+                onRemoveTuioObject = function(removeObject) {
+                    console.log(removeObject);
+                },
+
+                onRefresh = function(time) {
+
+                };
+
+                client.on("connect", onConnect);
+                client.on("addTuioCursor", onAddTuioCursor);
+                client.on("updateTuioCursor", onUpdateTuioCursor);
+                client.on("removeTuioCursor", onRemoveTuioCursor);
+                client.on("addTuioObject", onAddTuioObject);
+                client.on("updateTuioObject", onUpdateTuioObject);
+                client.on("removeTuioObject", onRemoveTuioObject);
+                client.on("refresh", onRefresh);
+                client.connect();
+
+
+                ////////////////
+                // Math Utils
+                ////////////////
+
+                function getRandomInt(min, max) {
+                    return Math.floor(Math.random() * (max - min)) + min;
+                }
+
+                Number.prototype.map = function (in_min, in_max, out_min, out_max) {
+                    return (this - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+                }
+            });
+        </script>
+    </body>
+</html>

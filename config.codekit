@@ -2,6 +2,17 @@
 "CodeKitInfo": "This is a CodeKit 2.x project configuration file. It is designed to sync project settings across multiple machines. MODIFYING THE CONTENTS OF THIS FILE IS A POOR LIFE DECISION. If you do so, you will likely cause CodeKit to crash. This file is not useful unless accompanied by the project that created it in CodeKit 2. This file is not backwards-compatible with CodeKit 1.x. For more information, see: http:\/\/incident57.com\/codekit",
 "creatorBuild": "19127",
 "files": {
+	"\/data\/places_aoi.json": {
+		"fileType": 524288,
+		"ignore": 1,
+		"ignoreWasSetByUser": 0,
+		"inputAbbreviatedPath": "\/data\/places_aoi.json",
+		"orderOutput": 0,
+		"outputAbbreviatedPath": "\/data\/places_aoi-min.json",
+		"outputPathIsOutsideProject": 0,
+		"outputPathIsSetByUser": 0,
+		"outputStyle": 1
+		},
 	"\/lib\/d3.min.js": {
 		"fileType": 64,
 		"ignore": 0,
@@ -96,17 +107,6 @@
 		"outputPathIsOutsideProject": 0,
 		"outputPathIsSetByUser": 0
 		},
-	"\/tests\/test01\/places_aoi.json": {
-		"fileType": 524288,
-		"ignore": 1,
-		"ignoreWasSetByUser": 0,
-		"inputAbbreviatedPath": "\/tests\/test01\/places_aoi.json",
-		"orderOutput": 0,
-		"outputAbbreviatedPath": "\/tests\/test01\/places_aoi-min.json",
-		"outputPathIsOutsideProject": 0,
-		"outputPathIsSetByUser": 0,
-		"outputStyle": 1
-		},
 	"\/tests\/test02\/index.html": {
 		"fileType": 8192,
 		"ignore": 0,
@@ -115,17 +115,6 @@
 		"outputAbbreviatedPath": "No Output Path",
 		"outputPathIsOutsideProject": 0,
 		"outputPathIsSetByUser": 0
-		},
-	"\/tests\/test02\/places_aoi.json": {
-		"fileType": 524288,
-		"ignore": 1,
-		"ignoreWasSetByUser": 0,
-		"inputAbbreviatedPath": "\/tests\/test02\/places_aoi.json",
-		"orderOutput": 0,
-		"outputAbbreviatedPath": "\/tests\/test02\/places_aoi-min.json",
-		"outputPathIsOutsideProject": 0,
-		"outputPathIsSetByUser": 0,
-		"outputStyle": 1
 		},
 	"\/tests\/test03\/index.html": {
 		"fileType": 8192,
@@ -136,16 +125,14 @@
 		"outputPathIsOutsideProject": 0,
 		"outputPathIsSetByUser": 0
 		},
-	"\/tests\/test03\/places_aoi.json": {
-		"fileType": 524288,
-		"ignore": 1,
+	"\/tests\/test04\/index.html": {
+		"fileType": 8192,
+		"ignore": 0,
 		"ignoreWasSetByUser": 0,
-		"inputAbbreviatedPath": "\/tests\/test03\/places_aoi.json",
-		"orderOutput": 0,
-		"outputAbbreviatedPath": "\/tests\/test03\/places_aoi-min.json",
+		"inputAbbreviatedPath": "\/tests\/test04\/index.html",
+		"outputAbbreviatedPath": "No Output Path",
 		"outputPathIsOutsideProject": 0,
-		"outputPathIsSetByUser": 0,
-		"outputStyle": 1
+		"outputPathIsSetByUser": 0
 		}
 	},
 "hooks": [

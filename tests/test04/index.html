@@ -33,7 +33,7 @@
             #map {
               position:relative;
               width: 100%;
-              height: 80%;
+              height: 85%;
               margin: auto auto;
               overflow: visible;
             }
@@ -56,6 +56,16 @@
                 stroke-linejoin: round;
                 stroke-linecap: round;
             }
+                path.route,
+                path.distance {
+                    stroke: #099;
+                }
+
+                path.foot {
+                    stroke-dasharray: 4, 10;
+                    /*stroke: #50E3C2*/
+                }
+
                 path.time {
                     stroke: #225BB1;
                 }
@@ -103,10 +113,10 @@
                 <!-- <option value="fos-outdoor selected">FOS outdoor</option> -->
                 <option value="outdoors-v9">outdoors</option>
                 <option value="basic-v9">basic</option>
-                <option value="streets-v9">streets</option>
+                <option value="streets-v9" selected>streets</option>
                 <option value="emerald-v8">emerald</option>
                 <option value="bright-v9">bright</option>
-                <option value="light-v9" selected>light</option>
+                <option value="light-v9">light</option>
                 <option value="dark-v9">dark</option>
                 <option value="satellite-v9">satellite</option>
                 <option value="satellite-streets-v9">satellite streets</option>
@@ -160,8 +170,10 @@
             var routes_points = [];
             var routes_paths = [];
             var lines_paths = [];
+            var routes_foot_points = [];
+            var routes_foot_paths = [];
             var routing_history = [];
-            var pathData;
+            var pathData, pathFootData;
 
             //mapDraw("geojson");
 
@@ -172,7 +184,7 @@
                 var map = new mapboxgl.Map({
                     container: 'map',
                     // style: 'mapbox://styles/jorditost/cip44ooh90013cjnkmwmwd2ft',
-                    style: 'mapbox://styles/mapbox/light-v9',
+                    style: 'mapbox://styles/mapbox/streets-v9',
                     zoom: 11,
                     center: [-73.02, 10.410],
                     pitch: currentPitch, // pitch in degrees
@@ -277,82 +289,160 @@
 
                 // This callback is called when clicking on a location
                 function click(d) {
-
                     var coordinates = d.geometry.coordinates;
+
                     routing_history.push(coordinates[1]+","+coordinates[0]);
 
                     if (routing_history.length > 1) {
-
-                        var api_request = "https://graphhopper.com/api/1/route?point="+routing_history[routing_history.length-2]+"&point="+routing_history[routing_history.length-1]+"&type=json&key=af189539-9363-4c60-b6af-f6b86294d181&locale=de-DE&vehicle=car&weighting=fastest&elevation=true&points_encoded=false&debug=true";
-
-                        d3.json(api_request, function(error,response) {
-
-                            console.log("distance: " + response.paths[0].distance + ", time: " + response.paths[0].time);
-
-                            pathData = response.paths[0].points.coordinates;
-
-                            var routePath = lineFunction(pathData);
-
-                            var lineGraph = gRoutes.append("path")
-                                .attr("d", routePath)
-                                .attr("stroke-width", 1)
-
-                            routes_paths.push(lineGraph);
-
-                            // Add dots over the route
-                            var temp = svg
-                                .append("g")
-                                    .attr("class", "route-dots")
-                                    .selectAll("circle")
-                                    .data(pathData)
-                                    .enter()
-                                    .append("svg:circle")
-                                        .attr({
-                                            "r": 2
-                                        });
-
-                            routes_points.push(temp);
-
-                            // Transform routes into lines
-                            setTimeout(function() {
-
-                                // Distance
-                                var line = gLines.append("path")
-                                    .attr("class", "distance")
-                                    .attr("d", routePath)
-                                    .attr("stroke-width", 4)
-
-                                var linePath = morphpath.linify(routePath, 0, 10, (0.8*window.innerHeight)+10+(lines_paths.length*linePadding));
-
-                                line
-                                    .transition()
-                                    .duration(2000)
-                                    // .attr("transform","translate(0,150)")
-                                    .attr("d", linePath);
-
-                                // Time
-                                var time = gLines.append("path")
-                                    .attr("class", "time")
-                                    .attr("d", routePath)
-                                    .attr("stroke-width", 4)
-
-                                var timePath = morphpath.linify(routePath, 0, 10, (0.8*window.innerHeight)+10+(lines_paths.length*linePadding), parseInt(response.paths[0].time,10)/2000);
-
-                                console.log(timePath);
-                                time
-                                    .transition()
-                                    .duration(2000)
-                                    .attr("transform","translate(0,5)")
-                                    .attr("d", timePath);
-
-                                lines_paths.push(linePath);
-
-                            }, 1000);
-
-                            update();
-                        });
-
+                        routingCar(coordinates);
+                        routingFoot(coordinates);
                     }
+                }
+
+                function routingCar(coordinates) {
+
+                    var api_request = "https://graphhopper.com/api/1/route?point="+routing_history[routing_history.length-2]+"&point="+routing_history[routing_history.length-1]+"&type=json&key=af189539-9363-4c60-b6af-f6b86294d181&locale=de-DE&vehicle=car&weighting=fastest&elevation=true&points_encoded=false&debug=true";
+
+                    d3.json(api_request, function(error,response) {
+
+                        console.log("car - distance: " + response.paths[0].distance + ", time: " + response.paths[0].time);
+
+                        pathData = response.paths[0].points.coordinates;
+
+                        var routePath = lineFunction(pathData);
+
+                        var lineGraph = gRoutes.append("path")
+                            .attr("class", "route")
+                            .attr("d", routePath)
+                            .attr("stroke-width", 2)
+
+                        routes_paths.push(lineGraph);
+
+                        // Add dots over the route
+                        // var temp = svg
+                        //     .append("g")
+                        //         .attr("class", "route-dots")
+                        //         .selectAll("circle")
+                        //         .data(pathData)
+                        //         .enter()
+                        //         .append("svg:circle")
+                        //             .attr({
+                        //                 "r": 2
+                        //             });
+
+                        // routes_points.push(temp);
+
+                        // Transform routes into lines
+                        setTimeout(function() {
+
+                            // Distance
+                            var line = gLines.append("path")
+                                .attr("class", "distance")
+                                .attr("d", routePath)
+                                .attr("stroke-width", 4)
+
+                            var linePath = morphpath.linify(routePath, 0, 10, (0.85*window.innerHeight)+10+(lines_paths.length*linePadding));
+
+                            line
+                                .transition()
+                                .duration(2000)
+                                // .attr("transform","translate(0,150)")
+                                .attr("d", linePath);
+
+                            // Time
+                            var time = gLines.append("path")
+                                .attr("class", "time")
+                                .attr("d", routePath)
+                                .attr("stroke-width", 4)
+
+                            var timePath = morphpath.linify(routePath, 0, 10, (0.85*window.innerHeight)+10+(lines_paths.length*linePadding), parseInt(response.paths[0].time,10)/2000);
+
+                            console.log(timePath);
+                            time
+                                .transition()
+                                .duration(2000)
+                                .attr("transform","translate(0,5)")
+                                .attr("d", timePath);
+
+                            lines_paths.push(linePath);
+
+                        }, 1000);
+
+                        update();
+                    });
+                }
+
+                function routingFoot(coordinates) {
+
+                    var api_request = "https://graphhopper.com/api/1/route?point="+routing_history[routing_history.length-2]+"&point="+routing_history[routing_history.length-1]+"&type=json&key=af189539-9363-4c60-b6af-f6b86294d181&locale=de-DE&vehicle=foot&weighting=fastest&elevation=true&points_encoded=false&debug=true";
+
+                    d3.json(api_request, function(error,response) {
+
+                        console.log("foot - distance: " + response.paths[0].distance + ", time: " + response.paths[0].time);
+
+                        pathFootData = response.paths[0].points.coordinates;
+
+                        var routePath = lineFunction(pathFootData);
+
+                        var lineGraph = gRoutes.append("path")
+                            .attr("class", "route foot")
+                            .attr("d", routePath)
+                            .attr("stroke-width", 2)
+
+                        routes_foot_paths.push(lineGraph);
+
+                        // Add dots over the route
+                        // var temp = svg
+                        //     .append("g")
+                        //         .attr("class", "route-dots foot")
+                        //         .selectAll("circle")
+                        //         .data(pathFootData)
+                        //         .enter()
+                        //         .append("svg:circle")
+                        //             .attr({
+                        //                 "r": 2
+                        //             });
+
+                        // routes_foot_points.push(temp);
+
+                        // Transform routes into lines
+                        setTimeout(function() {
+
+                            // Distance
+                            var line = gLines.append("path")
+                                .attr("class", "distance foot")
+                                .attr("d", routePath)
+                                .attr("stroke-width", 4)
+
+                            var linePath = morphpath.linify(routePath, 0, 10, (0.85*window.innerHeight)+10+(lines_paths.length*linePadding));
+
+                            line
+                                .transition()
+                                .duration(2000)
+                                // .attr("transform","translate(0,150)")
+                                .attr("d", linePath);
+
+                            // Time
+                            var time = gLines.append("path")
+                                .attr("class", "time foot")
+                                .attr("d", routePath)
+                                .attr("stroke-width", 4)
+
+                            var timePath = morphpath.linify(routePath, 0, 10, (0.85*window.innerHeight)+10+(lines_paths.length*linePadding), parseInt(response.paths[0].time,10)/2000);
+
+                            console.log(timePath);
+                            time
+                                .transition()
+                                .duration(2000)
+                                .attr("transform","translate(0,5)")
+                                .attr("d", timePath);
+
+                            lines_paths.push(linePath);
+
+                        }, 1000);
+
+                        update();
+                    });
                 }
 
 
@@ -386,6 +476,19 @@
 
                     for (var i = 0; i < routes_points.length; i++) {
                         routes_points[i]
+                            .attr({
+                                cx: function(d) { return project(d).x; },
+                                cy: function(d) { return project(d).y; },
+                            });
+                    }
+
+                    for (var i = 0; i < routes_foot_paths.length; i++) {
+                        routes_foot_paths[i]
+                            .attr("d", lineFunction(pathFootData));
+                    }
+
+                    for (var i = 0; i < routes_foot_points.length; i++) {
+                        routes_foot_points[i]
                             .attr({
                                 cx: function(d) { return project(d).x; },
                                 cy: function(d) { return project(d).y; },

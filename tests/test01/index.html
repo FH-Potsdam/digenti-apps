@@ -110,7 +110,7 @@
             var map = L.mapbox.map('map', 'mapbox.satellite')
                 .setView([0, 0], 1);*/
 
-            d3.json("places_aoi.json", function(err, data) {
+            d3.json("../../data/places_aoi.json", function(err, data) {
                 mapDraw(data);
             });
 
@@ -169,7 +169,7 @@
                 function click(d) {
                     var coordinates = d.geometry.coordinates;
                     routing_history.push(coordinates[1]+","+coordinates[0]);
-                    
+
                     if (routing_history.length > 1) {
 
                         var api_request = "https://graphhopper.com/api/1/route?point="+routing_history[routing_history.length-2]+"&point="+routing_history[routing_history.length-1]+"&type=json&key=af189539-9363-4c60-b6af-f6b86294d181&locale=de-DE&vehicle=car&weighting=fastest&elevation=true&points_encoded=false&debug=true";
@@ -177,7 +177,7 @@
                         d3.json(api_request, function(error,response) {
 
                             pathData = response.paths[0].points.coordinates;
- 
+
                             console.log(pathData);
 
                             var lineGraph = svg.append("path")

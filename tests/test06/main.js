@@ -1,8 +1,13 @@
+/* #############
+        HERE CONFIG
+   ############# */
+
 var platform = new H.service.Platform({
   'app_id': 'EOg7UyuSFbPF0IG5ANjz',
   'app_code': 'iRnqNl0dyzX_8FOlchD0ZQ'
 });
 
+// Get an instance of the normal routing service:
 var router = platform.getRoutingService();
 // Get an instance of the enterprise routing service:
 var enterpriseRouter = platform.getEnterpriseRoutingService();
@@ -33,7 +38,6 @@ $.fn.d3Click = function () {
 
 function isolineAll() {
     $( ".village" ).each(function( index ) {
-        console.log("asdasd");
         $( this ).d3Click();
     });
 }
@@ -67,6 +71,12 @@ d3.json("../../data/places_aoi.json", function(err, data) {
     mapDraw(data);
 });
 
+
+
+/* #############
+        VARS
+   ############# */
+
 var routes_points = [];
 var routes_paths = [];
 var lines_paths = [];
@@ -79,8 +89,16 @@ var gRoutes, lineFunction;
 var currentMode, isoline;
 var isolines_collection = [];
 var isolinesGroup;
+var map_data_sources = [];
+var map_data_layers = [];
 
-//mapDraw("geojson");
+
+
+
+
+
+
+
 
 function mapDraw(geojson) {
 
@@ -96,8 +114,19 @@ function mapDraw(geojson) {
 
     map.addControl(new mapboxgl.Navigation());
 
-    map.on('load', function () {
+    // Add data layers at style load
+    map.on('style.load', function () {
+
         drawFOSLines();
+
+        $.each(map_data_sources, function(index, source) {
+            map.addSource(source[0], source[1]);
+        });
+
+        $.each(map_data_layers, function(index, layer) {
+            map.addLayer(layer);
+        });
+
     });
 
     function drawFOSLines() {
@@ -198,20 +227,18 @@ function mapDraw(geojson) {
 
     // This callback is called when clicking on a location
     function click(d, objectID) {
+
         var coordinates = d.geometry.coordinates;
 
-        console.log(d);
-
-
-        routing_history.push(coordinates[1]+","+coordinates[0]);
-
+        // We are in routing mode
         if (currentMode === "routing") {
+            routing_history.push(coordinates[1]+","+coordinates[0]);
             if (routing_history.length > 1) {
                 routingCar(coordinates);
-                //routingFoot(coordinates);
             }
         }
 
+        // We are in isonline mode
         if (currentMode === "isoline") {
             getIsoline(coordinates, objectID);
         }
@@ -223,12 +250,8 @@ function mapDraw(geojson) {
 
     function getIsoline(coordinates, objectID) {
 
-        console.log(coordinates);
-
-
         var range = parseInt($("#range__slider").val());
         var rangeforAPI = (range*1000).toString();
-        console.log(rangeforAPI);
 
         c = 'geo!'+coordinates[1]+','+coordinates[0];
 
@@ -242,18 +265,12 @@ function mapDraw(geojson) {
           distance: rangeforAPI
         };
 
-        console.log(c);
-
 
         // Define a callback function to process the isoline response.
         var onIsolineResult = function(result) {
 
-            console.log(result);
-
             var coordArray = result.Response.isolines[0].value;
             coordArray = transformHEREgeometry(coordArray);
-
-            console.log(coordArray);
 
             var poly = {
               "type": "Feature",
@@ -278,49 +295,32 @@ function mapDraw(geojson) {
             };
 
             var poly_buffered = turf.buffer(poly, 500, "meters");
-            console.log(poly_buffered);
 
             var isInside1 = turf.inside(pt1, poly_buffered.features[0]);
-            console.log(isInside1);
 
-            //isolinesGroup.append("polygon")
 
             if (isInside1) {
 
-                map.addSource(objectID, {
+                var s = [objectID+"-"+range, {
                     'type': 'geojson',
                     'data': poly
-                });
+                }];
 
-                map.addLayer({
-                    'id': 'isoline_'+objectID,
+                var l = {
+                    'id': 'isoline_'+objectID+"-"+range,
                     'type': 'fill',
-                    'source': objectID,
+                    'source': objectID+"-"+range,
                     'layout': {},
                     'paint': {
                         'fill-color': '#088',
                         'fill-opacity': 0.1
                     }
-                });
+                };
 
-                /*var isoline = isolinesGroup
-                    .append("polygon")
-                    .data([coordArray])
-                    .attr("class", "isoline")
-                    .attr("data-refobjectid", objectID);
-
-
-                $("polygon").hover(
-                    function() {
-                        var idstring = "[data-id='"+$(this).data('refobjectid')+"']";
-                        console.log(idstring);
-                        $(".village").filter(idstring).addClass("active");
-                    }
-                );
-
-                isolines_collection.push(isoline);
-
-                update();*/
+                map_data_sources.push(s);
+                map_data_layers.push(l);
+                map.addSource(s[0], s[1]);
+                map.addLayer(l);
 
 
             }
@@ -530,10 +530,6 @@ function mapDraw(geojson) {
         } else {
             map.setStyle('mapbox://styles/mapbox/' + layer);
         }
-
-        map.on('load', function () {
-            drawFOSLines();
-        });
     }
 
 

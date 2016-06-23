@@ -13,6 +13,17 @@
 		"outputPathIsSetByUser": 0,
 		"outputStyle": 1
 		},
+	"\/data\/upstream_areas_aoi.json": {
+		"fileType": 524288,
+		"ignore": 1,
+		"ignoreWasSetByUser": 0,
+		"inputAbbreviatedPath": "\/data\/upstream_areas_aoi.json",
+		"orderOutput": 0,
+		"outputAbbreviatedPath": "\/data\/upstream_areas_aoi-min.json",
+		"outputPathIsOutsideProject": 0,
+		"outputPathIsSetByUser": 0,
+		"outputStyle": 1
+		},
 	"\/lib\/d3.min.js": {
 		"fileType": 64,
 		"ignore": 0,

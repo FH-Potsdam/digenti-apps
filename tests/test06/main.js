@@ -118,6 +118,7 @@ function mapDraw(geojson) {
     map.on('style.load', function () {
 
         drawFOSLines();
+        drawUpstreamAreas();
 
         $.each(map_data_sources, function(index, source) {
             map.addSource(source[0], source[1]);
@@ -128,6 +129,14 @@ function mapDraw(geojson) {
         });
 
     });
+
+
+    addLayer('FOS 1', 'fos1');
+    addLayer('FOS 2', 'fos2');
+    addLayer('FOS 3', 'fos3');
+    addLayer('Upstream Areas', 'colombia-upstream-areas');
+
+
 
     function drawFOSLines() {
         map.addSource('colombia-fos', {
@@ -183,8 +192,120 @@ function mapDraw(geojson) {
                 "line-opacity": 0.3
             }
         });
+
     }
 
+    function drawUpstreamAreas() {
+        map.addSource('colombia-upstream-areas', {
+            type: 'vector',
+            url: 'mapbox://jorditost.4ljeh60j'
+        });
+
+        map.addLayer({
+            "id": "colombia-upstream-areas",
+            "type": "fill",
+            "source": "colombia-upstream-areas",
+            "source-layer": "upstream_areas_aoi",
+            // "layout": {
+            //     "line-join": "round",
+            //     "line-cap": "round"
+            // },
+            "paint": {
+                'fill-color': '#4f91ab',
+                'fill-opacity': 0.2
+            }
+        });
+
+    }
+
+    function addLayer(name, layerID) {
+
+        var layers = document.getElementById('switch');
+        var div = document.createElement('div');
+        layers.appendChild(div);
+
+        // Add checkbox and label elements for the layer.
+          var input = document.createElement('input');
+          input.type = 'checkbox';
+          input.id = layerID;
+          input.checked = true;
+          div.appendChild(input);
+
+          var label = document.createElement('label');
+          label.setAttribute('for', layerID);
+          label.textContent = name;
+          div.appendChild(label);
+
+          // When the checkbox changes, update the visibility of the layer.
+          input.addEventListener('change', function(e) {
+              map.setLayoutProperty(layerID, 'visibility',
+                  e.target.checked ? 'visible' : 'none');
+          });
+    }
+
+
+
+
+
+
+
+/*
+    function drawFOSLines() {
+        map.addSource('colombia-fos', {
+            type: 'vector',
+            url: 'mapbox://jorditost.49a7b9e1'
+        });
+
+        map.addLayer({
+            "id": "fos3",
+            "type": "line",
+            "source": "colombia-fos",
+            "source-layer": "colombia_fos_h1_m0_5_CLASSIFIED_wgs84",
+            "filter": ["==", "elev", 3],
+            "layout": {
+                "line-join": "round",
+                "line-cap": "round"
+            },
+            "paint": {
+                "line-color": "#e6dc51",
+                "line-width": 2,
+                "line-opacity": 0.3
+            }
+        });
+        map.addLayer({
+            "id": "fos2",
+            "type": "line",
+            "source": "colombia-fos",
+            "source-layer": "colombia_fos_h1_m0_5_CLASSIFIED_wgs84",
+            "filter": ["==", "elev", 2],
+            "layout": {
+                "line-join": "round",
+                "line-cap": "round"
+            },
+            "paint": {
+                "line-color": "#d9943f",
+                "line-width": 2,
+                "line-opacity": 0.3
+            }
+        });
+        map.addLayer({
+            "id": "fos1",
+            "type": "line",
+            "source": "colombia-fos",
+            "source-layer": "colombia_fos_h1_m0_5_CLASSIFIED_wgs84",
+            "filter": ["==", "elev", 1],
+            "layout": {
+                "line-join": "round",
+                "line-cap": "round"
+            },
+            "paint": {
+                "line-color": "#c74d4d",
+                "line-width": 2,
+                "line-opacity": 0.3
+            }
+        });
+    }
+*/
     // MapboxGL container
     var container = map.getCanvasContainer()
 

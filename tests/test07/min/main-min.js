@@ -134,8 +134,6 @@ function mapDraw(geojson) {
     addLayer('FOS 1', 'fos1');
     addLayer('FOS 2', 'fos2');
     addLayer('FOS 3', 'fos3');
-    addLayer('Upstream Areas', 'colombia-upstream-areas');
-
 
 
     function drawFOSLines() {
@@ -769,3 +767,5 @@ function setMode(mode) {
     currentMode = mode;
     d3.select("."+mode).classed("active", true);
 }
+
+

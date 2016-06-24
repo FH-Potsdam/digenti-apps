@@ -3,7 +3,7 @@
 
     <head>
         <meta charset=utf-8 />
-        <title>DIGENTI Routing – Upstreams Test</title>
+        <title>Routing Test 06</title>
         <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
         <script src='../../lib/mapbox-gl.js'></script>
         <link href='../../lib/mapbox-gl.css' rel='stylesheet' />
@@ -19,6 +19,7 @@
         <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
         <script src="//api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
 
+        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro" rel="stylesheet">
         <link href='main.css' rel='stylesheet' />
 
     </head>
@@ -30,7 +31,8 @@
             <h1>DIGENTI Routing Test</h1>
 
             <div>
-                <h2>Select Basemap</h2>
+                <h2>Basemap</h2>
+                <p>Select a basemap out of this list.</p>
                 <select id="basemap_select">
                     <!-- <option value="fos-outdoor selected">FOS outdoor</option> -->
                     <option value="DIGENTI" selected>DIGENTI</option>
@@ -48,10 +50,11 @@
 
             <div>
                 <h2>Isoline</h2>
+                <p>Activate the Isoline-Mode first. The Isolines will reveal which areas you can reach from a given point in a given time.</p>
                 <input id="range__slider" type="range" min="0" max="60" value="30" step="5" oninput="showValue()" onchange="showValue()" />
                 <label id="range"></label>
-                <button class="mode isoline" onclick="setMode('isoline')">Isoline</button>
-                <button class="mode isoline" onclick="isolineAll()">Isoline All</button>
+                <button class="mode isoline" onclick="setMode('isoline')">Activate Isoline Mode</button>
+                <button class="mode isoline" onclick="isolineAll()">Generate Isolines for all places</button>
             </div>
 
             <div>
@@ -63,6 +66,7 @@
                 <h2>Layers</h2>
                 <nav id="switch"></nav>
             </div>
+
 
         </div>
 

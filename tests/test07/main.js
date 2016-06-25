@@ -208,7 +208,7 @@ function mapDraw(geojson) {
                 'fill-color': '#4f91ab',
                 'fill-opacity': 0.25
             },
-            // "filter": ["==", "osm_id", "468769318"],
+            "filter": ["==", "osm_id", ""],
         });
 
         // map.setFilter('colombia-upstream-areas', ['==', 'osm_id', '468769318']);
@@ -339,8 +339,8 @@ function mapDraw(geojson) {
                     map.setFilter('colombia-upstream-areas', ['==', 'osm_id', d.properties.osm_id]);
                 })
                 .on("mouseout", function(d) {
-                    // map.setFilter('colombia-upstream-areas', ['==', 'osm_id', '']);
-                    map.setFilter('colombia-upstream-areas', ["all"]);
+                    map.setFilter('colombia-upstream-areas', ['==', 'osm_id', '']);
+                    // map.setFilter('colombia-upstream-areas', ["all"]);
                 });
 
     //This is the accessor function we talked about above

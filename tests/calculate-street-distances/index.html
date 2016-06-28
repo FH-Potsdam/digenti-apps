@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset=utf-8 />
+        <title>Routing Test 06</title>
+        <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+        <script src='../../lib/mapbox-gl.js'></script>
+        <link href='../../lib/mapbox-gl.css' rel='stylesheet' />
+
+        <!-- This example requires d3 for AJAX and the brush, though you can bring your own library. -->
+        <script src='../../lib/d3.min.js' charset="utf-8"></script>
+        <script src='../../lib/turf.min.js' charset='utf-8'></script>
+        <script src='../../lib/polymorph.js' charset='utf-8'></script>
+        <script src='../../lib/morphpath.js' charset='utf-8'></script>
+
+        <script src="http://js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
+        <script src="http://js.api.here.com/v3/3.0/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
+        <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+        <script src="//api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro" rel="stylesheet">
+        <link href='main.css' rel='stylesheet' />
+
+    </head>
+
+    <body>
+
+
+        <div id='menu'>
+            <h1>DIGENTI Settlement–Street-Connection Calculator</h1>
+
+            <div>
+                <h2>Basemap</h2>
+                <select id="basemap_select">
+                    <!-- <option value="fos-outdoor selected">FOS outdoor</option> -->
+                    <option value="DIGENTI" selected>DIGENTI</option>
+                    <option value="outdoors-v9">outdoors</option>cipseaugm001ycunimvr00zea
+                    <option value="basic-v9">basic</option>
+                    <option value="streets-v9">streets</option>
+                    <option value="emerald-v8">emerald</option>
+                    <option value="bright-v9">bright</option>
+                    <option value="light-v9">light</option>
+                    <option value="dark-v9">dark</option>
+                    <option value="satellite-v9">satellite</option>
+                    <option value="satellite-streets-v9">satellite streets</option>
+                </select>
+            </div>
+
+            <div>
+                <h2>Calculator</h2>
+                <p>The tool will calculate a geojson with all settlements in the are. The geojson will contain informations about the street-connection of a settlement. Activate the Isoline-Mode first.</p>
+                <input id="range__slider" type="range" min="0" max="60" value="30" step="5" oninput="showValue()" onchange="showValue()" />
+                <label id="range"></label>
+                <button class="mode isoline" onclick="setMode('isoline')">Activate Isoline Mode</button>
+                <button class="mode isoline" onclick="isolineAll()">Generate Isolines for all places</button>
+            </div>
+
+        </div>
+
+        <div id='map' class='dark'></div>
+
+        <script src="main.js" type="text/javascript" charset="utf-8"></script>
+
+    </body>
+
+</html>

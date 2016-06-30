@@ -298,13 +298,6 @@ function getIsoline(coordinates, objectID, feature) {
 
         } else {  // Point is not Inside Polygon and therefor not connected to street
 
-            // Transform points of polygons to turf-FeatureCollection (fc)
-            var point_array = [];
-            for (var i=0; i<coordArray.length; i++) {
-                point_array.push(turf.point(coordArray[i]));
-            }
-            var fc = turf.featurecollection(point_array);
-
             // get the neareast point
             var nearest_point = turf.nearest(current_point, street_points_aoi);
             var distance = turf.distance(current_point, nearest_point, "kilometers");

@@ -1,3 +1,5 @@
+// @codekit-prepend "js/digenti-framework.js"
+
 /* #############
         HERE CONFIG
    ############# */
@@ -7,13 +9,8 @@ var platform = new H.service.Platform({
   'app_code': 'iRnqNl0dyzX_8FOlchD0ZQ'
 });
 
-// Get an instance of the normal routing service:
-var router = platform.getRoutingService();
 // Get an instance of the enterprise routing service:
 var enterpriseRouter = platform.getEnterpriseRoutingService();
-
-
-
 
 
 
@@ -28,12 +25,22 @@ showValue();
 
 
 
+/* #############
+        VARS
+   ############# */
 
-
-
-
-
-var places_aoi;
+var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+var pathData, pathFootData;
+var routes_collection = [];
+var gRoutes;
+var isoline;
+var isolines_collection = [];
+var map_data_sources = [];
+var map_data_layers = [];
+var map, featureElement, svg;
+var view = "";
+var places_aoi, street_points_aoi;
 var places_aoi_street_distance = {
    "type":"FeatureCollection",
    "crs":{
@@ -47,37 +54,16 @@ var places_aoi_street_distance = {
 
 
 
+
+
+
 d3.json("../../data/places_aoi.json", function(err, data) {
-    mapDraw(data);
     places_aoi = data;
-    console.log(places_aoi);
+    d3.json("../../data/street_points_aoi.json", function(err, data2) {
+        street_points_aoi = data2;
+        mapDraw(places_aoi);
+    });
 });
-
-
-
-/* #############
-        VARS
-   ############# */
-
-var routes_points = [];
-var routes_paths = [];
-var lines_paths = [];
-var routes_foot_points = [];
-var routes_foot_paths = [];
-var routing_history = [];
-var pathData, pathFootData;
-var routes_collection = [];
-var gRoutes, lineFunction;
-var currentMode, isoline;
-var isolines_collection = [];
-var isolinesGroup;
-var map_data_sources = [];
-var map_data_layers = [];
-var map;
-
-
-
-
 
 
 
@@ -90,7 +76,6 @@ function mapDraw(geojson) {
     map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/jorditost/cipseaugm001ycunimvr00zea',
-        //style: 'mapbox://styles/mapbox/streets-v9',
         zoom: 11,
         center: [-73.02, 10.410]
     });
@@ -111,8 +96,6 @@ function mapDraw(geojson) {
     });
 
 
-
-
     function addLayer(name, layerID) {
 
         var layers = document.getElementById('switch');
@@ -120,22 +103,22 @@ function mapDraw(geojson) {
         layers.appendChild(div);
 
         // Add checkbox and label elements for the layer.
-          var input = document.createElement('input');
-          input.type = 'checkbox';
-          input.id = layerID;
-          input.checked = true;
-          div.appendChild(input);
+        var input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = layerID;
+        input.checked = true;
+        div.appendChild(input);
 
-          var label = document.createElement('label');
-          label.setAttribute('for', layerID);
-          label.textContent = name;
-          div.appendChild(label);
+        var label = document.createElement('label');
+        label.setAttribute('for', layerID);
+        label.textContent = name;
+        div.appendChild(label);
 
-          // When the checkbox changes, update the visibility of the layer.
-          input.addEventListener('change', function(e) {
-              map.setLayoutProperty(layerID, 'visibility',
-                  e.target.checked ? 'visible' : 'none');
-          });
+        // When the checkbox changes, update the visibility of the layer.
+        input.addEventListener('change', function(e) {
+            map.setLayoutProperty(layerID, 'visibility', e.target.checked ? 'visible' : 'none');
+        });
+
     }
 
 
@@ -146,111 +129,24 @@ function mapDraw(geojson) {
     var container = map.getCanvasContainer()
 
     // d3 canvas
-    var svgMorph = d3.select(container).append("svg").attr("class", "map-morphed"),
-        svg = d3.select(container).append("svg").attr("class", "map-features");
+    svg = d3.select(container).append("svg").attr("class", "map-features");
 
-    gRoutes = svg.append("g").attr("class", "routes");
-    var gLines = svgMorph.append("g").attr("class", "route-lines");
-
-    isolinesGroup = svg.append("g").attr("class", "isolinesGroup");
-
-    // var svg = d3.select(container).append("svg")
-                // .attr("id", "map-features")
-
-    var featureElement = svg
-        .append("g")
+    featureElement = svg.append("g")
             .attr("class", "villages")
-            .selectAll("circle")
+            .selectAll("g")
             .data(geojson.features)
             .enter()
-            .append("circle")
-                .attr({
-                    "r": 8
-                })
-                .attr("class", "village")
-                .attr("data-id", function() { return generateUniqueID(); })
-                .on("click", function(d) {
-                    d3.select(this).classed("selected", true);
-                    var objectID = d3.select(this).attr("data-id");
-                    click(d, objectID);
-                });
-
-    //This is the accessor function we talked about above
-    lineFunction = d3.svg.line()
-                        .x(function(d) { return project(d).x; })
-                        .y(function(d) { return project(d).y; })
-                        .interpolate("linear");
-
-
-    // This callback is called when clicking on a location
-    function click(d, objectID) {
-
-        var coordinates = d.geometry.coordinates;
-
-
-        // We are in isonline mode
-        if (currentMode === "isoline") {
-            getIsoline(coordinates, objectID);
-        }
-
-    }
-
-
-
-
-    function update() {
-
-        for (var i = 0; i < routes_paths.length; i++) {
-            routes_paths[i]
-                .attr("d", lineFunction(pathData));
-        }
-
-        for (var i = 0; i < routes_points.length; i++) {
-            routes_points[i]
-                .attr({
-                    cx: function(d) { return project(d).x; },
-                    cy: function(d) { return project(d).y; },
-                });
-        }
-
-        for (var i = 0; i < routes_foot_paths.length; i++) {
-            routes_foot_paths[i]
-                .attr("d", lineFunction(pathFootData));
-        }
-
-        for (var i = 0; i < routes_foot_points.length; i++) {
-            routes_foot_points[i]
-                .attr({
-                    cx: function(d) { return project(d).x; },
-                    cy: function(d) { return project(d).y; },
-                });
-        }
-
-        featureElement
-            .attr({
-                cx: function(d) { return project(d.geometry.coordinates).x; },
-                cy: function(d) { return project(d.geometry.coordinates).y; },
-            });
-
-            console.log("UPDATE");
-
-        for (var j=0; j<isolines_collection.length; j++) {
-
-            if (typeof isolines_collection[j] !== 'undefined') {
-                isolines_collection[j]
-                    .attr("points",function(d) {
-                        var test = [];
-                        for (var i=0; i<d.length; i++) {
-                            test.push([project(d[i]).x, project(d[i]).y].join(","));
-                        }
-                        return test.join(" ");
+            .append("g")
+                .attr("class", "village-group")
+                .append("circle")
+                    .attr({ "r": 8 })
+                    .attr("class", "village")
+                    .attr("data-id", function() { return generateUniqueID(); })
+                    .on("click", function(d) {
+                        d3.select(this).classed("selected", true);
+                        var objectID = d3.select(this).attr("data-id");
                     });
-            }
 
-
-        }
-
-    }
 
     //
     map.on("viewreset", update);
@@ -261,17 +157,13 @@ function mapDraw(geojson) {
     });
 
     map.on("moveend", function() {
-        update();
+        update(0);
         //svg.classed("hidden", false);
     });
 
-    //初期レンダリング
-    update();
 
-    // Use MapboxGL projection for d3 features
-    function project(d) {
-        return map.project(new mapboxgl.LngLat(+d[0], +d[1]));
-    }
+    update(0);
+
 
 
     var basemap_select = document.getElementById('basemap_select');
@@ -329,49 +221,9 @@ function transformHEREgeometry(pathData) {
 
 
 
-// Warn if overriding existing method
-if(Array.prototype.equals) {
-    console.warn("Overriding existing Array.prototype.equals. Possible causes: New API defines the method, there's a framework conflict or you've got double inclusions in your code.");
-}
-// attach the .equals method to Array's prototype to call it on any array
-Array.prototype.equals = function (array) {
-    // if the other array is a falsy value, return
-    if (!array)
-        return false;
-
-    // compare lengths - can save a lot of time
-    if (this.length != array.length)
-        return false;
-
-    for (var i = 0, l=this.length; i < l; i++) {
-        // Check if we have nested arrays
-        if (this[i] instanceof Array && array[i] instanceof Array) {
-            // recurse into the nested arrays
-            if (!this[i].equals(array[i]))
-                return false;
-        }
-        else if (this[i] != array[i]) {
-            // Warning - two different object instances will never be equal: {x:20} != {x:20}
-            return false;
-        }
-    }
-    return true;
-}
-// Hide method from for-in loops
-Object.defineProperty(Array.prototype, "equals", {enumerable: false});
 
 
 
-
-
-
-
-
-function setMode(mode) {
-    d3.selectAll("button.mode").classed("active", false);
-    currentMode = mode;
-    d3.select("."+mode).classed("active", true);
-}
 
 
 
@@ -454,7 +306,7 @@ function getIsoline(coordinates, objectID, feature) {
             var fc = turf.featurecollection(point_array);
 
             // get the neareast point
-            var nearest_point = turf.nearest(current_point, fc);
+            var nearest_point = turf.nearest(current_point, street_points_aoi);
             var distance = turf.distance(current_point, nearest_point, "kilometers");
 
             json_result = {
@@ -468,10 +320,45 @@ function getIsoline(coordinates, objectID, feature) {
         feature.properties.connections = json_result;
         places_aoi_street_distance.features.push(feature);
 
-        if (places_aoi_street_distance.features.length === 42) {
-            var s = JSON.stringify(places_aoi_street_distance);
-            //window.location =
-            OpenInNewTab('data:text/plain;charset=utf-8,'+encodeURIComponent(s));
+        if (places_aoi_street_distance.features.length === places_aoi.features.length) {
+
+            activateButtons();
+
+            places_aoi_street_distance.features.sort(function (a, b) {
+                return d3.ascending(a.properties.name, b.properties.name);
+            });
+
+            svg.selectAll(".village")
+                    .data(places_aoi_street_distance.features)
+                    .attr("data-distance_to_street", function(d) { return d.properties.connections.distance_to_street; })
+                    .attr("data-touches_street", function(d) { return d.properties.connections.touches_street; })
+                    .enter();
+
+            svg.selectAll(".village-group").each(function(d, i) {
+
+                var current_el = d3.select(this);
+
+                current_el.append("line");
+
+                current_el.append("circle")
+                    .attr({ "r": 4 })
+                    .attr("class", "road");
+
+                current_el.append("text")
+                    .text(d.properties.name)
+                    .style("font-weight", "bold")
+                    .attr("y", "30");
+
+                current_el.append("text")
+                    .text("Distance to Street: "+Math.round(d.properties.connections.distance_to_street)+" meter")
+                    .attr("y", "45");
+
+            });
+
+
+            update(0);
+
+
         }
 
 
@@ -492,6 +379,231 @@ function getIsoline(coordinates, objectID, feature) {
 
 
 
+function update(transition_time) {
+
+    w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+    if (view === "smallmultiples") {
+
+        var ix = 0;
+        var iy = 0;
+        var rows = 7;
+        var cols = 6;
+
+        var gap_hor = (w*0.8)/(cols+1);
+        var gap_ver = (h)/(rows+1);
+
+        var arr = [];
+        for (var i=0; i<places_aoi_street_distance.features.length; i++) {
+            arr.push(places_aoi_street_distance.features[i].properties.connections.distance_to_street);
+        }
+        var max = Math.max.apply(null, arr);
+
+
+        var faktor = (gap_hor*0.8)/(max*2);
+
+
+        svg.selectAll(".village-group").each(function(d, i) {
+
+            var current_el = d3.select(this);
+
+            current_el
+                .transition()
+                //.delay(20 * i)
+                .duration(transition_time)
+                    .style("opacity", 1)
+                    .attr("transform", function(d) {
+                        var x = (w*0.2)+ix*gap_hor+(gap_hor/2);
+                        var y = iy*gap_ver+gap_ver;
+                        return "translate("+x+","+y+")";
+                    });
+
+            current_el.select(".village")
+                .transition()
+                .duration(transition_time)
+                    .attr("cx", function() {
+                        var gap = 8;
+                        if (d.properties.connections.distance_to_street > 0) { gap = 2*faktor*d.properties.connections.distance_to_street; }
+                        return gap;
+                    });
+
+            current_el.select(".road")
+                .transition()
+                .duration(transition_time)
+                    .style("opacity", 1)
+                    .attr("cy", 0)
+                    .attr("cx", function() {
+                        var gap = 8;
+                        if (d.properties.connections.distance_to_street > 0) { gap = 0; }
+                        return gap;
+                    });
+
+            current_el.select("line")
+                .transition()
+                .duration(transition_time)
+                    .attr("x1", 0)
+                    .attr("y1", 0)
+                    .attr("x2", 2*faktor*d.properties.connections.distance_to_street)
+                    .attr("y2", 0);
+
+            current_el.selectAll("text")
+                .attr("x", 0)
+                .transition()
+                .duration(500)
+                    .style("opacity", 1);
+
+            setMapOpacity(0);
+
+            ix++;
+            if (ix === cols) { ix = 0; }
+            iy++;
+            if (iy === rows) { iy = 0; }
+
+        });
+
+
+
+
+    } else if (view === "map_distances") {
+
+        svg.selectAll(".village-group").each(function(d, i) {
+
+            var current_el = d3.select(this);
+
+            var x1 = project(d.geometry.coordinates).x;
+            var y1 = project(d.geometry.coordinates).y;
+            var x2 = project(d.properties.connections.nearest_point).x - x1;
+            var y2 = project(d.properties.connections.nearest_point).y - y1;
+
+            current_el
+                .transition()
+                //.delay(20 * i)
+                .duration(transition_time)
+                    .style("opacity", 0.4)
+                    .attr("transform", function(d) {
+                        return "translate("+x1+","+y1+")";
+                    });
+
+            current_el.select(".village")
+                .transition()
+                .duration(transition_time)
+                    .attr("cx", function() {
+                        return 0;
+                    });
+
+            current_el.select(".road")
+                .transition()
+                .duration(transition_time)
+                    .style("opacity", 1)
+                    .attr("cx", x2)
+                    .attr("cy", y2);
+
+            current_el.select("line")
+                .transition()
+                .duration(transition_time)
+                    .attr("x1", 0)
+                    .attr("y1", 0)
+                    .attr("x2", x2)
+                    .attr("y2", y2);
+
+            current_el.selectAll("text")
+                .transition()
+                .duration(transition_time)
+                    .style("opacity", 0);
+
+            setMapOpacity(1);
+
+
+        });
+
+    } else {
+
+        svg.selectAll(".village-group").each(function(d, i) {
+
+            var current_el = d3.select(this);
+
+            var x1 = project(d.geometry.coordinates).x;
+            var y1 = project(d.geometry.coordinates).y;
+
+            current_el
+                .transition()
+                //.delay(20 * i)
+                .duration(transition_time)
+                    .style("opacity", 0.4)
+                    .attr("transform", function(d) {
+                        return "translate("+x1+","+y1+")";
+                    });
+
+            current_el.select(".village")
+                .transition()
+                .duration(transition_time)
+                    .attr("cx", function() {
+                        return 0;
+                    });
+
+            current_el.select(".road")
+                .transition()
+                .duration(transition_time)
+                    .style("opacity", 0);
+
+            current_el.select("line")
+                .transition()
+                .duration(transition_time)
+                    .attr("x1", 0)
+                    .attr("y1", 0)
+                    .attr("x2", 0)
+                    .attr("y2", 0);
+
+            current_el.selectAll("text")
+                .transition()
+                .duration(transition_time)
+                    .style("opacity", 0);
+
+            setMapOpacity(1);
+
+
+        });
+
+    }
+
+
+    console.log("UPDATE");
+
+    for (var j=0; j<isolines_collection.length; j++) {
+
+        if (typeof isolines_collection[j] !== 'undefined') {
+            isolines_collection[j]
+                .attr("points",function(d) {
+                    var test = [];
+                    for (var i=0; i<d.length; i++) {
+                        test.push([project(d[i]).x, project(d[i]).y].join(","));
+                    }
+                    return test.join(" ");
+                });
+        }
+
+
+    }
+
+}
+
+
+
+
+
+
+// Use MapboxGL projection for d3 features
+function project(d) {
+    return map.project(new mapboxgl.LngLat(+d[0], +d[1]));
+}
+
+
+
+
+
+
+
 function isolineAll() {
 
     for (var i=0; i<places_aoi.features.length; i++) {
@@ -503,7 +615,53 @@ function isolineAll() {
 
 
 
-function OpenInNewTab(url) {
-  var win = window.open(url, '_blank');
-  win.focus();
+
+
+function triggerSmallMultiplesView() {
+    d3.selectAll(".view").classed("active", false);
+    d3.selectAll(".smallmultiplesview").classed("active", true);
+    view = "smallmultiples";
+    update(500);
+}
+
+function triggerMapView() {
+    d3.selectAll(".view").classed("active", false);
+    d3.selectAll(".mapview").classed("active", true);
+    view = "";
+    update(500);
+}
+
+function triggerMapDistancesView() {
+    d3.selectAll(".view").classed("active", false);
+    d3.selectAll(".mapdistancesview").classed("active", true);
+    view = "map_distances";
+    update(500);
+}
+
+
+
+function setMapOpacity(value) {
+
+    d3.selectAll(".mapboxgl-canvas")
+        .transition()
+        .duration(500)
+            .style("opacity", value);
+
+    d3.selectAll(".mapboxgl-control-container")
+        .transition()
+        .duration(500)
+            .style("opacity", value);
+}
+
+
+function getGEOJSON() {
+    var s = JSON.stringify(places_aoi_street_distance);
+    OpenInNewTab('data:text/plain;charset=utf-8,' + encodeURIComponent(s));
+}
+
+
+
+function activateButtons() {
+    d3.selectAll(".disabled")
+        .attr("disabled", null);
 }

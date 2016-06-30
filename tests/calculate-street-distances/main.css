@@ -1,3 +1,7 @@
+body {
+    background: #eee;
+}
+
 #menu {
     position: absolute;
     top: 1vw;
@@ -70,16 +74,30 @@ path.time {
     stroke: #225BB1;
 }
 
+
+
+.village-group .road {
+    fill: #f33;
+}
+
 .villages {
     cursor: pointer;
     fill: #f33;
     stroke: none;
-    fill-opacity: 0.4;
 }
 
 .villages .selected {
     fill: #088;
-    fill-opacity: 0.8;
+}
+
+.villages text {
+    fill: #222;
+}
+
+.villages line {
+    stroke-width: 1px;
+    stroke: #f33;
+    stroke-dasharray: 1,1;
 }
 
 .villages circle:hover, .villages circle.active {
@@ -117,10 +135,22 @@ button {
     border-radius: 6px;
     margin-top: 8px;
     width: 100%;
+    transition: background 0.2s;
+}
+
+button:hover {
+    transition: background 0.2s;
+    background: #ff5050;
+}
+
+button:disabled {
+    transition: background 0.2s;
+    background: #ddd;
 }
 
 button.active {
-    background: #ff5050;
+    transition: background 0.2s;
+    background: #5050ff;    
 }
 
 .isoline {

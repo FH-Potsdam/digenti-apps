@@ -106,8 +106,8 @@ function mapDraw(geojson) {
 
     var map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/jorditost/cipseaugm001ycunimvr00zea',
-        //style: 'mapbox://styles/mapbox/streets-v9',
+        // style: 'mapbox://styles/jorditost/cipseaugm001ycunimvr00zea',
+        style: 'mapbox://styles/mapbox/satellite-v9',
         zoom: 11,
         center: [-73.02, 10.410]
     });
@@ -116,6 +116,23 @@ function mapDraw(geojson) {
 
     // Add data layers at style load
     map.on('style.load', function () {
+
+
+        // Areas
+        // var sourcePlacesObj = new mapboxgl.GeoJSONSource({ data: geojson });
+        // map.addSource('places', sourcePlacesObj);
+        // map.addLayer({
+        //     "id": "places",
+        //     "interactive": true,
+        //     "type": "circle",
+        //     "source": "places",
+        //     "paint": {
+        //         "circle-radius": 8,
+        //         "circle-opacity": 0.3,
+        //         "circle-color": "#f00"
+        //     }
+        // });
+        // map.setLayoutProperty('places', 'visibility', 'none');
 
         drawFOSLines();
         drawUpstreamAreas();
@@ -130,11 +147,9 @@ function mapDraw(geojson) {
 
     });
 
-
     addLayer('FOS 1', 'fos1');
     addLayer('FOS 2', 'fos2');
     addLayer('FOS 3', 'fos3');
-
 
     function drawFOSLines() {
         map.addSource('colombia-fos', {
@@ -155,7 +170,7 @@ function mapDraw(geojson) {
             "paint": {
                 "line-color": "#e6dc51",
                 "line-width": 2,
-                "line-opacity": 0.3
+                "line-opacity": 0.15
             }
         });
         map.addLayer({
@@ -171,7 +186,7 @@ function mapDraw(geojson) {
             "paint": {
                 "line-color": "#d9943f",
                 "line-width": 2,
-                "line-opacity": 0.3
+                "line-opacity": 0.15
             }
         });
         map.addLayer({
@@ -187,7 +202,7 @@ function mapDraw(geojson) {
             "paint": {
                 "line-color": "#c74d4d",
                 "line-width": 2,
-                "line-opacity": 0.3
+                "line-opacity": 0.15
             }
         });
 
@@ -196,7 +211,7 @@ function mapDraw(geojson) {
     function drawUpstreamAreas() {
         map.addSource('colombia-upstream-areas', {
             type: 'vector',
-            url: 'mapbox://jorditost.4ljeh60j'
+            url: 'mapbox://jorditost.0d82b46f'
         });
 
         map.addLayer({
@@ -204,15 +219,14 @@ function mapDraw(geojson) {
             "type": "fill",
             "source": "colombia-upstream-areas",
             "source-layer": "upstream_areas_aoi",
-            // "layout": {
-            //     "line-join": "round",
-            //     "line-cap": "round"
-            // },
             "paint": {
                 'fill-color': '#4f91ab',
-                'fill-opacity': 0.2
-            }
+                'fill-opacity': 0.25
+            },
+            "filter": ["==", "osm_id", ""],
         });
+
+        // map.setFilter('colombia-upstream-areas', ['==', 'osm_id', '468769318']);
 
     }
 
@@ -335,6 +349,13 @@ function mapDraw(geojson) {
                     d3.select(this).classed("selected", true);
                     var objectID = d3.select(this).attr("data-id");
                     click(d, objectID);
+                })
+                .on("mouseover", function(d) {
+                    map.setFilter('colombia-upstream-areas', ['==', 'osm_id', d.properties.osm_id]);
+                })
+                .on("mouseout", function(d) {
+                    map.setFilter('colombia-upstream-areas', ['==', 'osm_id', '']);
+                    // map.setFilter('colombia-upstream-areas', ["all"]);
                 });
 
     //This is the accessor function we talked about above
@@ -616,12 +637,14 @@ function mapDraw(geojson) {
 
 
     map.on("movestart", function() {
-        //svg.classed("hidden", true);
+        svg.classed("hidden", true);
+        // map.setLayoutProperty('places', 'visibility', 'visible');
     });
 
     map.on("moveend", function() {
         update();
-        //svg.classed("hidden", false);
+        svg.classed("hidden", false);
+        // map.setLayoutProperty('places', 'visibility', 'none');
     });
 
     //初期レンダリング
@@ -767,5 +790,3 @@ function setMode(mode) {
     currentMode = mode;
     d3.select("."+mode).classed("active", true);
 }
-
-

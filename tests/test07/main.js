@@ -1,3 +1,5 @@
+
+
 /* #############
         HERE CONFIG
    ############# */
@@ -106,8 +108,8 @@ function mapDraw(geojson) {
 
     var map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/jorditost/cipseaugm001ycunimvr00zea',
-        //style: 'mapbox://styles/mapbox/streets-v9',
+        // style: 'mapbox://styles/jorditost/cipseaugm001ycunimvr00zea',
+        style: 'mapbox://styles/mapbox/outdoors-v9',
         zoom: 11,
         center: [-73.02, 10.410]
     });
@@ -116,6 +118,23 @@ function mapDraw(geojson) {
 
     // Add data layers at style load
     map.on('style.load', function () {
+
+
+        // Areas
+        var sourcePlacesObj = new mapboxgl.GeoJSONSource({ data: geojson });
+        map.addSource('places', sourcePlacesObj);
+        map.addLayer({
+            "id": "places",
+            "interactive": true,
+            "type": "circle",
+            "source": "places",
+            "paint": {
+                "circle-radius": 8,
+                "circle-opacity": 0.3,
+                "circle-color": "#f00"
+            }
+        });
+        // map.setLayoutProperty('places', 'visibility', 'none');
 
         drawFOSLines();
         drawUpstreamAreas();
@@ -130,11 +149,9 @@ function mapDraw(geojson) {
 
     });
 
-
     addLayer('FOS 1', 'fos1');
     addLayer('FOS 2', 'fos2');
     addLayer('FOS 3', 'fos3');
-
 
     function drawFOSLines() {
         map.addSource('colombia-fos', {
@@ -622,12 +639,14 @@ function mapDraw(geojson) {
 
 
     map.on("movestart", function() {
-        //svg.classed("hidden", true);
+        svg.classed("hidden", true);
+        // map.setLayoutProperty('places', 'visibility', 'visible');
     });
 
     map.on("moveend", function() {
         update();
-        //svg.classed("hidden", false);
+        svg.classed("hidden", false);
+        // map.setLayoutProperty('places', 'visibility', 'none');
     });
 
     //初期レンダリング

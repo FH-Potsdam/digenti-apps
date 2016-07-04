@@ -1,4 +1,16 @@
 /* ####################
+    CodeKit Stuff
+#################### */
+/*global d3:true */
+/*global mapboxgl:true */
+/*global turf:true */
+/*global console:true */
+/*global alert:true */
+
+
+
+
+/* ####################
     Opens URL in Parameter in new Tab
 #################### */
 function OpenInNewTab(url) {
@@ -52,6 +64,14 @@ Object.defineProperty(Array.prototype, "equals", {enumerable: false});
 #################### */
 function generateUniqueID() {
     return 'id' + (new Date).getTime().toString() + Math.random().toString(36).substr(2, 16);
+}
+
+
+/* ####################
+    Generate an radnom integer value
+#################### */
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min)) + min;
 }
 
 

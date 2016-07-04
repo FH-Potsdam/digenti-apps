@@ -49,11 +49,7 @@
 
             <div>
                 <h2>Analysis</h2>
-                <p>The tool will calculate a geojson with all settlements in the are. The geojson will contain informations about the street-connection of a settlement. Activate the Isoline-Mode first.</p>
-                <input id="range__slider" type="range" min="0" max="60" value="30" step="5" oninput="showValue()" onchange="showValue()" />
-                <label id="range"></label>
-                <button class="mode isoline" onclick="isolineAll()">Generate Isolines for all places</button>
-                <button class="getgeojson disabled" onclick="getGEOJSON()" disabled>Get the geojson</button>
+                <p>The tool shows the nearest streets to every settlement in the AOI. The distance is calculated based on the OSM street data with turf.js.</p>
             </div>
 
             <div>

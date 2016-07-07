@@ -144,6 +144,6 @@ var bufferedPoint = turf.buffer(pt, 0.2, unit);
 var bufferedPolygon = turf.buffer(polygon, 0.2, unit);
 var bufferedLineString = turf.buffer(lineString, 0.2, unit);
 
-console.log(JSON.stringify(bufferedLineString));
-
 var result = turf.featureCollection([bufferedPoint, pt, bufferedPolygon, polygon, bufferedLineString, lineString]);
+
+console.log(JSON.stringify(result));

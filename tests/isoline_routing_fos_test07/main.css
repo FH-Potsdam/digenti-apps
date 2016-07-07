@@ -70,6 +70,13 @@ path.time {
     stroke: #225BB1;
 }
 
+.knotpoint {
+    cursor: pointer;
+    fill: #0f0;
+    stroke: none;
+    fill-opacity: 0.4;
+}
+
 .villages {
     cursor: pointer;
     fill: #f33;

@@ -1,4 +1,5 @@
 // @codekit-prepend "js/digenti-framework.js"
+// @codekit-prepend "api.js"
 
 
 /* #############
@@ -18,11 +19,7 @@ var enterpriseRouter = platform.getEnterpriseRoutingService();
 
 
 
-function showValue() {
-    var val = $("#range__slider").val();
-	document.getElementById("range").innerHTML = val + " minutes";
-}
-showValue();
+
 
 
 
@@ -62,17 +59,16 @@ d3.json("../../data/places_aoi.json", function(err, data) {
 var routes_points = [];
 var routes_paths = [];
 var lines_paths = [];
-var routes_foot_points = [];
-var routes_foot_paths = [];
 var routing_history = [];
 var pathData, pathFootData;
 var routes_collection = [];
 var gRoutes, lineFunction;
 var currentMode, isoline;
-var isolines_collection = [];
-var isolinesGroup;
 var map_data_sources = [];
 var map_data_layers = [];
+var knotpoints = [];
+var kps;
+var routes_geo = new Array ();
 
 
 
@@ -158,16 +154,15 @@ function mapDraw(geojson) {
     var container = map.getCanvasContainer();
 
     // d3 canvas
-    var svgMorph = d3.select(container).append("svg").attr("class", "map-morphed"),
-        svg = d3.select(container).append("svg").attr("class", "map-features");
+    var svg = d3.select(container).append("svg").attr("class", "map-features");
 
     gRoutes = svg.append("g").attr("class", "routes");
-    var gLines = svgMorph.append("g").attr("class", "route-lines");
 
-    isolinesGroup = svg.append("g").attr("class", "isolinesGroup");
+    kps = svg
+        .append("g")
+            .attr("class", "knotpoints");
 
-    // var svg = d3.select(container).append("svg")
-                // .attr("id", "map-features")
+
 
     var featureElement = svg
         .append("g")
@@ -216,7 +211,6 @@ function mapDraw(geojson) {
 
     });
 
-
     function routingCar(start, end) {
 
         // set parametes for API-call
@@ -238,9 +232,8 @@ function mapDraw(geojson) {
         // succeeded!
         function onSuccess(r) {
 
-
             var response = r.response;
-            console.log(response);
+            //console.log(response);
 
             // initialize route from response
             var route = {
@@ -258,9 +251,12 @@ function mapDraw(geojson) {
 
             // generate lineGraph
             var lineGraph = gRoutes.append("path")
+                .attr("data-id", route.id)
                 .attr("class", "route")
                 .attr("d", route.path)
                 .attr("stroke-width", 2);
+
+            routes_geo[route.id] = route.geometry;
 
             // push lineGraph to array routes_paths
             routes_paths.push(lineGraph);
@@ -277,31 +273,40 @@ function mapDraw(geojson) {
 
     function update() {
 
-        for (var i = 0; i < routes_paths.length; i++) {
-            routes_paths[i]
-                .attr("d", lineFunction(pathData));
+
+
+        if (routes_paths.length > 0) {
+            var test = routes_paths.length;
+            for (var i=0; i < test; i++) {
+                /*routes_paths[i][0]
+                    .attr("d", lineFunction(pathData));*/
+            }
         }
 
-        for (var i = 0; i < routes_points.length; i++) {
-            routes_points[i]
-                .attr({
-                    cx: function(d) { return project(d).x; },
-                    cy: function(d) { return project(d).y; },
-                });
+        if (routes_points.length > 0) {
+            for (var i = 0; i < routes_points.length; i++) {
+                routes_points[i]
+                    .attr({
+                        cx: function(d) { return project(d).x; },
+                        cy: function(d) { return project(d).y; },
+                    });
+            }
         }
 
-        for (var i = 0; i < routes_foot_paths.length; i++) {
-            routes_foot_paths[i]
-                .attr("d", lineFunction(pathFootData));
-        }
 
-        for (var i = 0; i < routes_foot_points.length; i++) {
-            routes_foot_points[i]
-                .attr({
-                    cx: function(d) { return project(d).x; },
-                    cy: function(d) { return project(d).y; },
-                });
-        }
+        gRoutes.selectAll("path").each(function(d, i) {
+            var el = d3.select(this);
+            console.log(el.attr("data-id"));
+        });
+
+        kps.selectAll("circle").each(function(d, i) {
+            var el = d3.select(this);
+            el.attr({
+                cx: function() { return project([el.attr("data-coord-x"), el.attr("data-coord-y")]).x; },
+                cy: function() { return project([el.attr("data-coord-x"), el.attr("data-coord-y")]).y; },
+            });
+        });
+
 
         featureElement
             .attr({
@@ -311,37 +316,11 @@ function mapDraw(geojson) {
 
             console.log("UPDATE");
 
-        for (var j=0; j<isolines_collection.length; j++) {
-
-            if (typeof isolines_collection[j] !== 'undefined') {
-                isolines_collection[j]
-                    .attr("points",function(d) {
-                        var test = [];
-                        for (var i=0; i<d.length; i++) {
-                            test.push([project(d[i]).x, project(d[i]).y].join(","));
-                        }
-                        return test.join(" ");
-                    });
-            }
-
-
-        }
-
     }
 
     //
     map.on("viewreset", update);
-
-    map.on("movestart", function() {
-        svg.classed("hidden", true);
-        // map.setLayoutProperty('places', 'visibility', 'visible');
-    });
-
-    map.on("moveend", function() {
-        update();
-        svg.classed("hidden", false);
-        // map.setLayoutProperty('places', 'visibility', 'none');
-    });
+    map.on("moveend", update);
 
     //初期レンダリング
     update();
@@ -350,7 +329,6 @@ function mapDraw(geojson) {
     function project(d) {
         return map.project(new mapboxgl.LngLat(+d[0], +d[1]));
     }
-
 
     var basemap_select = document.getElementById('basemap_select');
     var basemap_select_options = basemap_select.options;
@@ -372,6 +350,96 @@ function mapDraw(geojson) {
 
 
 
+
+    // Returns overlapping geometry of two path arrays of points of a line
+    function getOverlappingGeometry(geometry1, geometry2) {
+
+        var overlappingGeometry = [];
+
+        for (var i=0; i<geometry1.length; i++) {
+            for (var j=0; j<geometry2.length; j++) {
+                if (geometry1[i].equals(geometry2[j])) {
+                    overlappingGeometry.push(geometry1[i]);
+                }
+            }
+        }
+
+        return overlappingGeometry;
+
+    }
+
+
+
+
+
+    // c = collection of existing routes
+    // r = new route to add
+    function compareRouteWithCollection(r, c) {
+
+        pushToKnotpoint(r.geometry[0]);
+        pushToKnotpoint(r.geometry[r.geometry.length-1]);
+
+        if (c.length > 1) {
+            // there are existing routes
+            for (var i=0; i<c.length; i++) {
+                if (r.id !== c[i].id) {
+                    var overlapping_route = getOverlappingGeometry(r.geometry, c[i].geometry);
+                    if (overlapping_route.length>0) {
+                        pushToKnotpoint(overlapping_route[0]);
+                        pushToKnotpoint(overlapping_route[overlapping_route.length-1]);
+                        var test123 = gRoutes.append("path")
+                            .attr("class", "route")
+                            .attr("d", lineFunction(overlapping_route))
+                            .attr("stroke-width", 8);
+                        routes_paths.push(test123);
+                    }
+                }
+            }
+        }
+    }
+
+
+
+
+    function pushToKnotpoint(point) {
+
+        var enable_push = true;
+
+        for (var i=0; i<knotpoints.length; i++) {
+
+            var point_equals = true;
+            for (var j=0; j<point.length-1; j++) {
+                if (knotpoints[i][j] !== point[j]) { point_equals = false; }
+            }
+
+            if (point_equals) {
+                enable_push = false;
+            }
+
+        }
+
+        if (enable_push) {
+
+            //var ledata = {"geometry": { "coordinates": point } };
+            var pt1 = turf.point([-point[0], point[1]]);
+            console.log(pt1);
+
+
+            kps.append("circle")
+                    .attr({ "r": 8 })
+                    .attr("class", "knotpoint")
+                    .attr("data-coord-x", point[0])
+                    .attr("data-coord-y", point[1])
+                    .attr("cx", function() { return project(point).x; } )
+                    .attr("cy", function() { return project(point).y; } );
+
+            knotpoints.push(point);
+
+        }
+
+    }
+
+
 }
 
 
@@ -383,41 +451,31 @@ function mapDraw(geojson) {
 ////////////////
 
 
-// Returns overlapping geometry of two path arrays of points of a line
-function getOverlappingGeometry(geometry1, geometry2) {
 
-    var overlappingGeometry = [];
 
-    for (var i=0; i<geometry1.length; i++) {
-        for (var j=0; j<geometry2.length; j++) {
-            if (geometry1[i].equals(geometry2[j])) {
-                overlappingGeometry.push(geometry1[i]);
+
+
+function uniqueArrayOfArrays(array) {
+
+    var currentI;
+
+    for (var i=0; i<array.length; i++) {
+        var arrayToRemove = [];
+        currentI = array[i];
+        for (var j=i; j<array.length; j++) {
+            var equals = true;
+            for (var k=0; k<currentI.length-1; k++) {
+                if (currentI[k] !== array[j]) { equals = false; }
             }
+            if (equals) {
+                arrayToRemove.push(j);
+            }
+        }
+        for (var j=arrayToRemove.length-1; j>=0; j--) {
+            array.remove(j);
         }
     }
 
-    return overlappingGeometry;
+    return array;
 
-}
-
-
-
-
-
-
-function compareRouteWithCollection(r, c) {
-    if (c.length > 1) {
-        for (var i=0; i<c.length; i++) {
-            if (r.id !== c[i].id) {
-                var overlapping_route = getOverlappingGeometry(r.geometry, c[i].geometry);
-                if (overlapping_route.length>0) {
-                    var test123 = gRoutes.append("path")
-                        .attr("class", "route")
-                        .attr("d", lineFunction(overlapping_route))
-                        .attr("stroke-width", 8);
-                    routes_paths.push(test123);
-                }
-            }
-        }
-    }
 }

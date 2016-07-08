@@ -1,6 +1,6 @@
 
 *.codekit
 
-*.codekit
-
 config.codekit
+
+/lib/node_modules/

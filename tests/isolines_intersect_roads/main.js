@@ -1,3 +1,5 @@
+var concaveman = require('concaveman');
+
 var platform = new H.service.Platform({
   'app_id': 'EOg7UyuSFbPF0IG5ANjz',
   'app_code': 'iRnqNl0dyzX_8FOlchD0ZQ'
@@ -62,6 +64,11 @@ var linePadding = 15;
 /*L.mapbox.accessToken = 'pk.eyJ1IjoiZmFiaWFuZWhtZWwiLCJhIjoiNDZiNTI3NGQxNzRiNjgxMGEwYTljYjgzZDU5ZjdjODYifQ.Mu_TWKlvON7j4UAkQ1EXJg';
 var map = L.mapbox.map('map', 'mapbox.satellite')
     .setView([0, 0], 1);*/
+
+var roadsData;
+d3.json("../../data/roads_aoi.json", function(err, data) {
+    roadsData = data;
+});
 
 d3.json("../../data/places_aoi.json", function(err, data) {
     mapDraw(data);
@@ -180,7 +187,7 @@ function mapDraw(geojson) {
             .enter()
             .append("circle")
                 .attr({
-                    "r": 8
+                    "r": 5
                 })
                 .attr("class", "village")
                 .attr("data-id", function() { return generateUniqueID(); })
@@ -245,7 +252,6 @@ function mapDraw(geojson) {
 
         console.log(c);
 
-
         // Define a callback function to process the isoline response.
         var onIsolineResult = function(result) {
 
@@ -254,7 +260,7 @@ function mapDraw(geojson) {
             var coordArray = result.Response.isolines[0].value;
             coordArray = transformHEREgeometry(coordArray);
 
-            console.log(coordArray);
+            // console.log(JSON.stringify(coordArray));
 
             var poly = {
               "type": "Feature",
@@ -267,7 +273,7 @@ function mapDraw(geojson) {
               }
             };
 
-            console.log(JSON.stringify(poly));
+            // console.log(JSON.stringify(poly));
 
             var pt1 = {
               "type": "Feature",
@@ -281,15 +287,38 @@ function mapDraw(geojson) {
             };
 
             var poly_buffered = turf.buffer(poly, 500, "meters");
-            console.log(poly_buffered);
+            // console.log(poly_buffered);
 
             var isInside1 = turf.inside(pt1, poly_buffered.features[0]);
-            console.log(isInside1);
+            // console.log(isInside1);
 
             //isolinesGroup.append("polygon")
 
             if (isInside1) {
 
+                var concave = concaveman(coordArray, 3);
+                var concaveFeature = turf.polygon([concave]);
+
+                console.log(JSON.stringify(concaveFeature));
+
+                // Add concave polygon
+                map.addSource(objectID + "_concave", {
+                    'type': 'geojson',
+                    'data': concaveFeature
+                });
+
+                map.addLayer({
+                    'id': 'isoline_'+objectID+"_concave",
+                    'type': 'fill',
+                    'source': objectID + "_concave",
+                    'layout': {},
+                    'paint': {
+                        'fill-color': '#f00',
+                        'fill-opacity': 0.1
+                    }
+                });
+
+                // Add original polygon
                 map.addSource(objectID, {
                     'type': 'geojson',
                     'data': poly
@@ -301,10 +330,52 @@ function mapDraw(geojson) {
                     'source': objectID,
                     'layout': {},
                     'paint': {
-                        'fill-color': '#088',
+                        'fill-color': '#009',
                         'fill-opacity': 0.1
                     }
                 });
+
+                // Roads
+                var bufferedRoads = null;
+
+                // Buffer all roads in AOI
+                for (var i=0; i<roadsData.features.length; i++) {
+
+                    var road = roadsData.features[i];
+                    var buffered = turf.buffer(road, 10, 'meters');
+
+                    var bufferedRoad = buffered.features[0];
+                    // console.log("road: " + i + ", " + JSON.stringify(bufferedRoad));
+
+                    // Calculate union
+                    if (bufferedRoads == null) {
+                        bufferedRoads = bufferedRoad;
+                    } else {
+                        bufferedRoads = turf.union(bufferedRoads, bufferedRoad);
+                    }
+                }
+
+                var newIsodistance = turf.intersect(bufferedRoads, concaveFeature);
+
+                newIsodistance = turf.buffer(newIsodistance, 250, "meters");
+
+                // Add isolines polygon
+                map.addSource(objectID + "_roads", {
+                    'type': 'geojson',
+                    'data': newIsodistance
+                });
+
+                map.addLayer({
+                    'id': 'isoline_'+objectID+"_roads",
+                    'type': 'fill',
+                    'source': objectID + "_roads",
+                    'layout': {},
+                    'paint': {
+                        'fill-color': '#088',
+                        'fill-opacity': 0.2
+                    }
+                });
+
 
                 /*var isoline = isolinesGroup
                     .append("polygon")
@@ -324,8 +395,6 @@ function mapDraw(geojson) {
                 isolines_collection.push(isoline);
 
                 update();*/
-
-
             }
 
 

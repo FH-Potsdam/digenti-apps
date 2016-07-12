@@ -411,6 +411,8 @@ function mapDraw(geojson) {
         // Define a callback function to process the isoline response.
         var onIsolineResult = function(result) {
 
+            console.log(result);
+
             var coordArray = result.Response.isolines[0].value;
             coordArray = transformHEREgeometry(coordArray);
 

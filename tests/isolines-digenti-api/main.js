@@ -231,47 +231,22 @@ function mapDraw(geojson) {
 
     function getIsoline(coordinates, objectID) {
 
-        console.log(coordinates);
+        // console.log(objectID);
 
+        var coords = coordinates[1]+','+coordinates[0],
+            range = parseInt($("#range__slider").val());
 
-        var range = parseInt($("#range__slider").val());
-        var rangeforAPI = (range*1000).toString();
-        console.log(rangeforAPI);
-
-        c = 'geo!'+coordinates[1]+','+coordinates[0];
-
-        // Create the parameters for the routing request:
-        var routingParams = {
-          mode: 'fastest;car',
-          resolution: '1',
-          maxpoints: '1000',
-          rangetype: 'time',
-          start: c,
-          distance: rangeforAPI
-        };
-
-        console.log(c);
+        var uri = 'http://localhost:61002/api/isoline/' + coords + '/' + range;
 
         // Define a callback function to process the isoline response.
         var onIsolineResult = function(result) {
 
-            console.log(result);
+            var poly = result;
 
-            var coordArray = result.Response.isolines[0].value;
-            coordArray = transformHEREgeometry(coordArray);
+            console.log(JSON.stringify(result));
+            // console.log(result);
 
-            // console.log(JSON.stringify(coordArray));
-
-            var poly = {
-              "type": "Feature",
-              "properties": {
-                  "objectID": objectID
-              },
-              "geometry": {
-                "type": "Polygon",
-                "coordinates": [coordArray]
-              }
-            };
+            poly.properties.objectID = objectID;
 
             // console.log(JSON.stringify(poly));
 
@@ -296,7 +271,7 @@ function mapDraw(geojson) {
 
             if (isInside1) {
 
-                var concave = concaveman(coordArray, 3);
+                var concave = concaveman(poly.geometry.coordinates[0], 6);
                 var concaveFeature = turf.polygon([concave]);
 
                 console.log(JSON.stringify(concaveFeature));
@@ -313,10 +288,27 @@ function mapDraw(geojson) {
                     'source': objectID + "_concave",
                     'layout': {},
                     'paint': {
-                        'fill-color': '#f00',
+                        'fill-color': '#ffed00',
                         'fill-opacity': 0.1
                     }
                 });
+
+                // // Add buffered polygon
+                // map.addSource(objectID+"_buffered", {
+                //     'type': 'geojson',
+                //     'data': poly_buffered
+                // });
+                //
+                // map.addLayer({
+                //     'id': 'isoline_'+objectID+'+"_buffered"',
+                //     'type': 'fill',
+                //     'source': objectID+"_buffered",
+                //     'layout': {},
+                //     'paint': {
+                //         'fill-color': '#ffed00',
+                //         'fill-opacity': 0.1
+                //     }
+                // });
 
                 // Add original polygon
                 map.addSource(objectID, {
@@ -330,91 +322,36 @@ function mapDraw(geojson) {
                     'source': objectID,
                     'layout': {},
                     'paint': {
-                        'fill-color': '#009',
-                        'fill-opacity': 0.1
-                    }
-                });
-
-                // Roads
-                var bufferedRoads = null;
-
-                // Buffer all roads in AOI
-                for (var i=0; i<roadsData.features.length; i++) {
-
-                    var road = roadsData.features[i];
-                    var buffered = turf.buffer(road, 10, 'meters');
-
-                    var bufferedRoad = buffered.features[0];
-                    // console.log("road: " + i + ", " + JSON.stringify(bufferedRoad));
-
-                    // Calculate union
-                    if (bufferedRoads == null) {
-                        bufferedRoads = bufferedRoad;
-                    } else {
-                        bufferedRoads = turf.union(bufferedRoads, bufferedRoad);
-                    }
-                }
-
-                var newIsodistance = turf.intersect(bufferedRoads, concaveFeature);
-
-                newIsodistance = turf.buffer(newIsodistance, 250, "meters");
-
-                // Add isolines polygon
-                map.addSource(objectID + "_roads", {
-                    'type': 'geojson',
-                    'data': newIsodistance
-                });
-
-                map.addLayer({
-                    'id': 'isoline_'+objectID+"_roads",
-                    'type': 'fill',
-                    'source': objectID + "_roads",
-                    'layout': {},
-                    'paint': {
                         'fill-color': '#088',
                         'fill-opacity': 0.2
                     }
                 });
-
-
-                /*var isoline = isolinesGroup
-                    .append("polygon")
-                    .data([coordArray])
-                    .attr("class", "isoline")
-                    .attr("data-refobjectid", objectID);
-
-
-                $("polygon").hover(
-                    function() {
-                        var idstring = "[data-id='"+$(this).data('refobjectid')+"']";
-                        console.log(idstring);
-                        $(".village").filter(idstring).addClass("active");
-                    }
-                );
-
-                isolines_collection.push(isoline);
-
-                update();*/
             }
-
-
         };
 
+        $.ajax({
+          dataType: "json",
+          url: uri,
+        //   url: 'http://localhost:61002/api/isoline/',
+        //   data: {
+        //       coords: coords,
+        //       range: range
+        //   },
+          success: onIsolineResult,
+          error: function(error) {
+              alert(error);
+          }
+        });
+
         // Call the Enterprise Routing API to calculate an isoline:
-        console.log(JSON.stringify(routingParams));
-        enterpriseRouter.calculateIsoline(
-            routingParams,
-            onIsolineResult,
-            function(error) {
-                alert(error.message);
-            });
-
-
-
+        // console.log(JSON.stringify(routingParams));
+        // enterpriseRouter.calculateIsoline(
+        //     routingParams,
+        //     onIsolineResult,
+        //     function(error) {
+        //         alert(error.message);
+        //     });
     }
-
-
-
 
     function routingCar(coordinates) {
 

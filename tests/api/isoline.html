@@ -29,9 +29,9 @@ var url = 'http://localhost:61002/api/isoline/start/10.4036554,-72.9246737999999
 var source = new mapboxgl.GeoJSONSource({
     data: url
 });
-window.setInterval(function() {
-    source.setData(url);
-}, 2000);
+// window.setInterval(function() {
+//     source.setData(url);
+// }, 2000);
 
 map.on('load', function () {
     map.addSource('isoline', source);

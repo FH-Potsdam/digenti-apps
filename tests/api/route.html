@@ -28,9 +28,9 @@ var url = 'http://localhost:61002/api/route/10.3910411,-73.027069899999987/10.35
 var source = new mapboxgl.GeoJSONSource({
     data: url
 });
-window.setInterval(function() {
-    source.setData(url);
-}, 2000);
+// window.setInterval(function() {
+//     source.setData(url);
+// }, 2000);
 
 map.on('load', function () {
     map.addSource('route', source);

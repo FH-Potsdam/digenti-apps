@@ -28,9 +28,9 @@ var url = 'http://localhost:61002/api/fos/place/1/1200';
 var source = new mapboxgl.GeoJSONSource({
     data: url
 });
-window.setInterval(function() {
-    source.setData(url);
-}, 2000);
+// window.setInterval(function() {
+//     source.setData(url);
+// }, 2000);
 
 map.on('load', function () {
     map.addSource('colombia-fos', source);

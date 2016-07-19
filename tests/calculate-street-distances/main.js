@@ -53,7 +53,7 @@ function mapDraw(geojson) {
 
     map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/jorditost/cipseaugm001ycunimvr00zea',
+        style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
         zoom: 11,
         center: [-73.02, 10.410]
     });
@@ -118,9 +118,11 @@ function mapDraw(geojson) {
     };
 
     function switchLayer(layer) {
-        if (layer === 'DIGENTI') {
+        if (layer == 'DIGENTI') {
             map.setStyle('mapbox://styles/jorditost/cipseaugm001ycunimvr00zea');
-        } else if (layer === 'fos-outdoor') {
+        } else if (layer == 'DIGENTI-Light') {
+            map.setStyle('mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi');
+        } else if (layer == 'fos-outdoor') {
             map.setStyle('mapbox://styles/jorditost/cip44ooh90013cjnkmwmwd2ft');
         } else {
             map.setStyle('mapbox://styles/mapbox/' + layer);

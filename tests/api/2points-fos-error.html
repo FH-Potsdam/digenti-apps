@@ -20,19 +20,59 @@ mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZS
 var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
-    center: [-73.044403399999979,10.3506951],
-    zoom: 14
+    center: [-72.9470699,10.3910411],
+    zoom: 13
 });
 
-var url = 'http://localhost:61002/api/fos/10.3506951,-73.044403399999979/1200';
+var url = 'http://localhost:61002/api/fos/points/10.4037,-72.9247/10.3888,-72.9762/1200';
+// var url = 'http://localhost:61002/api/fos/line/10.3506951,-73.044403399999979/1000';
 var source = new mapboxgl.GeoJSONSource({
     data: url
 });
-// window.setInterval(function() {
-//     source.setData(url);
-// }, 2000);
+
+// var urlRoad = 'http://localhost:61002/api/roads/336609942';
+var sourceRoad = new mapboxgl.GeoJSONSource({
+    data: {"type":"Feature","geometry":{"type":"LineString","coordinates":[[-72.9247,10.4037],[-72.9762,10.3888]]}}
+    // data: urlRoad
+});
+
+var sourceBuffer = new mapboxgl.GeoJSONSource({
+    data: {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[-72.9734207779746,10.3791939641405],[-72.981027286356,10.3800423001629],[-72.9858060358595,10.3860207779746],[-72.9849576998371,10.393627286356],[-72.9789792220254,10.3984060358595],[-72.9274792220254,10.4133060358595],[-72.919872713644,10.4124576998371],[-72.9150939641405,10.4064792220254],[-72.9159423001629,10.398872713644],[-72.9219207779746,10.3940939641405],[-72.9734207779746,10.3791939641405]]]}}
+});
 
 map.on('load', function () {
+
+    // Line
+    map.addSource('line', sourceRoad);
+    map.addLayer({
+        "id": "line",
+        "type": "line",
+        "source": "line",
+        "layout": {
+            "line-join": "round",
+            "line-cap": "round"
+        },
+        "paint": {
+            'line-color': '#099',
+            'line-opacity': 1,
+            'line-width': 3
+        }
+    });
+
+    // Buffer
+    map.addSource('buffer', sourceBuffer);
+    map.addLayer({
+        "id": "buffer",
+        "type": "fill",
+        "source": "buffer",
+        "paint": {
+            "fill-color": "#880",
+            "fill-opacity": 0.2,
+            "fill-antialias": false
+        }
+    });
+
+    // FOS
     map.addSource('colombia-fos', source);
 
     map.addLayer({

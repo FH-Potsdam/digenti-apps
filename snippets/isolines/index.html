@@ -3,7 +3,7 @@
 
     <head>
         <meta charset=utf-8 />
-        <title>Isolines with DIGENTI REST API</title>
+        <title>DIGENTI - Isolines</title>
         <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
         <script src='../../lib/mapbox-gl.js'></script>
         <link href='../../lib/mapbox-gl.css' rel='stylesheet' />
@@ -14,13 +14,12 @@
         <script src='../../lib/polymorph.js' charset='utf-8'></script>
         <script src='../../lib/morphpath.js' charset='utf-8'></script>
 
-        <script src="http://js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
-        <script src="http://js.api.here.com/v3/3.0/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
         <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
         <script src="//api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
 
         <script src="../../lib/bundle.js"></script>
 
+        <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,600,300' rel='stylesheet' type='text/css'>
         <link href='main.css' rel='stylesheet' />
 
     </head>
@@ -29,13 +28,14 @@
 
 
         <div id='menu'>
-            <h1>DIGENTI Accessibility</h1>
+            <h1>DIGENTI Isolines</h1>
 
             <div>
-                <h2>Select Basemap</h2>
+                <h3>Select Basemap</h3>
                 <select id="basemap_select">
                     <!-- <option value="fos-outdoor selected">FOS outdoor</option> -->
                     <option value="DIGENTI-Light" selected>DIGENTI Light</option>
+                    <option value="DIGENTI-Dark">DIGENTI Dark</option>
                     <option value="DIGENTI">DIGENTI</option>
                     <option value="outdoors-v9">outdoors</option>
                     <option value="basic-v9">basic</option>
@@ -50,11 +50,15 @@
             </div>
 
             <div>
-                <h2>Isoline</h2>
-                <input id="range__slider" type="range" min="0" max="60" value="30" step="5" oninput="showValue()" onchange="showValue()" />
-                <label id="range"></label>
-                <button class="mode isoline" onclick="setMode('isoline')">Isoline</button>
-                <button class="mode isoline" onclick="isolineAll()">Isoline All</button>
+                <h3>Isolines</h3>
+                <div class="range-wrapper">
+                    <input id="range__slider" type="range" min="0" max="60" value="30" step="5" oninput="showValue()" onchange="showValue()" />
+                    <label id="range"></label>
+                </div>
+                <div class="button-wrapper">
+                    <button class="mode isoline" onclick="setMode('isoline')">Isoline</button>
+                    <button class="mode isoline-all" onclick="isolineAll()">Isoline All</button>
+                </div>
             </div>
 
             <!-- <div>

@@ -26,9 +26,9 @@ var places_aoi_street_distance = {
 };
 
 
-
-
-
+//////////////////
+// Data loading
+//////////////////
 
 d3.json("../../data/places_aoi.json", function(err, data) {
     places_aoi = data;
@@ -39,8 +39,9 @@ d3.json("../../data/places_aoi.json", function(err, data) {
 });
 
 
-
-
+//////////////
+// Map draw
+//////////////
 
 function mapDraw(geojson) {
 
@@ -50,7 +51,7 @@ function mapDraw(geojson) {
         container: 'map',
         style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
         zoom: 11,
-        center: [-73.02, 10.410]
+        center: [-73.05, 10.410]
     });
 
     map.addControl(new mapboxgl.Navigation());
@@ -99,7 +100,7 @@ function mapDraw(geojson) {
 
     update(0);
 
-    isolineAll();
+    distanceAll();
     triggerMapDistancesView();
 
 
@@ -123,96 +124,12 @@ function mapDraw(geojson) {
             map.setStyle('mapbox://styles/mapbox/' + layer);
         }
     }
-
-
 }
-
-
-
-
-
-
-
-
-function getIsoline(coordinates, objectID, feature) {
-
-    var json_result;
-    //var range = parseInt($("#range__slider").val());
-    //var rangeforAPI = (range*1000).toString();
-
-    var current_point = {
-      "type": "Feature", "properties": { "marker-color": "#f00" },
-      "geometry": { "type": "Point", "coordinates": coordinates }
-    };
-
-    // get the neareast point
-    var nearest_point = turf.nearest(current_point, street_points_aoi);
-    var distance = turf.distance(current_point, nearest_point, "kilometers");
-
-    if (distance < 0.2) {
-        json_result = {
-            "touches_street": true,
-            "distance_to_street": distance*1000,
-            "nearest_point": nearest_point.geometry.coordinates
-        };
-    } else {  // Point is not Inside Polygon and therefor not connected to street
-        json_result = {
-            "touches_street": false,
-            "distance_to_street": distance*1000,
-            "nearest_point": nearest_point.geometry.coordinates
-        };
-    }
-
-    feature.properties.connections = json_result;
-    places_aoi_street_distance.features.push(feature);
-
-    if (places_aoi_street_distance.features.length === places_aoi.features.length) {
-
-        activateButtons();
-
-        places_aoi_street_distance.features.sort(function (a, b) {
-            return d3.ascending(a.properties.name, b.properties.name);
-        });
-
-        svg.selectAll(".village")
-                .data(places_aoi_street_distance.features)
-                .attr("data-distance_to_street", function(d) { return d.properties.connections.distance_to_street; })
-                .attr("data-touches_street", function(d) { return d.properties.connections.touches_street; })
-                .enter();
-
-        svg.selectAll(".village-group").each(function(d) {
-
-            var current_el = d3.select(this);
-
-            current_el.append("line");
-
-            current_el.append("circle")
-                .attr({ "r": 4 })
-                .attr("class", "road");
-
-            current_el.append("text")
-                .text(d.properties.name)
-                .style("font-weight", "bold")
-                .attr("y", "30");
-
-            current_el.append("text")
-                .text("Distance to Street: "+Math.round(d.properties.connections.distance_to_street)+" meter")
-                .attr("y", "45");
-
-        });
-
-        update(0);
-
-    }
-
-}
-
-
-
-
 
 
 function update(transition_time) {
+
+    transition_time = (typeof transition_time === undefined) ? 0 : transition_time;
 
     w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
     h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
@@ -398,10 +315,17 @@ function update(transition_time) {
 
     console.log("UPDATE");
 
+    // Map Interaction
+    // map.on("viewreset", update);
+    // map.on("movestart", function() {
+    //     svg.classed("hidden", true);
+    // });
+    //
+    // map.on("moveend", function() {
+    //     update(0);
+    //     svg.classed("hidden", false);
+    // });
 }
-
-
-
 
 
 
@@ -412,25 +336,95 @@ function project(d) {
 
 
 
+/////////////////////////
+// Calculate Distances
+/////////////////////////
 
-
-
-
-function isolineAll() {
+function distanceAll() {
 
     for (var i=0; i<places_aoi.features.length; i++) {
         var current_feature = places_aoi.features[i];
-        getIsoline(current_feature.geometry.coordinates, current_feature.properties.osm_id, current_feature);
+        calculateDistance(current_feature.geometry.coordinates, current_feature.properties.osm_id, current_feature);
     }
 
 }
 
+function calculateDistance(coordinates, objectID, feature) {
+
+    var json_result;
+    //var range = parseInt($("#range__slider").val());
+    //var rangeforAPI = (range*1000).toString();
+
+    var current_point = {
+      "type": "Feature", "properties": { "marker-color": "#f00" },
+      "geometry": { "type": "Point", "coordinates": coordinates }
+    };
+
+    // get the neareast point
+    var nearest_point = turf.nearest(current_point, street_points_aoi);
+    var distance = turf.distance(current_point, nearest_point, "kilometers");
+
+    if (distance < 0.2) {
+        json_result = {
+            "touches_street": true,
+            "distance_to_street": distance*1000,
+            "nearest_point": nearest_point.geometry.coordinates
+        };
+    } else {  // Point is not Inside Polygon and therefor not connected to street
+        json_result = {
+            "touches_street": false,
+            "distance_to_street": distance*1000,
+            "nearest_point": nearest_point.geometry.coordinates
+        };
+    }
+
+    feature.properties.connections = json_result;
+    places_aoi_street_distance.features.push(feature);
+
+    if (places_aoi_street_distance.features.length === places_aoi.features.length) {
+
+        activateButtons();
+
+        places_aoi_street_distance.features.sort(function (a, b) {
+            return d3.ascending(a.properties.name, b.properties.name);
+        });
+
+        svg.selectAll(".village")
+                .data(places_aoi_street_distance.features)
+                .attr("data-distance_to_street", function(d) { return d.properties.connections.distance_to_street; })
+                .attr("data-touches_street", function(d) { return d.properties.connections.touches_street; })
+                .enter();
+
+        svg.selectAll(".village-group").each(function(d) {
+
+            var current_el = d3.select(this);
+
+            current_el.append("line");
+
+            current_el.append("circle")
+                .attr({ "r": 4 })
+                .attr("class", "road");
+
+            current_el.append("text")
+                .text(d.properties.name)
+                .style("font-weight", "bold")
+                .attr("y", "30");
+
+            current_el.append("text")
+                .text("Distance to Street: "+Math.round(d.properties.connections.distance_to_street)+" meter")
+                .attr("y", "45");
+
+        });
+
+        update(0);
+    }
+}
 
 
 
-/* #####################
-   TRIGGER VIEWS
-   ##################### */
+///////////////////
+// TRIGGER VIEWS
+///////////////////
 
 function triggerSmallMultiplesView() {
     d3.selectAll(".view").classed("active", false);
@@ -453,9 +447,6 @@ function triggerMapDistancesView() {
     update(500);
 }
 
-
-
-
 function setMapOpacity(value) {
 
     d3.selectAll(".mapboxgl-canvas")
@@ -468,8 +459,6 @@ function setMapOpacity(value) {
         .duration(500)
             .style("opacity", value);
 }
-
-
 
 
 function activateButtons() {

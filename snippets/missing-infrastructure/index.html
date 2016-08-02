@@ -26,10 +26,8 @@
 
     <body>
 
-
-        <div id='menu'>
+        <div id="menu" class="modal">
             <h1>DIGENTI Missing Infrastructure</h1>
-
             <div>
                 <h3>Basemap</h3>
                 <select id="basemap_select">
@@ -60,7 +58,12 @@
                 <button class="view mapdistancesview disabled" onclick="triggerMapDistancesView()" disabled>Map View + Missing Roads</button>
                 <button class="view smallmultiplesview disabled" onclick="triggerSmallMultiplesView()" disabled>Small Multiples View</button>
             </div>
+        </div>
 
+        <div id="orderby" class="modal disabled">
+            <h3>Order by</h3>
+            <button class="orderby size active" onclick="reorderSmallMultiples('size')">Size</button>
+            <button class="orderby distance" onclick="reorderSmallMultiples('distance')">Distance</button>
         </div>
 
         <div id='map' class='dark'></div>

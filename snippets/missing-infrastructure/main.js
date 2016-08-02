@@ -13,6 +13,7 @@ var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 var map, featureElement, svg;
 var view = "";
+var orderby = "size";
 var places_aoi, street_points_aoi;
 var places_aoi_street_distance = {
    "type":"FeatureCollection",
@@ -127,6 +128,10 @@ function mapDraw(geojson) {
 }
 
 
+///////////////
+// Update d3
+///////////////
+
 function update(transition_time) {
 
     transition_time = (typeof transition_time === undefined) ? 0 : transition_time;
@@ -134,7 +139,10 @@ function update(transition_time) {
     w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
     h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
+    // Small multiples
     if (view === "smallmultiples") {
+
+        console.log("small multiples - orderby: " + orderby);
 
         var ix = 0;
         var iy = 0;
@@ -144,10 +152,16 @@ function update(transition_time) {
         var gap_hor = (w*0.8)/(cols+1);
         var gap_ver = (h)/(rows+1);
 
-        var arr = [];
+        console.log("gap hor: " + gap_hor);
+
+        var arr = [],
+            orderedArray = [];
+
         for (var i=0; i<places_aoi_street_distance.features.length; i++) {
             arr.push(places_aoi_street_distance.features[i].properties.connections.distance_to_street);
         }
+
+        // console.log(arr);
         var max = Math.max.apply(null, arr);
 
         var faktor = (gap_hor*0.8)/(max*2);
@@ -162,6 +176,14 @@ function update(transition_time) {
                 .duration(transition_time)
                     .style("opacity", 1)
                     .attr("transform", function() {
+
+                        if (orderby == "distance") {
+                            var pos = d.properties.connections.distance_order;
+                            iy = Math.floor(pos/cols);
+                            ix = Math.round(cols*((pos/cols)-iy));
+                            // ix = Math.round(cols*((pos/cols)%1));
+                        }
+
                         var x = (w*0.2)+ix*gap_hor+(gap_hor/2);
                         var y = iy*gap_ver+gap_ver;
                         return "translate("+x+","+y+")";
@@ -201,16 +223,17 @@ function update(transition_time) {
                 .duration(500)
                     .style("opacity", 1);
 
-            setMapOpacity(0);
+            setMapOpacity(0.08);
 
-            ix++;
-            if (ix === cols) { ix = 0; }
-            iy++;
-            if (iy === rows) { iy = 0; }
-
+            if (orderby == "size") {
+                ix++;
+                if (ix === cols) { ix = 0; }
+                iy++;
+                if (iy === rows) { iy = 0; }
+            }
         });
 
-
+    // Map with missing infrastructure
     } else if (view === "map_distances") {
 
         svg.selectAll(".village-group").each(function(d) {
@@ -263,6 +286,7 @@ function update(transition_time) {
 
         });
 
+    // Map view
     } else {
 
         svg.selectAll(".village-group").each(function(d) {
@@ -347,6 +371,44 @@ function distanceAll() {
         calculateDistance(current_feature.geometry.coordinates, current_feature.properties.osm_id, current_feature);
     }
 
+    var features = places_aoi_street_distance.features;
+
+    var mapped = features.map(function(el, i) {
+        return { index: i, value: el };
+    });
+
+    // console.log(features);
+
+    // Sort by distance to street, descendent
+    mapped.sort(function(a,b) {
+        return b.value.properties.connections.distance_to_street - a.value.properties.connections.distance_to_street;
+    })
+
+    // console.log(mapped);
+
+    // We use the keys of the array to set now the position
+    for (var i=0; i<mapped.length; i++) {
+        places_aoi_street_distance.features[mapped[i].index].properties.connections.distance_order = i;
+    }
+
+    // Sort by distance
+    // var ordered = places_aoi_street_distance.features;
+    // ordered = ordered.sort(sortByDistanceDesc);
+
+    // console.log(ordered);
+
+    // var ordered = ordered.map(function(el, i) {
+    //     return { index: i, value: el };
+    // })
+
+    // for (var i=0; i<ordered.length; i++) {
+    //     var current_feature = ordered[i];
+    //
+    //     for (var j=0; j<ordered.length; j++) {
+    //
+    //     }
+    //     // console.log("ordered place: " + current_feature.properties.name + ", distance: " + current_feature.properties.connections.distance_to_street);
+    // }
 }
 
 function calculateDistance(coordinates, objectID, feature) {
@@ -389,17 +451,20 @@ function calculateDistance(coordinates, objectID, feature) {
             return d3.ascending(a.properties.name, b.properties.name);
         });
 
+        // Village dots
         svg.selectAll(".village")
                 .data(places_aoi_street_distance.features)
-                .attr("data-distance_to_street", function(d) { return d.properties.connections.distance_to_street; })
-                .attr("data-touches_street", function(d) { return d.properties.connections.touches_street; })
+                .attr("data-distance", function(d) { return d.properties.connections.distance_to_street; })
+                .attr("data-touches", function(d) { return d.properties.connections.touches_street; })
                 .enter();
 
+        // Village group
         svg.selectAll(".village-group").each(function(d) {
 
             var current_el = d3.select(this);
 
-            current_el.append("line");
+            current_el.append("line")
+                .attr("class", "missing");
 
             current_el.append("circle")
                 .attr({ "r": 4 })
@@ -407,11 +472,12 @@ function calculateDistance(coordinates, objectID, feature) {
 
             current_el.append("text")
                 .text(d.properties.name)
-                .style("font-weight", "bold")
+                .attr("class", "title")
                 .attr("y", "30");
 
             current_el.append("text")
-                .text("Distance to Street: "+Math.round(d.properties.connections.distance_to_street)+" meter")
+                .attr("class", "text")
+                .text(Math.round(d.properties.connections.distance_to_street)+" m to street")
                 .attr("y", "45");
 
         });
@@ -426,16 +492,17 @@ function calculateDistance(coordinates, objectID, feature) {
 // TRIGGER VIEWS
 ///////////////////
 
-function triggerSmallMultiplesView() {
-    d3.selectAll(".view").classed("active", false);
-    d3.selectAll(".smallmultiplesview").classed("active", true);
-    view = "smallmultiples";
+function reorderSmallMultiples(ob) {
+    orderby = ob;
+    d3.selectAll(".orderby").classed("active", false);
+    d3.selectAll("."+orderby).classed("active", true);
     update(500);
 }
 
 function triggerMapView() {
     d3.selectAll(".view").classed("active", false);
     d3.selectAll(".mapview").classed("active", true);
+    d3.selectAll("#orderby").classed("disabled", true);
     view = "";
     update(500);
 }
@@ -443,7 +510,16 @@ function triggerMapView() {
 function triggerMapDistancesView() {
     d3.selectAll(".view").classed("active", false);
     d3.selectAll(".mapdistancesview").classed("active", true);
+    d3.selectAll("#orderby").classed("disabled", true);
     view = "map_distances";
+    update(500);
+}
+
+function triggerSmallMultiplesView() {
+    d3.selectAll(".view").classed("active", false);
+    d3.selectAll(".smallmultiplesview").classed("active", true);
+    d3.selectAll("#orderby").classed("disabled", false);
+    view = "smallmultiples";
     update(500);
 }
 
@@ -464,4 +540,12 @@ function setMapOpacity(value) {
 function activateButtons() {
     d3.selectAll(".disabled")
         .attr("disabled", null);
+}
+
+//////////////////////
+// Sort by distance
+//////////////////////
+
+function sortByDistanceDesc(a, b) {
+    return b.properties.connections.distance_to_street - a.properties.connections.distance_to_street;
 }

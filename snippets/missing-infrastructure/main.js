@@ -103,28 +103,6 @@ function mapDraw(geojson) {
 
     distanceAll();
     triggerMapDistancesView();
-
-
-
-    var basemap_select = document.getElementById('basemap_select');
-    var basemap_select_options = basemap_select.options;
-
-    basemap_select.onchange = function() {
-        var selectedValue = basemap_select_options[basemap_select.selectedIndex].value;
-        switchLayer(selectedValue);
-    };
-
-    function switchLayer(layer) {
-        if (layer == 'DIGENTI') {
-            map.setStyle('mapbox://styles/jorditost/cipseaugm001ycunimvr00zea');
-        } else if (layer == 'DIGENTI-Light') {
-            map.setStyle('mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi');
-        } else if (layer == 'fos-outdoor') {
-            map.setStyle('mapbox://styles/jorditost/cip44ooh90013cjnkmwmwd2ft');
-        } else {
-            map.setStyle('mapbox://styles/mapbox/' + layer);
-        }
-    }
 }
 
 
@@ -234,7 +212,7 @@ function update(transition_time) {
         });
 
     // Map with missing infrastructure
-    } else if (view === "map_distances") {
+    } else if (view === "map-distances") {
 
         svg.selectAll(".village-group").each(function(d) {
 
@@ -487,9 +465,35 @@ function calculateDistance(coordinates, objectID, feature) {
 }
 
 
+////////////////////////
+// GUI / Interactions
+////////////////////////
+
+var basemap_select = document.getElementById('basemap_select');
+var basemap_select_options = basemap_select.options;
+
+basemap_select.onchange = function() {
+    var selectedValue = basemap_select_options[basemap_select.selectedIndex].value;
+    switchLayer(selectedValue);
+}
+
+function switchLayer(layer) {
+    if (layer == 'DIGENTI') {
+        map.setStyle('mapbox://styles/jorditost/cipseaugm001ycunimvr00zea');
+    } else if (layer == 'DIGENTI-Light') {
+        map.setStyle('mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi');
+    } else if (layer == 'DIGENTI-Dark') {
+        map.setStyle('mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t');
+    } else if (layer == 'fos-outdoor') {
+        map.setStyle('mapbox://styles/jorditost/cip44ooh90013cjnkmwmwd2ft');
+    } else {
+        map.setStyle('mapbox://styles/mapbox/' + layer);
+    }
+}
+
 
 ///////////////////
-// TRIGGER VIEWS
+// Trigger Views
 ///////////////////
 
 function reorderSmallMultiples(ob) {
@@ -511,7 +515,7 @@ function triggerMapDistancesView() {
     d3.selectAll(".view").classed("active", false);
     d3.selectAll(".mapdistancesview").classed("active", true);
     d3.selectAll("#orderby").classed("disabled", true);
-    view = "map_distances";
+    view = "map-distances";
     update(500);
 }
 

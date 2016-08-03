@@ -58,15 +58,17 @@ function mapDraw(polygon){
     map.addControl(new mapboxgl.Navigation());
 
     // svg要素をアペンドする
-    var container = map.getCanvasContainer()
-    var svg = d3.select(container).append("svg")
+    var container = map.getCanvasContainer();
+    var svg = d3.select(container).append("svg");
+
+    var isolinesGroup = svg.append("g").attr("class", "isolines-group");
 
 
 	//緯度経度->パスジェネレーター関数作成
 	var transform = d3.geo.transform({point: project});
 	var path = d3.geo.path().projection(transform);
 
- 	var featureElement = svg.selectAll("path")
+ 	var isolines = isolinesGroup.selectAll("path")
 		.data([polygon])
 		.enter()
 		.append("path")
@@ -78,7 +80,7 @@ function mapDraw(polygon){
 
     //path要素のアップデート
     function update() {
-        featureElement.attr("d", path);
+        isolines.attr("d", path);
     }
 
     //

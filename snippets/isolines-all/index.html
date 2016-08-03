@@ -11,23 +11,18 @@
         <!-- This example requires d3 for AJAX and the brush, though you can bring your own library. -->
         <script src='../../lib/d3.min.js' charset="utf-8"></script>
         <!-- <script src='../../lib/turf.min.js' charset='utf-8'></script> -->
-        <script src='../../lib/polymorph.js' charset='utf-8'></script>
-        <script src='../../lib/morphpath.js' charset='utf-8'></script>
 
         <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
         <script src="//api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
 
         <script src="../../lib/bundle.js"></script>
 
-        <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,600,300' rel='stylesheet' type='text/css'>
-        <link href='main.css' rel='stylesheet' />
-
+        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,600,300" rel="stylesheet" type="text/css">
+        <link href="main.css" rel="stylesheet" />
     </head>
 
     <body>
-
-
-        <div id='menu'>
+        <div id="menu">
             <h1>DIGENTI Isolines</h1>
 
             <div>
@@ -55,10 +50,6 @@
                     <input id="range__slider" type="range" min="0" max="60" value="30" step="5" oninput="showValue()" onchange="showValue()" />
                     <label id="range"></label>
                 </div>
-                <!-- <div class="button-wrapper">
-                    <button class="mode isoline" onclick="setMode('isoline')">Isoline</button>
-                    <button class="mode isoline-all active" onclick="isolineAll()">Isoline All</button>
-                </div> -->
             </div>
 
             <div>
@@ -66,17 +57,10 @@
                 <button class="view mapview active disabled" onclick="triggerMapView()" disabled>Map View</button>
                 <button class="view smallmultiplesview disabled" onclick="triggerSmallMultiplesView()" disabled>Small Multiples View</button>
             </div>
-            <!-- <div>
-                <h2>Routing</h2>
-                <button class="mode routing" onclick="setMode('routing')">Routing</button>
-            </div> -->
-
         </div>
 
-        <div id='map' class='dark'></div>
+        <div id="map" class="dark"></div>
 
-        <script src="main.js" type="text/javascript" charset="utf-8"></script>
-
+        <script src="min/main-min.js" type="text/javascript" charset="utf-8"></script>
     </body>
-
 </html>

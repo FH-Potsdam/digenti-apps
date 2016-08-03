@@ -1,16 +1,29 @@
+// @codekit-prepend "js/digenti-framework.js"
+/*global d3:true */
+/*global mapboxgl:true */
+/*global turf:true */
+/*global console:true */
+
 var concaveman = require('concaveman');
 
-var map;
+var map,
+    svg,
+    gVillages,
+    path;
 
-var currentMode, isoline;
-var isolines_collection = [];
-var isolinesGroup;
+var currentMode = "isoline-all",
+    view = "mode";
+
+var places_aoi;
+
+var isolinesLoaded = 0;
 
 var isolineColor = '#3dc8e7'; //'#26D1F9',
     isolineOpacity = 0.35;
 
 // Load places
 d3.json("../../data/places_aoi.json", function(err, data) {
+    places_aoi = data;
     mapDraw(data);
 });
 
@@ -27,7 +40,7 @@ function mapDraw(geojson) {
         container: 'map',
         style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
         zoom: 11,
-        center: [-73.13, 10.403]
+        center: [-73.06, 10.410]
     });
 
     map.addControl(new mapboxgl.Navigation());
@@ -37,41 +50,44 @@ function mapDraw(geojson) {
     });
 
     // MapboxGL container
-    var container = map.getCanvasContainer()
+    var container = map.getCanvasContainer();
 
     // d3 canvas
-    var svg = d3.select(container).append("svg").attr("id", "map-features"),
-        isolinesGroup = svg.append("g").attr("class", "isolinesGroup");
+    svg = d3.select(container).append("svg").attr("id", "map-features");
 
-    var featureElement = svg
+    // Isolines group
+    // gIsolines = svg.append("g").attr("class", "isolines");
+
+    // Path transform
+    var transform = d3.geo.transform({point: projectPoint});
+	path = d3.geo.path().projection(transform);
+
+    // Draw villages
+    gVillages = svg
         .append("g")
             .attr("class", "villages")
             .selectAll("circle")
             .data(geojson.features)
             .enter()
-            .append("circle")
-                .attr({
-                    "r": 5
-                })
-                .attr("class", "village")
-                .attr("data-id", function() { return generateUniqueID(); })
-                .on("click", function(d) {
-                    d3.select(this).classed("selected", true);
-                    var objectID = d3.select(this).attr("data-id");
-                    click(d, objectID);
-                });
-
-    //This is the accessor function we talked about above
-    lineFunction = d3.svg.line()
-                        .x(function(d) { return project(d).x; })
-                        .y(function(d) { return project(d).y; })
-                        .interpolate("linear");
+            .append("g")
+                .attr("data-id", function(d) { return d.properties.osm_id; })
+                .append("circle")
+                    .attr({
+                        "r": 5
+                    })
+                    .attr("class", "village")
+                    .attr("data-id", function(d) { return d.properties.osm_id; })
+                    .on("click", function(d) {
+                        d3.select(this).classed("selected", true);
+                        var objectID = d3.select(this).attr("data-id");
+                        click(d, objectID);
+                    });
 
 
     // This callback is called when clicking on a location
     function click(d, objectID) {
         var coordinates = d.geometry.coordinates;
-        console.log(d);
+        // console.log(d);
         if (currentMode === "isoline" || currentMode === "isoline-all") {
             getIsoline(coordinates, objectID);
         }
@@ -87,11 +103,13 @@ function mapDraw(geojson) {
         // Define a callback function to process the isoline response.
         var onIsolineResult = function(result) {
 
-            var poly = result;
+            isolinesLoaded++;
 
-            console.log(JSON.stringify(result));
+            var polygon = result;
 
-            poly.properties.objectID = objectID;
+            // console.log(JSON.stringify(result));
+
+            polygon.properties.objectID = objectID;
 
             var settlementPoint = {
                 "type": "Feature",
@@ -104,16 +122,16 @@ function mapDraw(geojson) {
                 }
             };
 
-            var polyBuffered = turf.buffer(poly, 500, "meters");
+            var polygonBuffered = turf.buffer(polygon, 500, "meters");
 
-            var isInside = turf.inside(settlementPoint, polyBuffered.features[0]);
+            var isInside = turf.inside(settlementPoint, polygonBuffered.features[0]);
 
             if (isInside) {
 
-                // Add original polygon
+                // mapboxgl isoline
                 map.addSource(objectID, {
                     'type': 'geojson',
-                    'data': poly
+                    'data': polygon
                 });
 
                 map.addLayer({
@@ -127,24 +145,19 @@ function mapDraw(geojson) {
                     }
                 });
 
-                // var isoline = isolinesGroup
-                //     .append("polygon")
-                //     .data([coordArray])
-                //     .attr("class", "isoline")
-                //     .attr("data-refobjectid", objectID);
+                // d3 isoline
+                var isoline = svg.select('g[data-id="'+objectID+'"]')
+                    .append("path")
+            		.data([polygon])
+                    .attr("class", "isoline")
+                    .attr("data-id", objectID);
 
+            }
 
-                // $("polygon").hover(
-                //     function() {
-                //         var idstring = "[data-id='"+$(this).data('refobjectid')+"']";
-                //         console.log(idstring);
-                //         $(".village").filter(idstring).addClass("active");
-                //     }
-                // );
-
-                isolines_collection.push(isoline);
-
+            // Update isolines when all loaded
+            if (isolinesLoaded == places_aoi.features.length) {
                 update();
+                activateButtons();
             }
         };
 
@@ -163,40 +176,6 @@ function mapDraw(geojson) {
         });
     }
 
-
-
-    function update() {
-
-        // Update villages
-        featureElement
-            .attr({
-                cx: function(d) { return project(d.geometry.coordinates).x; },
-                cy: function(d) { return project(d.geometry.coordinates).y; },
-            });
-
-            console.log("UPDATE");
-
-        for (var j=0; j<isolines_collection.length; j++) {
-
-            if (typeof isolines_collection[j] !== 'undefined') {
-                isolines_collection[j]
-                    .attr("points",function(d) {
-                        var test = [];
-                        for (var i=0; i<d.length; i++) {
-                            test.push([project(d[i]).x, project(d[i]).y].join(","));
-                        }
-                        return test.join(" ");
-                    });
-            }
-
-
-        }
-
-    }
-
-    // Update d3 map features
-    update();
-
     // Map Interaction
     map.on("viewreset", update);
     map.on("movestart", function() {
@@ -208,24 +187,127 @@ function mapDraw(geojson) {
         svg.classed("hidden", false);
     });
 
-    // Use MapboxGL projection for d3 features
-    function project(d) {
-        return map.project(new mapboxgl.LngLat(+d[0], +d[1]));
+    // Update d3 map features
+    update();
+}
+
+
+///////////////
+// Update d3
+///////////////
+
+function update(transition_time) {
+
+    transition_time = (typeof transition_time === undefined) ? 0 : transition_time;
+
+    w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+    // Small multiples
+    if (view === "smallmultiples") {
+
+        console.log("triggerSmallMultiplesView");
+
+        // Hide villages
+        // svg.selectAll(".village")
+        //     .transition()
+        //     .duration(transition_time)
+        //     .attr("opacity", 0);
+
+        // Transform isolines
+        var ix = 0;
+        var iy = 0;
+        var rows = 7;
+        var cols = 6;
+
+        var gap_hor = (w*0.8)/(cols+1);
+        var gap_ver = 20;
+
+        var max_path_w = 0;
+        var max_path_h = 0;
+
+        // Calculate max width and height
+        svg.selectAll(".isoline").each(function(d, i) {
+            var current_el = d3.select(this);
+
+            var current_path_w = current_el.node().getBBox().width;
+            var current_path_h = current_el.node().getBBox().height;
+
+            if (current_path_h > max_path_h) { max_path_h = current_path_h; }
+            if (current_path_w > max_path_w) { max_path_w = current_path_w; }
+        });
+
+        var widthperelement = w*0.8/(cols);
+        var heightperelement = h/(rows)-gap_ver;
+
+        var gap_left = w*0.2;
+
+        var faktor_height = heightperelement/max_path_h;
+        var faktor_width = widthperelement/max_path_w;
+
+        console.log("max_path_w: "+max_path_w);
+        console.log("max_path_h: "+max_path_h);
+
+        var scaleFactor = faktor_height;
+        if (faktor_width<scaleFactor) { scaleFactor=faktor_width; }
+
+        console.log(scaleFactor);
+
+        // Update isolines
+        svg.selectAll(".isoline").each(function(d, index) {
+            var current_el = d3.select(this);
+
+            current_el
+                .transition()
+                .duration(transition_time)
+                    .attr("transform", function() {
+                        var x = (gap_left/scaleFactor)+(ix+0.5)*(widthperelement/scaleFactor)-current_el.node().getBBox().x-((current_el.node().getBBox().width)/2);
+                        var y = (iy+0.5)*((heightperelement+gap_ver)/scaleFactor)-current_el.node().getBBox().y-((current_el.node().getBBox().height)/2);
+                        ix++;
+                        if (ix === cols) { ix = 0; }
+                        iy++;
+                        if (iy === rows) { iy = 0; }
+                        return "scale("+scaleFactor+") translate("+x+","+y+")";
+                    });
+        });
+
+        setMapOpacity(0.08);
+
+    // Map view
+    } else {
+        // Update villages
+        svg.selectAll(".village")
+            .attr({
+                cx: function(d) { return project(d.geometry.coordinates).x; },
+                cy: function(d) { return project(d.geometry.coordinates).y; },
+            });
+
+        // Update isolines
+        svg.selectAll(".isoline").each(function(d, index) {
+            var isoline = d3.select(this);
+            isoline.attr("d", path);
+        });
+
+        setMapOpacity(1);
     }
-}
 
-////////////////
-// Math Utils
-////////////////
-
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min)) + min;
+    console.log("UPDATE");
 }
 
 
-function generateUniqueID() {
-    return 'id' + (new Date).getTime().toString() + Math.random().toString(36).substr(2, 16);
-};
+////////////////////
+// Map Projection
+////////////////////
+
+// Use MapboxGL projection for d3 features
+function project(d) {
+    return map.project(new mapboxgl.LngLat(+d[0], +d[1]));
+}
+
+function projectPoint(lon, lat) {
+    var point = map.project(new mapboxgl.LngLat(lon, lat));
+    this.stream.point(point.x, point.y);
+}
 
 
 ////////////////////////
@@ -261,6 +343,54 @@ function showValue() {
 }
 
 showValue();
+
+
+///////////////////
+// Trigger Views
+///////////////////
+
+function reorderSmallMultiples(ob) {
+    orderby = ob;
+    d3.selectAll(".orderby").classed("active", false);
+    d3.selectAll("."+orderby).classed("active", true);
+    update(500);
+}
+
+function triggerMapView() {
+    d3.selectAll(".view").classed("active", false);
+    d3.selectAll(".mapview").classed("active", true);
+    d3.selectAll("#orderby").classed("disabled", true);
+    view = "map";
+    update(500);
+}
+
+function triggerSmallMultiplesView() {
+    d3.selectAll(".view").classed("active", false);
+    d3.selectAll(".smallmultiplesview").classed("active", true);
+    d3.selectAll("#orderby").classed("disabled", false);
+    view = "smallmultiples";
+    update(500);
+}
+
+function setMapOpacity(value) {
+
+    d3.selectAll(".mapboxgl-canvas")
+        .transition()
+        .duration(500)
+            .style("opacity", value);
+
+    d3.selectAll(".mapboxgl-control-container")
+        .transition()
+        .duration(500)
+            .style("opacity", value);
+}
+
+
+function activateButtons() {
+    d3.selectAll(".disabled")
+        .attr("disabled", null);
+}
+
 
 ///////////
 // Modes

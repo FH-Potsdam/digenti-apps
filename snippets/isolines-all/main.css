@@ -141,23 +141,38 @@ path.time {
     stroke: #225BB1;
 }
 
+/* Villages */
 .villages {
     cursor: pointer;
     fill: #f33;
     stroke: none;
     fill-opacity: 0.4;
 }
+    .villages .selected {
+        fill: #088;
+        fill-opacity: 0.8;
+    }
 
-.villages .selected {
-    fill: #088;
-    fill-opacity: 0.8;
+    .villages circle:hover, .villages circle.active {
+        fill-opacity: 1.0;
+        transition: fill-opacity 0.6s;
+    }
+
+/* Isolines */
+.isoline {
+    fill: #3dc8e7;
+    fill-opacity: 0.35;
+    stroke-width: 1.5;
+    stroke: #3dc8e7;
+    transition: fill-opacity 0.3s ease;
 }
+    .isoline:hover {
+        fill-opacity: 0.25;
+        /*fill: rgba(255,0,0,0.5);
+        transition: fill 0.3s;*/
+    }
 
-.villages circle:hover, .villages circle.active {
-    fill-opacity: 1.0;
-    transition: fill-opacity 0.6s;
-}
-
+/* Routes */
 .route-dots {
     fill: #099;
     fill-opacity: 0.5;
@@ -178,15 +193,4 @@ path.time {
     stroke:#fff;
     fill-opacity:0.125;
     shape-rendering:crispEdges;
-}
-
-.isoline {
-    fill: rgba(255,0,0,0.1);
-    stroke-width: 1;
-    stroke: rgba(255,0,0, 0.4);
-}
-
-.isoline:hover {
-    fill: rgba(255,0,0,0.5);
-    transition: fill 0.3s;
 }

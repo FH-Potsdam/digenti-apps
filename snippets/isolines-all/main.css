@@ -1,0 +1,192 @@
+* {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+body {
+    font: 14px 'Source Sans Pro', sans-serif;
+}
+
+button, select, input, label {
+    font: 14px 'Source Sans Pro', sans-serif;
+    outline: none;
+}
+
+html, body, #wrapper {
+    width: 100%;
+    height: 100%;
+    padding: 0px;
+    margin: 0px;
+}
+
+#menu {
+    position: absolute;
+    top: 1vw;
+    left: 1vw;
+    background: #fff;
+    padding: 0;
+    z-index: 3000;
+    max-width: 320px;
+    /*display: flex;*/
+    /*flex-direction: column;*/
+    /*border-radius: 4px;*/
+    padding: 5px;
+}
+
+#menu h2, #menu h3 {
+    margin-bottom: 10px;
+}
+
+#menu > * {
+    padding: 15px;
+}
+
+.button-wrapper {
+    display: block;
+    margin-top: 15px;
+}
+
+button, select {
+    width: 100%;
+}
+
+.range-wrapper {
+    * {
+        display: inline-block;
+    }
+}
+
+#range {
+    position: relative;
+    top: -3px;
+}
+
+#range__slider {
+    margin-right: 5px;
+    padding-top: 3px;
+}
+
+button {
+    background: grey;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    display: inline-block;
+    cursor: pointer;
+
+    background-color: #464b57;
+
+    transition: all 0.2s ease;
+
+    margin-bottom: 5px;
+
+    -webkit-appearance: none !important;
+    -moz-appearance:    none !important;
+    appearance:         none !important;
+}
+
+button:hover,
+button.active {
+    background: #3dc8e7;
+    /*background: #26D1F9;*/
+    /*background: #e74c3c;*/
+}
+
+
+/**********/
+/*** d3 ***/
+/**********/
+
+#map {
+  position:relative;
+  width: 100vw;
+  height: 100vh;
+  margin: auto auto;
+  overflow: visible;
+}
+
+svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+svg.map-morphed {
+    overflow: visible;
+}
+
+.hidden {
+    display: none;
+}
+
+path {
+    stroke: #099;
+    fill: none;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+path.route,
+path.distance {
+    stroke: #099;
+}
+
+path.foot {
+    stroke-dasharray: 4, 10;
+    /*stroke: #50E3C2*/
+}
+
+path.time {
+    stroke: #225BB1;
+}
+
+.villages {
+    cursor: pointer;
+    fill: #f33;
+    stroke: none;
+    fill-opacity: 0.4;
+}
+
+.villages .selected {
+    fill: #088;
+    fill-opacity: 0.8;
+}
+
+.villages circle:hover, .villages circle.active {
+    fill-opacity: 1.0;
+    transition: fill-opacity 0.6s;
+}
+
+.route-dots {
+    fill: #099;
+    fill-opacity: 0.5;
+}
+
+.route-lines {
+    stroke-opacity: 0.6;
+}
+
+.ui-brush {
+    background:#f8f8f8;
+    position:absolute;
+    bottom:0;right:0;left:0;
+    height:100px;
+}
+
+.brush .extent {
+    stroke:#fff;
+    fill-opacity:0.125;
+    shape-rendering:crispEdges;
+}
+
+.isoline {
+    fill: rgba(255,0,0,0.1);
+    stroke-width: 1;
+    stroke: rgba(255,0,0, 0.4);
+}
+
+.isoline:hover {
+    fill: rgba(255,0,0,0.5);
+    transition: fill 0.3s;
+}

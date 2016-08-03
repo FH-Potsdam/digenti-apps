@@ -3,7 +3,7 @@
 
     <head>
         <meta charset=utf-8 />
-        <title>DIGENTI - Isolines</title>
+        <title>DIGENTI - Isolines All</title>
         <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
         <script src='../../lib/mapbox-gl.js'></script>
         <link href='../../lib/mapbox-gl.css' rel='stylesheet' />
@@ -55,10 +55,16 @@
                     <input id="range__slider" type="range" min="0" max="60" value="30" step="5" oninput="showValue()" onchange="showValue()" />
                     <label id="range"></label>
                 </div>
-                <div class="button-wrapper">
+                <!-- <div class="button-wrapper">
                     <button class="mode isoline" onclick="setMode('isoline')">Isoline</button>
-                    <button class="mode isoline-all" onclick="isolineAll()">Isoline All</button>
-                </div>
+                    <button class="mode isoline-all active" onclick="isolineAll()">Isoline All</button>
+                </div> -->
+            </div>
+
+            <div>
+                <h3>Views</h3>
+                <button class="view mapview active disabled" onclick="triggerMapView()" disabled>Map View</button>
+                <button class="view smallmultiplesview disabled" onclick="triggerSmallMultiplesView()" disabled>Small Multiples View</button>
             </div>
             <!-- <div>
                 <h2>Routing</h2>

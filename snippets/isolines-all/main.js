@@ -27,13 +27,13 @@ function mapDraw(geojson) {
         container: 'map',
         style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
         zoom: 11,
-        center: [-73.06, 10.410]
+        center: [-73.13, 10.403]
     });
 
     map.addControl(new mapboxgl.Navigation());
 
     map.on('load', function () {
-        // isolineAll();
+        isolineAll();
     });
 
     // MapboxGL container
@@ -127,29 +127,24 @@ function mapDraw(geojson) {
                     }
                 });
 
-                // console.log(poly.geometry.coordinates);
-
-                // console.log("Add d3 isoline");
                 // var isoline = isolinesGroup
                 //     .append("polygon")
-                //     .data(poly.geometry.coordinates[0])
+                //     .data([coordArray])
                 //     .attr("class", "isoline")
                 //     .attr("data-refobjectid", objectID);
 
 
-                    // .data(geojson.features)
-                    // .enter()
-                    // .append("circle")
-                    //     .attr({
-                    //         "r": 5
-                    //     })
-                    //     .attr("class", "village")
-                    //     .attr("data-id", function() { return generateUniqueID(); })
-                    //     .on("click", function(d) {
-                    //         d3.select(this).classed("selected", true);
-                    //         var objectID = d3.select(this).attr("data-id");
-                    //         click(d, objectID);
-                    //     });
+                // $("polygon").hover(
+                //     function() {
+                //         var idstring = "[data-id='"+$(this).data('refobjectid')+"']";
+                //         console.log(idstring);
+                //         $(".village").filter(idstring).addClass("active");
+                //     }
+                // );
+
+                isolines_collection.push(isoline);
+
+                update();
             }
         };
 
@@ -179,21 +174,24 @@ function mapDraw(geojson) {
                 cy: function(d) { return project(d.geometry.coordinates).y; },
             });
 
-        console.log("UPDATE");
+            console.log("UPDATE");
 
-        // for (var j=0; j<isolines_collection.length; j++) {
-        //
-        //     if (typeof isolines_collection[j] !== 'undefined') {
-        //         isolines_collection[j]
-        //             .attr("points",function(d) {
-        //                 var test = [];
-        //                 for (var i=0; i<d.length; i++) {
-        //                     test.push([project(d[i]).x, project(d[i]).y].join(","));
-        //                 }
-        //                 return test.join(" ");
-        //             });
-        //     }
-        // }
+        for (var j=0; j<isolines_collection.length; j++) {
+
+            if (typeof isolines_collection[j] !== 'undefined') {
+                isolines_collection[j]
+                    .attr("points",function(d) {
+                        var test = [];
+                        for (var i=0; i<d.length; i++) {
+                            test.push([project(d[i]).x, project(d[i]).y].join(","));
+                        }
+                        return test.join(" ");
+                    });
+            }
+
+
+        }
+
     }
 
     // Update d3 map features

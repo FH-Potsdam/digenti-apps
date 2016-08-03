@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<title>MapboxGL & D3.js - dpolygon</title>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.12.0/mapbox-gl.css' rel='stylesheet' />
+<style>
+
+html, body, #wrapper {
+    width: 100%;
+    height: 100%;
+	padding: 0px;
+	margin: 0px;
+}
+#map {
+  position:relative;
+  width: 100%;
+  height: 100%;
+  margin: auto auto;
+}
+svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.hidden {
+	display: none;
+}
+</style>
+</head>
+
+<body>
+<div id="wrapper">
+    <div id="map"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.12.0/mapbox-gl.js'></script>
+<script>
+
+d3.json("../../data/manaure-isoline.json", function(err, data) {
+    mapDraw(data);
+});
+
+
+function mapDraw(polygon){
+    //mapboxgs トークン
+    mapboxgl.accessToken = 'pk.eyJ1Ijoic2hpbWl6dSIsImEiOiI0cl85c2pNIn0.RefZMaOzNn-IistVe-Zcnw'
+
+    //Setup mapbox-gl map
+    var map = new mapboxgl.Map({
+        container: 'map', // container id
+        style: 'mapbox://styles/mapbox/streets-v8',
+        center: [-73.03, 10.410],
+        zoom: 11,
+    })
+
+    map.addControl(new mapboxgl.Navigation());
+
+    // svg要素をアペンドする
+    var container = map.getCanvasContainer()
+    var svg = d3.select(container).append("svg")
+
+
+	//緯度経度->パスジェネレーター関数作成
+	var transform = d3.geo.transform({point: project});
+	var path = d3.geo.path().projection(transform);
+
+ 	var featureElement = svg.selectAll("path")
+		.data([polygon])
+		.enter()
+		.append("path")
+		.attr({
+			"stroke": "red",
+			"fill": "green",
+			"fill-opacity": 0.4
+		});
+
+    //path要素のアップデート
+    function update() {
+        featureElement.attr("d", path);
+    }
+
+    //
+    map.on("viewreset", update)
+    map.on("movestart", function(){
+		svg.classed("hidden", true);
+	});
+    map.on("rotate", function(){
+		svg.classed("hidden", true);
+	});
+    map.on("moveend", function(){
+		update()
+		svg.classed("hidden", false);
+	})
+
+    //初期レンダリング
+    update()
+
+
+	function project(lon, lat) {
+        var point = map.project(new mapboxgl.LngLat(lon, lat));
+		this.stream.point(point.x, point.y);
+	}
+
+
+}
+
+
+  </script>
+</body>

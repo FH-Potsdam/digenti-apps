@@ -13,10 +13,6 @@ var platform = new H.service.Platform({
 
 // Get an instance of the normal routing service:
 var router = platform.getRoutingService();
-// Get an instance of the enterprise routing service:
-var enterpriseRouter = platform.getEnterpriseRoutingService();
-
-
 
 
 
@@ -38,14 +34,6 @@ $.fn.d3Click = function () {
 
 
 
-
-
-var linePadding = 15;
-
-/*L.mapbox.accessToken = 'pk.eyJ1IjoiZmFiaWFuZWhtZWwiLCJhIjoiNDZiNTI3NGQxNzRiNjgxMGEwYTljYjgzZDU5ZjdjODYifQ.Mu_TWKlvON7j4UAkQ1EXJg';
-var map = L.mapbox.map('map', 'mapbox.satellite')
-    .setView([0, 0], 1);*/
-
 d3.json("../../data/places_aoi.json", function(err, data) {
     mapDraw(data);
 });
@@ -58,25 +46,19 @@ d3.json("../../data/places_aoi.json", function(err, data) {
 
 var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
 var routes_points = [];
 var routes_paths = [];
-var lines_paths = [];
 var routing_history = [];
-var pathData, pathFootData;
 var routes_collection = [];
-var gRoutes, lineFunction, gRouteParts, gSM;
-var currentMode, isoline;
 var map_data_sources = [];
 var map_data_layers = [];
 var knotpoints = [];
 var overlapping_routes = [];
-var kps;
-var routes_geo = new Array ();
-var view;
-var featureElement, map;
+var gRoutes, lineFunction, gRouteParts, gSM, currentMode, kps, view, featureElement, map;
+var routes_geo = [];
 
-var resultingGEOJSON = new Object();
-
+var resultingGEOJSON = {};
 resultingGEOJSON.type = "FeatureCollection";
 resultingGEOJSON.features = [];
 
@@ -168,10 +150,7 @@ function mapDraw(geojson) {
     gRoutes = svg.append("g").attr("class", "routes");
     gRouteParts = svg.append("g").attr("class", "routeparts");
     gSM = svg.append("g").attr("class", "smallmultiples");
-
-    kps = svg
-        .append("g")
-            .attr("class", "knotpoints");
+    //kps = svg.append("g").attr("class", "knotpoints");
 
 
 
@@ -221,7 +200,7 @@ function mapDraw(geojson) {
 
 
     // This callback is called when clicking on a location
-    function click(d, objectID) {
+    function click(d) {
 
         var coordinates = d.geometry.coordinates;
 
@@ -234,7 +213,7 @@ function mapDraw(geojson) {
     }
 
 
-    featureElement.each(function(d, i) {
+    featureElement.each(function(d) {
 
         var current_el = d3.select(this);
         var coord_valledupar = "10.471667,-73.25";
@@ -255,8 +234,6 @@ function mapDraw(geojson) {
                 waypoint1: end, // finish
                 returnelevation: 'true'
             };
-        // call API
-        router.calculateRoute(routeRequestParams, onSuccess, onError);
 
         // case of error (hopefully not…)
         function onError(e) { console.log(e); }
@@ -282,31 +259,34 @@ function mapDraw(geojson) {
             routes_collection.push(route);
 
             // generate lineGraph
-            var lineGraph = gRoutes.append("path")
+            /*var lineGraph = gRoutes.append("path")
                 .attr("data-id", route.id)
+                .attr("data-traveltime", route.travelTime)
                 .attr("class", "route")
                 .attr("d", route.path)
-                .attr("stroke-width", 2);
+                .attr("stroke-width", 2);*/
 
             gSM.selectAll("g[data-id='"+route.id+"']")
                 .append("path")
                 .attr("data-id", route.id)
+                .attr("data-traveltime", route.travelTime)
                 .attr("class", "route")
                 .attr("d", route.path)
                 .attr("stroke-width", 2);
 
             // push lineGraph to array routes_paths
-            routes_paths.push(lineGraph);
-
+            //routes_paths.push(lineGraph);
 
             routes_geo[route.id] = route.geometry;
-
 
             compareRouteWithCollection(route, routes_collection);
 
             update(500);
 
         }
+
+        // call API
+        router.calculateRoute(routeRequestParams, onSuccess, onError);
 
     }
 
@@ -318,9 +298,6 @@ function mapDraw(geojson) {
     //初期レンダリング
     update(500);
 
-    // Use MapboxGL projection for d3 features
-
-
     var basemap_select = document.getElementById('basemap_select');
     var basemap_select_options = basemap_select.options;
 
@@ -330,17 +307,18 @@ function mapDraw(geojson) {
     };
 
     function switchLayer(layer) {
-        if (layer == 'DIGENTI') {
+        if (layer === 'DIGENTI') {
             map.setStyle('mapbox://styles/jorditost/cipseaugm001ycunimvr00zea');
-        } else if (layer == 'DIGENTI-Light') {
+        } else if (layer === 'DIGENTI-Light') {
             map.setStyle('mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi');
-        } else if (layer == 'fos-outdoor') {
+        } else if (layer === 'DIGENTI-Dark') {
+            map.setStyle('mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t');
+        } else if (layer === 'fos-outdoor') {
             map.setStyle('mapbox://styles/jorditost/cip44ooh90013cjnkmwmwd2ft');
         } else {
             map.setStyle('mapbox://styles/mapbox/' + layer);
         }
     }
-
 
 
     // Returns overlapping geometry of two path arrays of points of a line
@@ -359,9 +337,6 @@ function mapDraw(geojson) {
         return overlappingGeometry;
 
     }
-
-
-
 
 
     // c = collection of existing routes
@@ -401,12 +376,12 @@ function mapDraw(geojson) {
 
                             pushToKnotpoint(overlapping_route[0]);
                             pushToKnotpoint(overlapping_route[overlapping_route.length-1]);
-                            var feature = new Object();
+                            var feature = {};
                             feature.type = "Feature";
-                            feature.geometry = new Object();
+                            feature.geometry = {};
                             feature.geometry.type = "LineString";
                             feature.geometry.coordinates = overlapping_route;
-                            feature.properties = new Object();
+                            feature.properties = {};
                             feature.properties.prop1 = "test123";
                             resultingGEOJSON.features.push(feature);
 
@@ -452,12 +427,7 @@ function mapDraw(geojson) {
 
         if (enable_push) {
 
-            //var ledata = {"geometry": { "coordinates": point } };
-            var pt1 = turf.point([-point[0], point[1]]);
-            //console.log(pt1);
-
-
-            kps.append("circle")
+            /*kps.append("circle")
                     .attr({ "r": 8 })
                     .attr("class", "knotpoint")
                     .attr("data-coord-x", point[0])
@@ -465,7 +435,7 @@ function mapDraw(geojson) {
                     .attr("cx", function() { return project(point).x; } )
                     .attr("cy", function() { return project(point).y; } );
 
-            knotpoints.push(point);
+            knotpoints.push(point);*/
 
         }
 
@@ -494,19 +464,16 @@ function update(transition_time) {
         var rows = 7;
         var cols = 6;
 
-        var gap_hor = (w*0.8)/(cols+1);
+        //var gap_hor = (w*0.8)/(cols+1);
         var gap_ver = 20;
-
 
         var max_path_w = 0;
         var max_path_h = 0;
 
 
-        gSM.selectAll("g").each(function(d, i) {
+        gSM.selectAll("g").each(function() {
 
             var current_el = d3.select(this);
-
-            //gSM.append(current_el);
 
             var current_path_w = current_el.node().getBBox().width;
             var current_path_h = current_el.node().getBBox().height;
@@ -523,12 +490,8 @@ function update(transition_time) {
         var faktor_height = heightperelement/max_path_h;
         var faktor_width = widthperelement/max_path_w;
 
-        console.log("max_path_w: "+max_path_w);
-        console.log("max_path_h: "+max_path_h);
-
         var scaleFactor = faktor_height;
         if (faktor_width<scaleFactor) { scaleFactor=faktor_width; }
-
 
         gSM.selectAll("g").each(function(d, i) {
 
@@ -546,19 +509,42 @@ function update(transition_time) {
                         iy++;
                         if (iy === rows) { iy = 0; }
                         return "scale("+scaleFactor+") translate("+x+","+y+")";
-                    })
-                    .selectAll("path")
-                        .attr("stroke-width", function() {
-                            return 2/scaleFactor;
-                        });
+                    });
+
+        });
+
+        gSM.selectAll("g").each(function() {
+
+            var current_el = d3.select(this);
+
+            current_el.selectAll("path")
+                .transition()
+                .duration(transition_time)
+                    .attr("stroke-width", function() { return 2/scaleFactor; });
+
             current_el.selectAll("circle")
-                .attr({
-                    "r": 4/scaleFactor
-                });
+                .transition()
+                .duration(transition_time)
+                    .attr({ "r": 4/scaleFactor });
 
         });
 
         setMapOpacity(0.08);
+
+        gRoutes
+            .transition()
+            .duration(transition_time)
+                .style("opacity", 0);
+
+        featureElement
+            .transition()
+            .duration(transition_time)
+                .style("opacity", 0);
+
+        /*kps
+            .transition()
+            .duration(transition_time)
+                .style("opacity", 0);*/
 
     } else {
 
@@ -584,28 +570,43 @@ function update(transition_time) {
         }
 
 
-        gSM.selectAll("g").each(function(d, i) {
+        gSM.selectAll("g").each(function() {
 
             var current_el = d3.select(this);
             current_el
                 .transition()
-                //.delay(20 * i)
                 .duration(transition_time)
                     .style("opacity", 1)
                     .attr("stroke-width", 2)
                     .attr("transform", function() {
-                        return "none";
+                        return "";
                     });
 
         });
 
-        kps.selectAll("circle").each(function(d, i) {
+        gSM.selectAll("g").each(function() {
+
+            var current_el = d3.select(this);
+
+            current_el.selectAll("path")
+                .transition()
+                .duration(transition_time)
+                    .attr("stroke-width", function() { return 2; });
+
+            current_el.selectAll("circle")
+                .transition()
+                .duration(transition_time)
+                    .attr({ "r": 8 });
+
+        });
+
+        /*kps.selectAll("circle").each(function() {
             var el = d3.select(this);
             el.attr({
                 cx: function() { return project([el.attr("data-coord-x"), el.attr("data-coord-y")]).x; },
                 cy: function() { return project([el.attr("data-coord-x"), el.attr("data-coord-y")]).y; },
             });
-        });
+        });*/
 
 
         featureElement
@@ -737,31 +738,30 @@ function project(d) {
 
 
 // Warn if overriding existing method
-if(Array.prototype.equals)
+if (Array.prototype.equals) {
     console.warn("Overriding existing Array.prototype.equals. Possible causes: New API defines the method, there's a framework conflict or you've got double inclusions in your code.");
+}
 // attach the .equals method to Array's prototype to call it on any array
 Array.prototype.equals = function (array) {
     // if the other array is a falsy value, return
-    if (!array)
-        return false;
+    if (!array) { return false; }
 
     // compare lengths - can save a lot of time
-    if (this.length != array.length)
-        return false;
+    if (this.length !== array.length) { return false; }
+
 
     for (var i = 0, l=this.length; i < l; i++) {
         // Check if we have nested arrays
         if (this[i] instanceof Array && array[i] instanceof Array) {
             // recurse into the nested arrays
-            if (!this[i].equals(array[i]))
-                return false;
+            if (!this[i].equals(array[i])) { return false; }
         }
-        else if (this[i] != array[i]) {
+        else if (this[i] !== array[i]) {
             // Warning - two different object instances will never be equal: {x:20} != {x:20}
             return false;
         }
     }
     return true;
-}
+};
 // Hide method from for-in loops
 Object.defineProperty(Array.prototype, "equals", {enumerable: false});

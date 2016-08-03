@@ -106,7 +106,7 @@ function mapDraw(geojson) {
     map.on('style.load', function () {
 
         // Areas
-        var sourcePlacesObj = new mapboxgl.GeoJSONSource({ data: geojson });
+        /*var sourcePlacesObj = new mapboxgl.GeoJSONSource({ data: geojson });
         map.addSource('places', sourcePlacesObj);
         map.addLayer({
             "id": "places",
@@ -118,7 +118,7 @@ function mapDraw(geojson) {
                 "circle-opacity": 0.3,
                 "circle-color": "#f00"
             }
-        });
+        });*/
 
         $.each(map_data_sources, function(index, source) {
             map.addSource(source[0], source[1]);
@@ -186,7 +186,24 @@ function mapDraw(geojson) {
                     "r": 8
                 })
                 .attr("class", "village")
-                .attr("data-id", function() { return generateUniqueID(); })
+                .attr("data-id", function(d) { return d.properties.osm_id; })
+                .on("click", function(d) {
+                    d3.select(this).classed("selected", true);
+                    var objectID = d3.select(this).attr("data-id");
+                    click(d, objectID);
+                });
+
+    gSM
+        .selectAll("circle")
+        .data(geojson.features)
+        .enter()
+        .append("g")
+            .attr("data-id", function(d) { return d.properties.osm_id; })
+            .append("circle")
+                .attr({
+                    "r": 8
+                })
+                .attr("class", "village")
                 .on("click", function(d) {
                     d3.select(this).classed("selected", true);
                     var objectID = d3.select(this).attr("data-id");
@@ -266,6 +283,13 @@ function mapDraw(geojson) {
 
             // generate lineGraph
             var lineGraph = gRoutes.append("path")
+                .attr("data-id", route.id)
+                .attr("class", "route")
+                .attr("d", route.path)
+                .attr("stroke-width", 2);
+
+            gSM.selectAll("g[data-id='"+route.id+"']")
+                .append("path")
                 .attr("data-id", route.id)
                 .attr("class", "route")
                 .attr("d", route.path)
@@ -477,7 +501,8 @@ function update(transition_time) {
         var max_path_w = 0;
         var max_path_h = 0;
 
-        gRoutes.selectAll("path").each(function(d, i) {
+
+        gSM.selectAll("g").each(function(d, i) {
 
             var current_el = d3.select(this);
 
@@ -504,9 +529,8 @@ function update(transition_time) {
         var scaleFactor = faktor_height;
         if (faktor_width<scaleFactor) { scaleFactor=faktor_width; }
 
-        console.log(scaleFactor);
 
-        gRoutes.selectAll("path").each(function(d, i) {
+        gSM.selectAll("g").each(function(d, i) {
 
             var current_el = d3.select(this);
             current_el
@@ -514,9 +538,6 @@ function update(transition_time) {
                 //.delay(20 * i)
                 .duration(transition_time)
                     .style("opacity", 1)
-                    .attr("stroke-width", function() {
-                        return 2/scaleFactor;
-                    })
                     .attr("transform", function() {
                         var x = (gap_left/scaleFactor)+(ix+0.5)*(widthperelement/scaleFactor)-current_el.node().getBBox().x-((current_el.node().getBBox().width)/2);
                         var y = (iy+0.5)*((heightperelement+gap_ver)/scaleFactor)-current_el.node().getBBox().y-((current_el.node().getBBox().height)/2);
@@ -525,7 +546,15 @@ function update(transition_time) {
                         iy++;
                         if (iy === rows) { iy = 0; }
                         return "scale("+scaleFactor+") translate("+x+","+y+")";
-                    });
+                    })
+                    .selectAll("path")
+                        .attr("stroke-width", function() {
+                            return 2/scaleFactor;
+                        });
+            current_el.selectAll("circle")
+                .attr({
+                    "r": 4/scaleFactor
+                });
 
         });
 
@@ -555,7 +584,7 @@ function update(transition_time) {
         }
 
 
-        gRoutes.selectAll("path").each(function(d, i) {
+        gSM.selectAll("g").each(function(d, i) {
 
             var current_el = d3.select(this);
             current_el
@@ -580,6 +609,12 @@ function update(transition_time) {
 
 
         featureElement
+            .attr({
+                cx: function(d) { return project(d.geometry.coordinates).x; },
+                cy: function(d) { return project(d.geometry.coordinates).y; },
+            });
+
+        gSM.selectAll("g").selectAll("circle")
             .attr({
                 cx: function(d) { return project(d.geometry.coordinates).x; },
                 cy: function(d) { return project(d.geometry.coordinates).y; },

@@ -368,25 +368,6 @@ function distanceAll() {
     for (var i=0; i<mapped.length; i++) {
         places_aoi_street_distance.features[mapped[i].index].properties.connections.distance_order = i;
     }
-
-    // Sort by distance
-    // var ordered = places_aoi_street_distance.features;
-    // ordered = ordered.sort(sortByDistanceDesc);
-
-    // console.log(ordered);
-
-    // var ordered = ordered.map(function(el, i) {
-    //     return { index: i, value: el };
-    // })
-
-    // for (var i=0; i<ordered.length; i++) {
-    //     var current_feature = ordered[i];
-    //
-    //     for (var j=0; j<ordered.length; j++) {
-    //
-    //     }
-    //     // console.log("ordered place: " + current_feature.properties.name + ", distance: " + current_feature.properties.connections.distance_to_street);
-    // }
 }
 
 function calculateDistance(coordinates, objectID, feature) {

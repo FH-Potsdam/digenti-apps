@@ -16,6 +16,8 @@ var currentMode = "isoline-all",
 
 var places_aoi;
 
+var circleRadius = 5;
+
 var isolinesLoaded = 0;
 
 var isolineColor = '#3dc8e7'; //'#26D1F9',
@@ -71,9 +73,10 @@ function mapDraw(geojson) {
             .enter()
             .append("g")
                 .attr("data-id", function(d) { return d.properties.osm_id; })
+                .attr("class", "village-group")
                 .append("circle")
                     .attr({
-                        "r": 5
+                        "r": circleRadius
                     })
                     .attr("class", "village")
                     .attr("data-id", function(d) { return d.properties.osm_id; })
@@ -82,7 +85,6 @@ function mapDraw(geojson) {
                         var objectID = d3.select(this).attr("data-id");
                         click(d, objectID);
                     });
-
 
     // This callback is called when clicking on a location
     function click(d, objectID) {
@@ -223,18 +225,24 @@ function update(transition_time) {
         var gap_hor = (w*0.8)/(cols+1);
         var gap_ver = 20;
 
+
         var max_path_w = 0;
         var max_path_h = 0;
 
-        // Calculate max width and height
-        svg.selectAll(".isoline").each(function(d, i) {
+
+        svg.selectAll(".village-group").each(function(d, i) {
+
+            console.log("village: " + i);
+
             var current_el = d3.select(this);
+
+            //gSM.append(current_el);
 
             var current_path_w = current_el.node().getBBox().width;
             var current_path_h = current_el.node().getBBox().height;
 
-            if (current_path_h > max_path_h) { max_path_h = current_path_h; }
-            if (current_path_w > max_path_w) { max_path_w = current_path_w; }
+            if (current_path_h>max_path_h) { max_path_h = current_path_h; }
+            if (current_path_w>max_path_w) { max_path_w = current_path_w; }
         });
 
         var widthperelement = w*0.8/(cols);
@@ -251,15 +259,14 @@ function update(transition_time) {
         var scaleFactor = faktor_height;
         if (faktor_width<scaleFactor) { scaleFactor=faktor_width; }
 
-        console.log(scaleFactor);
-
         // Update isolines
-        svg.selectAll(".isoline").each(function(d, index) {
+        svg.selectAll(".village-group").each(function(d, index) {
             var current_el = d3.select(this);
-
             current_el
                 .transition()
+                //.delay(20 * i)
                 .duration(transition_time)
+                    .style("opacity", 1)
                     .attr("transform", function() {
                         var x = (gap_left/scaleFactor)+(ix+0.5)*(widthperelement/scaleFactor)-current_el.node().getBBox().x-((current_el.node().getBBox().width)/2);
                         var y = (iy+0.5)*((heightperelement+gap_ver)/scaleFactor)-current_el.node().getBBox().y-((current_el.node().getBBox().height)/2);
@@ -268,13 +275,25 @@ function update(transition_time) {
                         iy++;
                         if (iy === rows) { iy = 0; }
                         return "scale("+scaleFactor+") translate("+x+","+y+")";
-                    });
+                    })
+                    .selectAll("path")
+                        .attr("stroke-width", function() {
+                            return 2/scaleFactor;
+                        });
+            current_el.selectAll("circle")
+                .transition()
+                .delay(transition_time/6)
+                .duration(transition_time)
+                .attr({
+                    "r": 4/scaleFactor
+                });
         });
 
         setMapOpacity(0.08);
 
     // Map view
     } else {
+
         // Update villages
         svg.selectAll(".village")
             .attr({
@@ -286,6 +305,28 @@ function update(transition_time) {
         svg.selectAll(".isoline").each(function(d, index) {
             var isoline = d3.select(this);
             isoline.attr("d", path);
+        });
+
+
+        svg.selectAll(".village-group").each(function(d, i) {
+
+            var current_el = d3.select(this);
+            current_el
+                .transition()
+                //.delay(20 * i)
+                .duration(transition_time)
+                    // .style("opacity", 1)
+                    // .attr("stroke-width", 2)
+                    .attr("transform", "");
+
+            current_el.selectAll("circle")
+                .transition()
+                .delay(transition_time/100)
+                .duration(transition_time)
+                .attr({
+                    "r": circleRadius
+                });
+
         });
 
         setMapOpacity(1);

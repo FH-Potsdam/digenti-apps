@@ -1,4 +1,16 @@
 /* ####################
+    CodeKit Stuff
+#################### */
+/*global d3:true */
+/*global mapboxgl:true */
+/*global turf:true */
+/*global console:true */
+/*global alert:true */
+
+
+
+
+/* ####################
     Opens URL in Parameter in new Tab
 #################### */
 function OpenInNewTab(url) {
@@ -55,6 +67,14 @@ function generateUniqueID() {
 }
 
 
+/* ####################
+    Generate an radnom integer value
+#################### */
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min)) + min;
+}
+
+
 
 
 /* ####################
@@ -83,3 +103,17 @@ function getGEOJSON(geojson) {
     var s = JSON.stringify(geojson);
     OpenInNewTab('data:text/plain;charset=utf-8,' + encodeURIComponent(s));
 }
+
+
+
+
+
+/* ####################
+	Shortcut to remove an element from an array
+#################### */
+// Array Remove - By John Resig (MIT Licensed)
+Array.prototype.remove = function(from, to) {
+  var rest = this.slice((to || from) + 1 || this.length);
+  this.length = from < 0 ? this.length + from : from;
+  return this.push.apply(this, rest);
+};

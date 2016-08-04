@@ -18,10 +18,22 @@ var places_aoi;
 
 var circleRadius = 5;
 
-var isolinesLoaded = 0;
-
 var isolineColor = '#3dc8e7'; //'#26D1F9',
     isolineOpacity = 0.35;
+
+var isolinesQueried = 0;
+
+var isolinesGeoJSON = {
+    "type":"FeatureCollection",
+    "crs":{
+        "type":"name",
+        "properties":{
+            "name":"urn:ogc:def:crs:OGC:1.3:CRS84"
+        }
+    },
+    "features":[]
+};
+
 
 // Load places
 d3.json("../../data/places_aoi.json", function(err, data) {
@@ -44,6 +56,8 @@ function mapDraw(geojson) {
         zoom: 11,
         center: [-73.06, 10.410]
     });
+
+    console.log(map);
 
     map.addControl(new mapboxgl.Navigation());
 
@@ -89,7 +103,6 @@ function mapDraw(geojson) {
     // This callback is called when clicking on a location
     function click(d, objectID) {
         var coordinates = d.geometry.coordinates;
-        // console.log(d);
         if (currentMode === "isoline" || currentMode === "isoline-all") {
             getIsoline(coordinates, objectID);
         }
@@ -105,11 +118,9 @@ function mapDraw(geojson) {
         // Define a callback function to process the isoline response.
         var onIsolineResult = function(result) {
 
-            isolinesLoaded++;
+            isolinesQueried++;
 
             var polygon = result;
-
-            // console.log(JSON.stringify(result));
 
             polygon.properties.objectID = objectID;
 
@@ -130,34 +141,44 @@ function mapDraw(geojson) {
 
             if (isInside) {
 
-                // mapboxgl isoline
-                map.addSource(objectID, {
-                    'type': 'geojson',
-                    'data': polygon
-                });
+                // // mapboxgl isoline
+                // map.addSource(objectID, {
+                //     'type': 'geojson',
+                //     'data': polygon
+                // });
+                //
+                // map.addLayer({
+                //     'id': 'isoline_'+objectID,
+                //     'type': 'fill',
+                //     'source': objectID,
+                //     'layout': {},
+                //     'paint': {
+                //         'fill-color': isolineColor,
+                //         'fill-opacity': isolineOpacity
+                //     }
+                // });
 
-                map.addLayer({
-                    'id': 'isoline_'+objectID,
-                    'type': 'fill',
-                    'source': objectID,
-                    'layout': {},
-                    'paint': {
-                        'fill-color': isolineColor,
-                        'fill-opacity': isolineOpacity
-                    }
-                });
+                isolinesGeoJSON.features.push(polygon);
+
+                // Isoline group
+                var g = svg.select('g[data-id="'+objectID+'"]');
 
                 // d3 isoline
-                var isoline = svg.select('g[data-id="'+objectID+'"]')
-                    .append("path")
-            		.data([polygon])
-                    .attr("class", "isoline")
-                    .attr("data-id", objectID);
+                var isoline = g.append("path")
+                        		.data([polygon])
+                                .attr("class", "isoline")
+                                .attr("data-id", objectID)
+                                // .classed("hidden", true);
+
+                // g.append("text")
+                //     .text(polygon.properties.name)
+                //     .attr("class", "title")
+                //     .attr("y", "30");
 
             }
 
             // Update isolines when all loaded
-            if (isolinesLoaded == places_aoi.features.length) {
+            if (isolinesQueried == places_aoi.features.length) {
                 update();
                 activateButtons();
             }
@@ -180,14 +201,15 @@ function mapDraw(geojson) {
 
     // Map Interaction
     map.on("viewreset", update);
-    map.on("movestart", function() {
-        svg.classed("hidden", true);
-    });
+    map.on("move", update);
+    // map.on("movestart", function() {
+    //     svg.classed("hidden", true);
+    // });
 
-    map.on("moveend", function() {
-        update();
-        svg.classed("hidden", false);
-    });
+    // map.on("moveend", function() {
+    //     update();
+    //     svg.classed("hidden", false);
+    // });
 
     // Update d3 map features
     update();
@@ -200,7 +222,7 @@ function mapDraw(geojson) {
 
 function update(transition_time) {
 
-    transition_time = (typeof transition_time === undefined) ? 0 : transition_time;
+    transition_time = typeof transition_time !== 'undefined' ? transition_time : 0;
 
     w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
     h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
@@ -209,6 +231,10 @@ function update(transition_time) {
     if (view === "smallmultiples") {
 
         console.log("triggerSmallMultiplesView");
+
+        // Show isolines
+        // svg.selectAll(".isoline").classed("hidden", false);
+        // map.setLayoutProperty("isolines", 'visibility', 'none');
 
         // Hide villages
         // svg.selectAll(".village")
@@ -232,12 +258,19 @@ function update(transition_time) {
 
         svg.selectAll(".village-group").each(function(d, i) {
 
-            console.log("village: " + i);
-
             var current_el = d3.select(this);
+
+            // Hide mapbox + show d3
+            // var isoline = current_el.select(".isoline");
+            // if (!isoline.empty()) {
+            //     var objectID = current_el.attr("data-id");
+            //     map.setLayoutProperty("isoline_" + objectID , 'visibility', 'none');
+            //     isoline.classed("hidden", false);
+            // }
 
             //gSM.append(current_el);
 
+            // Check max width / height
             var current_path_w = current_el.node().getBBox().width;
             var current_path_h = current_el.node().getBBox().height;
 
@@ -262,12 +295,15 @@ function update(transition_time) {
         // Update isolines
         svg.selectAll(".village-group").each(function(d, index) {
             var current_el = d3.select(this);
+
             current_el
                 .transition()
                 //.delay(20 * i)
                 .duration(transition_time)
                     .style("opacity", 1)
                     .attr("transform", function() {
+                        // var x = (gap_left)+(ix+0.5)*(widthperelement)-current_el.node().getBBox().x-((current_el.node().getBBox().width)/2);
+                        // var y = (iy+0.5)*((heightperelement+gap_ver))-current_el.node().getBBox().y-((current_el.node().getBBox().height)/2);
                         var x = (gap_left/scaleFactor)+(ix+0.5)*(widthperelement/scaleFactor)-current_el.node().getBBox().x-((current_el.node().getBBox().width)/2);
                         var y = (iy+0.5)*((heightperelement+gap_ver)/scaleFactor)-current_el.node().getBBox().y-((current_el.node().getBBox().height)/2);
                         ix++;
@@ -275,11 +311,12 @@ function update(transition_time) {
                         iy++;
                         if (iy === rows) { iy = 0; }
                         return "scale("+scaleFactor+") translate("+x+","+y+")";
+                        // return "translate("+x+","+y+")";
                     })
-                    .selectAll("path")
-                        .attr("stroke-width", function() {
-                            return 2/scaleFactor;
-                        });
+                    // .selectAll("path")
+                    //     .attr("stroke-width", function() {
+                    //         return 2/scaleFactor;
+                    //     });
             current_el.selectAll("circle")
                 .transition()
                 .delay(transition_time/6)
@@ -307,17 +344,25 @@ function update(transition_time) {
             isoline.attr("d", path);
         });
 
-
         svg.selectAll(".village-group").each(function(d, i) {
 
             var current_el = d3.select(this);
+
             current_el
                 .transition()
-                //.delay(20 * i)
                 .duration(transition_time)
                     // .style("opacity", 1)
                     // .attr("stroke-width", 2)
-                    .attr("transform", "");
+                .attr("transform", "")
+                // .each("end", function() {
+                //     // show mapbox + hide d3
+                //     var isoline = current_el.select(".isoline");
+                //     if (!isoline.empty()) {
+                //         var objectID = current_el.attr("data-id");
+                //         map.setLayoutProperty("isoline_" + objectID , 'visibility', 'visible');
+                //         isoline.classed("hidden", true);
+                //     }
+                // })
 
             current_el.selectAll("circle")
                 .transition()
@@ -326,7 +371,6 @@ function update(transition_time) {
                 .attr({
                     "r": circleRadius
                 });
-
         });
 
         setMapOpacity(1);
@@ -334,6 +378,22 @@ function update(transition_time) {
 
     console.log("UPDATE");
 }
+
+// function update() {
+//
+//     // Update villages
+//     svg.selectAll(".village")
+//         .attr({
+//             cx: function(d) { return project(d.geometry.coordinates).x; },
+//             cy: function(d) { return project(d.geometry.coordinates).y; },
+//         });
+//
+//     // Update isolines
+//     svg.selectAll(".isoline").each(function(d, index) {
+//         var isoline = d3.select(this);
+//         isoline.attr("d", path);
+//     });
+// }
 
 
 ////////////////////
@@ -395,6 +455,7 @@ function reorderSmallMultiples(ob) {
     d3.selectAll(".orderby").classed("active", false);
     d3.selectAll("."+orderby).classed("active", true);
     update(500);
+    // changeView(500);
 }
 
 function triggerMapView() {
@@ -403,6 +464,7 @@ function triggerMapView() {
     d3.selectAll("#orderby").classed("disabled", true);
     view = "map";
     update(500);
+    // changeView(500);
 }
 
 function triggerSmallMultiplesView() {
@@ -411,6 +473,7 @@ function triggerSmallMultiplesView() {
     d3.selectAll("#orderby").classed("disabled", false);
     view = "smallmultiples";
     update(500);
+    // changeView(500);
 }
 
 function setMapOpacity(value) {

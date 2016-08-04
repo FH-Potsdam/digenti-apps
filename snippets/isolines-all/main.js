@@ -255,7 +255,6 @@ function update(transition_time) {
         var max_path_w = 0;
         var max_path_h = 0;
 
-
         svg.selectAll(".village-group").each(function(d, i) {
 
             var current_el = d3.select(this);

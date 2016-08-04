@@ -1,26 +1,6 @@
-#menu {
-    position: absolute;
-    top: 1vw;
-    left: 1vw;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 0;
-    z-index: 3000;
-    display: flex;
-    flex-direction: column;
-    /* flex-direction: row; */
-    /*justify-content: space-between;
-    align-items: center;*/
-    border-radius: 6px;
-    padding: 10px;
-    max-width: 18vw;
-}
-
-#menu > * {
-    padding: 10px;
-}
+@import "scss/digenti-framework.scss";
 
 html, body, #wrapper {
-    font-family: 'Source Sans Pro', sans-serif;
     width: 100%;
     height: 100%;
     padding: 0px;
@@ -70,7 +50,7 @@ path.time {
     stroke: #225BB1;
 }
 
-.villages {
+.village {
     cursor: pointer;
     fill: #f33;
     stroke: none;
@@ -104,23 +84,9 @@ path.time {
 }
 
 .brush .extent {
-    stroke:#fff;
-    fill-opacity:0.125;
-    shape-rendering:crispEdges;
-}
-
-button {
-    background: grey;
-    border: none;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 6px;
-    margin-top: 8px;
-    width: 100%;
-}
-
-button.active {
-    background: #ff5050;
+    stroke: #fff;
+    fill-opacity: 0.125;
+    shape-rendering: crispEdges;
 }
 
 .isoline {
@@ -132,18 +98,4 @@ button.active {
 .isoline:hover {
     fill: rgba(255,0,0,0.5);
     transition: fill 0.3s;
-}
-
-
-
-h1 {
-    font-size: 24px;
-}
-
-h2 {
-    font-size: 20px;
-}
-
-p {
-    font-size: 16px;
 }

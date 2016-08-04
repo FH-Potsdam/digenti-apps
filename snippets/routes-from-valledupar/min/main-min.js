@@ -11,7 +11,7 @@ Array.prototype.equals = function(array) {
     if (!array) {
         return false;
     }
-    if (this.length != array.length) {
+    if (this.length !== array.length) {
         return false;
     }
     for (var i = 0, l = this.length; i < l; i++) {
@@ -62,14 +62,35 @@ Array.prototype.remove = function(from, to) {
     return this.push.apply(this, rest);
 };
 
+function uniqueArrayOfArrays(array) {
+    var currentI;
+    for (var i = 0; i < array.length; i++) {
+        var arrayToRemove = [];
+        currentI = array[i];
+        for (var j = i; j < array.length; j++) {
+            var equals = true;
+            for (var k = 0; k < currentI.length - 1; k++) {
+                if (currentI[k] !== array[j]) {
+                    equals = false;
+                }
+            }
+            if (equals) {
+                arrayToRemove.push(j);
+            }
+        }
+        for (var j = arrayToRemove.length - 1; j >= 0; j--) {
+            array.remove(j);
+        }
+    }
+    return array;
+}
+
 var platform = new H.service.Platform({
     app_id: "EOg7UyuSFbPF0IG5ANjz",
     app_code: "iRnqNl0dyzX_8FOlchD0ZQ"
 });
 
 var router = platform.getRoutingService();
-
-var enterpriseRouter = platform.getEnterpriseRoutingService();
 
 $.fn.d3Click = function() {
     this.each(function(i, e) {
@@ -78,31 +99,13 @@ $.fn.d3Click = function() {
     });
 };
 
-var linePadding = 15;
-
-d3.json("../../data/places_aoi.json", function(err, data) {
-    mapDraw(data);
-});
-
 var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 
 var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
-var routes_points = [];
-
-var routes_paths = [];
-
-var lines_paths = [];
-
 var routing_history = [];
 
-var pathData, pathFootData;
-
 var routes_collection = [];
-
-var gRoutes, lineFunction, gRouteParts, gSM;
-
-var currentMode, isoline;
 
 var map_data_sources = [];
 
@@ -112,19 +115,39 @@ var knotpoints = [];
 
 var overlapping_routes = [];
 
-var kps;
+var lineFunction, gRouteParts, gSM, currentMode, map;
 
-var routes_geo = new Array();
+var routes_geo = [];
 
-var view;
+var routesArray = [];
 
-var featureElement, map;
+var routesJSON = {};
 
-var resultingGEOJSON = new Object();
+routesJSON.routes = [];
+
+var resultingGEOJSON = {};
 
 resultingGEOJSON.type = "FeatureCollection";
 
 resultingGEOJSON.features = [];
+
+var config = {};
+
+config.view = "";
+
+d3.json("../../data/places_aoi.json", function(err, data) {
+    $.get("data/routes_cached.json").done(function() {
+        d3.json("data/routes_cached.json", function(error, data2) {
+            routesJSON = data2;
+            for (var i = 0; i < routesJSON.routes.length; i++) {
+                routesArray[routesJSON.routes[i].id] = routesJSON.routes[i].route;
+            }
+            mapDraw(data);
+        });
+    }).fail(function() {
+        mapDraw(data);
+    });
+});
 
 function mapDraw(geojson) {
     mapboxgl.accessToken = "pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A";
@@ -162,19 +185,8 @@ function mapDraw(geojson) {
     }
     var container = map.getCanvasContainer();
     var svg = d3.select(container).append("svg").attr("class", "map-features");
-    gRoutes = svg.append("g").attr("class", "routes");
     gRouteParts = svg.append("g").attr("class", "routeparts");
     gSM = svg.append("g").attr("class", "smallmultiples");
-    kps = svg.append("g").attr("class", "knotpoints");
-    featureElement = svg.append("g").attr("class", "villages").selectAll("circle").data(geojson.features).enter().append("circle").attr({
-        r: 8
-    }).attr("class", "village").attr("data-id", function(d) {
-        return d.properties.osm_id;
-    }).on("click", function(d) {
-        d3.select(this).classed("selected", true);
-        var objectID = d3.select(this).attr("data-id");
-        click(d, objectID);
-    });
     gSM.selectAll("circle").data(geojson.features).enter().append("g").attr("data-id", function(d) {
         return d.properties.osm_id;
     }).append("circle").attr({
@@ -190,14 +202,8 @@ function mapDraw(geojson) {
         return project(d).y;
     }).interpolate("linear");
     triggerMapView();
-    function click(d, objectID) {
-        var coordinates = d.geometry.coordinates;
-        if (currentMode === "routing") {
-            routing_history.push(coordinates[1] + "," + coordinates[0]);
-            routingCar(coordinates);
-        }
-    }
-    featureElement.each(function(d, i) {
+    function click(d) {}
+    gSM.selectAll("g").each(function(d) {
         var current_el = d3.select(this);
         var coord_valledupar = "10.471667,-73.25";
         var coord_end = d.geometry.coordinates[1] + "," + d.geometry.coordinates[0];
@@ -213,32 +219,43 @@ function mapDraw(geojson) {
             waypoint1: end,
             returnelevation: "true"
         };
-        router.calculateRoute(routeRequestParams, onSuccess, onError);
         function onError(e) {
             console.log(e);
         }
+        function processRoute(route) {
+            gSM.selectAll("g[data-id='" + route.id + "']").append("path").attr("data-id", route.id).attr("data-traveltime", route.travelTime).attr("class", "route").attr("d", route.path).attr("stroke-width", 2);
+            routes_geo[route.id] = route.geometry;
+            routes_collection.push(route);
+            compareRouteWithCollection(route, routes_collection);
+            update(500);
+        }
         function onSuccess(r) {
-            var response = r.response;
             var route = {
                 init: function() {
                     this.id = placeID;
-                    this.geometry = transformHEREgeometry(response.route[0].shape);
-                    this.travelTime = response.route[0].summary.travelTime;
+                    this.geometry = transformHEREgeometry(r.response.route[0].shape);
+                    this.travelTime = r.response.route[0].summary.travelTime;
                     this.path = lineFunction(this.geometry);
                     return this;
                 }
             }.init();
-            routes_collection.push(route);
-            var lineGraph = gRoutes.append("path").attr("data-id", route.id).attr("class", "route").attr("d", route.path).attr("stroke-width", 2);
-            gSM.selectAll("g[data-id='" + route.id + "']").append("path").attr("data-id", route.id).attr("class", "route").attr("d", route.path).attr("stroke-width", 2);
-            routes_paths.push(lineGraph);
-            routes_geo[route.id] = route.geometry;
-            compareRouteWithCollection(route, routes_collection);
-            update(500);
+            var routeasjson = {};
+            routeasjson.id = placeID;
+            routeasjson.route = route;
+            routesJSON.routes.push(routeasjson);
+            processRoute(route);
+        }
+        if (routesJSON.routes.length > 0) {
+            console.log("ROUTING CACHED");
+            processRoute(routesArray[placeID]);
+        } else {
+            console.log("ROUTING VIA API");
+            router.calculateRoute(routeRequestParams, onSuccess, onError);
         }
     }
     map.on("viewreset", update);
     map.on("moveend", update);
+    map.on("move", update);
     update(500);
     var basemap_select = document.getElementById("basemap_select");
     var basemap_select_options = basemap_select.options;
@@ -247,11 +264,13 @@ function mapDraw(geojson) {
         switchLayer(selectedValue);
     };
     function switchLayer(layer) {
-        if (layer == "DIGENTI") {
+        if (layer === "DIGENTI") {
             map.setStyle("mapbox://styles/jorditost/cipseaugm001ycunimvr00zea");
-        } else if (layer == "DIGENTI-Light") {
+        } else if (layer === "DIGENTI-Light") {
             map.setStyle("mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi");
-        } else if (layer == "fos-outdoor") {
+        } else if (layer === "DIGENTI-Dark") {
+            map.setStyle("mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t");
+        } else if (layer === "fos-outdoor") {
             map.setStyle("mapbox://styles/jorditost/cip44ooh90013cjnkmwmwd2ft");
         } else {
             map.setStyle("mapbox://styles/mapbox/" + layer);
@@ -286,13 +305,12 @@ function mapDraw(geojson) {
                             overlapping_routes.push(test);
                             pushToKnotpoint(overlapping_route[0]);
                             pushToKnotpoint(overlapping_route[overlapping_route.length - 1]);
-                            var feature = new Object();
+                            var feature = {};
                             feature.type = "Feature";
-                            feature.geometry = new Object();
+                            feature.geometry = {};
                             feature.geometry.type = "LineString";
                             feature.geometry.coordinates = overlapping_route;
-                            feature.properties = new Object();
-                            feature.properties.prop1 = "test123";
+                            feature.properties = {};
                             resultingGEOJSON.features.push(feature);
                         }
                     }
@@ -313,35 +331,24 @@ function mapDraw(geojson) {
                 enable_push = false;
             }
         }
-        if (enable_push) {
-            var pt1 = turf.point([ -point[0], point[1] ]);
-            kps.append("circle").attr({
-                r: 8
-            }).attr("class", "knotpoint").attr("data-coord-x", point[0]).attr("data-coord-y", point[1]).attr("cx", function() {
-                return project(point).x;
-            }).attr("cy", function() {
-                return project(point).y;
-            });
-            knotpoints.push(point);
-        }
+        if (enable_push) {}
     }
 }
 
 function update(transition_time) {
-    if (view === "smallmultiples") {
+    if (config.view === "smallmultiples") {
         console.log("triggerSmallMultiplesView");
         var ix = 0;
         var iy = 0;
         var rows = 7;
         var cols = 6;
-        var gap_hor = w * .8 / (cols + 1);
         var gap_ver = 20;
         var max_path_w = 0;
         var max_path_h = 0;
-        gSM.selectAll("g").each(function(d, i) {
-            var current_el = d3.select(this);
-            var current_path_w = current_el.node().getBBox().width;
-            var current_path_h = current_el.node().getBBox().height;
+        gSM.selectAll("g").each(function() {
+            var bbox = d3.select(this).node().getBBox();
+            var current_path_w = bbox.width;
+            var current_path_h = bbox.height;
             if (current_path_h > max_path_h) {
                 max_path_h = current_path_h;
             }
@@ -354,8 +361,6 @@ function update(transition_time) {
         var gap_left = w * .2;
         var faktor_height = heightperelement / max_path_h;
         var faktor_width = widthperelement / max_path_w;
-        console.log("max_path_w: " + max_path_w);
-        console.log("max_path_h: " + max_path_h);
         var scaleFactor = faktor_height;
         if (faktor_width < scaleFactor) {
             scaleFactor = faktor_width;
@@ -374,74 +379,52 @@ function update(transition_time) {
                     iy = 0;
                 }
                 return "scale(" + scaleFactor + ") translate(" + x + "," + y + ")";
-            }).selectAll("path").attr("stroke-width", function() {
+            });
+        });
+        gSM.selectAll("g").each(function() {
+            var current_el = d3.select(this);
+            current_el.selectAll("path").transition().duration(transition_time).attr("stroke-width", function() {
                 return 2 / scaleFactor;
             });
-            current_el.selectAll("circle").attr({
+            current_el.selectAll("circle").transition().duration(transition_time).attr({
                 r: 4 / scaleFactor
             });
         });
         setMapOpacity(.08);
+        disableMapInteraction();
     } else {
         setMapOpacity(1);
-        if (routes_paths.length > 0) {
-            var test = routes_paths.length;
-            for (var i = 0; i < test; i++) {}
-        }
-        if (routes_points.length > 0) {
-            for (var i = 0; i < routes_points.length; i++) {
-                routes_points[i].attr({
-                    cx: function(d) {
-                        return project(d).x;
-                    },
-                    cy: function(d) {
-                        return project(d).y;
-                    }
-                });
-            }
-        }
-        gSM.selectAll("g").each(function(d, i) {
+        enableMapInteraction();
+        gSM.selectAll("g").each(function() {
             var current_el = d3.select(this);
             current_el.transition().duration(transition_time).style("opacity", 1).attr("stroke-width", 2).attr("transform", function() {
-                return "none";
+                return "";
             });
-        });
-        kps.selectAll("circle").each(function(d, i) {
-            var el = d3.select(this);
-            el.attr({
-                cx: function() {
-                    return project([ el.attr("data-coord-x"), el.attr("data-coord-y") ]).x;
+            current_el.selectAll("path").each(function() {
+                var current_path = d3.select(this);
+                current_path.attr("d", lineFunction(routes_geo[current_path.attr("data-id")]));
+            }).transition().duration(transition_time).attr("stroke-width", function() {
+                return 2;
+            });
+            current_el.selectAll("circle").attr({
+                cx: function(d) {
+                    return project(d.geometry.coordinates).x;
                 },
-                cy: function() {
-                    return project([ el.attr("data-coord-x"), el.attr("data-coord-y") ]).y;
+                cy: function(d) {
+                    return project(d.geometry.coordinates).y;
                 }
+            }).transition().duration(transition_time).attr({
+                r: 8
             });
-        });
-        featureElement.attr({
-            cx: function(d) {
-                return project(d.geometry.coordinates).x;
-            },
-            cy: function(d) {
-                return project(d.geometry.coordinates).y;
-            }
-        });
-        gSM.selectAll("g").selectAll("circle").attr({
-            cx: function(d) {
-                return project(d.geometry.coordinates).x;
-            },
-            cy: function(d) {
-                return project(d.geometry.coordinates).y;
-            }
         });
     }
-    console.log("UPDATE");
 }
 
 function triggerMapView() {
     d3.selectAll(".view").classed("active", false);
     d3.selectAll(".mapview").classed("active", true);
     d3.selectAll("#orderby").classed("disabled", true);
-    view = "";
+    config.view = "";
     update(500);
 }
 
@@ -449,7 +432,7 @@ function triggerSmallMultiplesView() {
     d3.selectAll(".view").classed("active", false);
     d3.selectAll(".smallmultiplesview").classed("active", true);
     d3.selectAll("#orderby").classed("disabled", false);
-    view = "smallmultiples";
+    config.view = "smallmultiples";
     update(500);
 }
 
@@ -462,48 +445,16 @@ function activateButtons() {
     d3.selectAll(".disabled").attr("disabled", null);
 }
 
-function uniqueArrayOfArrays(array) {
-    var currentI;
-    for (var i = 0; i < array.length; i++) {
-        var arrayToRemove = [];
-        currentI = array[i];
-        for (var j = i; j < array.length; j++) {
-            var equals = true;
-            for (var k = 0; k < currentI.length - 1; k++) {
-                if (currentI[k] !== array[j]) {
-                    equals = false;
-                }
-            }
-            if (equals) {
-                arrayToRemove.push(j);
-            }
-        }
-        for (var j = arrayToRemove.length - 1; j >= 0; j--) {
-            array.remove(j);
-        }
-    }
-    return array;
+function enableMapInteraction() {
+    map.scrollZoom.enable();
+    map.dragPan.enable();
+}
+
+function disableMapInteraction(m) {
+    map.scrollZoom.enable();
+    map.dragPan.enable();
 }
 
 function project(d) {
     return map.project(new mapboxgl.LngLat(+d[0], +d[1]));
 }
-
-if (Array.prototype.equals) console.warn("Overriding existing Array.prototype.equals. Possible causes: New API defines the method, there's a framework conflict or you've got double inclusions in your code.");
-
-Array.prototype.equals = function(array) {
-    if (!array) return false;
-    if (this.length != array.length) return false;
-    for (var i = 0, l = this.length; i < l; i++) {
-        if (this[i] instanceof Array && array[i] instanceof Array) {
-            if (!this[i].equals(array[i])) return false;
-        } else if (this[i] != array[i]) {
-            return false;
-        }
-    }
-    return true;
-};
-
-Object.defineProperty(Array.prototype, "equals", {
-    enumerable: false
-});

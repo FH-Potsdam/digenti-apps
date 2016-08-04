@@ -20,7 +20,7 @@
         <script src="//api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
 
         <link href="//fonts.googleapis.com/css?family=Source+Sans+Pro" rel="stylesheet">
-        <link href='main.css' rel='stylesheet' />
+        <link href='css/main.css' rel='stylesheet' />
 
     </head>
 
@@ -53,8 +53,15 @@
             <div>
                 <button class="view mapview active" onclick="triggerMapView()">Map View</button>
                 <button class="view smallmultiplesview" onclick="triggerSmallMultiplesView()">Small Multiples View</button>
+                <button class="" onclick="getGEOJSON(routesJSON)">Get JSON with Routes</button>
             </div>
 
+        </div>
+
+        <div id="orderby" class="modal disabled">
+            <h3>Order by</h3>
+            <button class="orderby size active" onclick="reorderSmallMultiples('size')">Size</button>
+            <button class="orderby distance" onclick="reorderSmallMultiples('distance')">Distance</button>
         </div>
 
         <div id='map' class='dark'></div>

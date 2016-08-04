@@ -13,10 +13,6 @@ var platform = new H.service.Platform({
 
 // Get an instance of the normal routing service:
 var router = platform.getRoutingService();
-// Get an instance of the enterprise routing service:
-var enterpriseRouter = platform.getEnterpriseRoutingService();
-
-
 
 
 
@@ -37,49 +33,60 @@ $.fn.d3Click = function () {
 
 
 
-
-
-
-var linePadding = 15;
-
-/*L.mapbox.accessToken = 'pk.eyJ1IjoiZmFiaWFuZWhtZWwiLCJhIjoiNDZiNTI3NGQxNzRiNjgxMGEwYTljYjgzZDU5ZjdjODYifQ.Mu_TWKlvON7j4UAkQ1EXJg';
-var map = L.mapbox.map('map', 'mapbox.satellite')
-    .setView([0, 0], 1);*/
-
-d3.json("../../data/places_aoi.json", function(err, data) {
-    mapDraw(data);
-});
-
-
-
 /* #############
         VARS
    ############# */
 
 var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-var routes_points = [];
-var routes_paths = [];
-var lines_paths = [];
+
 var routing_history = [];
-var pathData, pathFootData;
 var routes_collection = [];
-var gRoutes, lineFunction, gRouteParts, gSM;
-var currentMode, isoline;
 var map_data_sources = [];
 var map_data_layers = [];
 var knotpoints = [];
 var overlapping_routes = [];
-var kps;
-var routes_geo = new Array ();
-var view;
-var featureElement, map;
+var lineFunction, gRouteParts, gSM, currentMode, map;
+var routes_geo = [];
+var routesArray = [];
+var routesJSON = {};
+routesJSON.routes = [];
 
-var resultingGEOJSON = new Object();
-
+var resultingGEOJSON = {};
 resultingGEOJSON.type = "FeatureCollection";
 resultingGEOJSON.features = [];
 
+// CONFIG ARRAY
+var config  = {};
+config.view = "";
+
+
+
+
+
+
+
+
+
+d3.json("../../data/places_aoi.json", function(err, data) {
+
+    $.get("data/routes_cached.json")
+        .done(function() {
+            d3.json("data/routes_cached.json", function(error, data2) {
+                routesJSON = data2;
+
+                for (var i = 0; i<routesJSON.routes.length; i++) {
+                    routesArray[routesJSON.routes[i].id] = routesJSON.routes[i].route
+                }
+
+                mapDraw(data);
+            });
+        })
+        .fail(function() {
+            mapDraw(data);
+        });
+
+});
 
 
 
@@ -165,33 +172,9 @@ function mapDraw(geojson) {
     // d3 canvas
     var svg = d3.select(container).append("svg").attr("class", "map-features");
 
-    gRoutes = svg.append("g").attr("class", "routes");
     gRouteParts = svg.append("g").attr("class", "routeparts");
     gSM = svg.append("g").attr("class", "smallmultiples");
 
-    kps = svg
-        .append("g")
-            .attr("class", "knotpoints");
-
-
-
-    featureElement = svg
-        .append("g")
-            .attr("class", "villages")
-            .selectAll("circle")
-            .data(geojson.features)
-            .enter()
-            .append("circle")
-                .attr({
-                    "r": 8
-                })
-                .attr("class", "village")
-                .attr("data-id", function(d) { return d.properties.osm_id; })
-                .on("click", function(d) {
-                    d3.select(this).classed("selected", true);
-                    var objectID = d3.select(this).attr("data-id");
-                    click(d, objectID);
-                });
 
     gSM
         .selectAll("circle")
@@ -221,20 +204,10 @@ function mapDraw(geojson) {
 
 
     // This callback is called when clicking on a location
-    function click(d, objectID) {
-
-        var coordinates = d.geometry.coordinates;
-
-        // We are in routing mode
-        if (currentMode === "routing") {
-            routing_history.push(coordinates[1]+","+coordinates[0]);
-            routingCar(coordinates);
-        }
-
-    }
+    function click(d) {}
 
 
-    featureElement.each(function(d, i) {
+    gSM.selectAll("g").each(function(d) {
 
         var current_el = d3.select(this);
         var coord_valledupar = "10.471667,-73.25";
@@ -255,71 +228,77 @@ function mapDraw(geojson) {
                 waypoint1: end, // finish
                 returnelevation: 'true'
             };
-        // call API
-        router.calculateRoute(routeRequestParams, onSuccess, onError);
 
         // case of error (hopefully not…)
         function onError(e) { console.log(e); }
 
-        // succeeded!
-        function onSuccess(r) {
+        function processRoute(route) {
 
-            var response = r.response;
-            //console.log(response);
-
-            // initialize route from response
-            var route = {
-                    init: function() {
-                        this.id = placeID;
-                        this.geometry = transformHEREgeometry(response.route[0].shape);
-                        this.travelTime = response.route[0].summary.travelTime;
-                        this.path = lineFunction(this.geometry);
-                        return this;
-                    }
-                }.init();
-
-            // push route to collection-array
-            routes_collection.push(route);
-
-            // generate lineGraph
-            var lineGraph = gRoutes.append("path")
-                .attr("data-id", route.id)
-                .attr("class", "route")
-                .attr("d", route.path)
-                .attr("stroke-width", 2);
-
+            // Add route path to svg
             gSM.selectAll("g[data-id='"+route.id+"']")
                 .append("path")
                 .attr("data-id", route.id)
+                .attr("data-traveltime", route.travelTime)
                 .attr("class", "route")
                 .attr("d", route.path)
                 .attr("stroke-width", 2);
 
-            // push lineGraph to array routes_paths
-            routes_paths.push(lineGraph);
-
-
+            // push route geometry to routes_geo-Array
             routes_geo[route.id] = route.geometry;
 
-
+            // push route to collection-array and compare it with existing routes
+            routes_collection.push(route);
             compareRouteWithCollection(route, routes_collection);
 
             update(500);
 
         }
 
+        // succeeded!
+        function onSuccess(r) {
+
+            // initialize route from response
+            var route = {
+                    init: function() {
+                        this.id = placeID;
+                        this.geometry = transformHEREgeometry(r.response.route[0].shape);
+                        this.travelTime = r.response.route[0].summary.travelTime;
+                        this.path = lineFunction(this.geometry);
+                        return this;
+                    }
+                }.init();
+
+            var routeasjson = {};
+            routeasjson.id = placeID;
+            routeasjson.route = route;
+            routesJSON.routes.push(routeasjson);
+
+            processRoute(route);
+
+        }
+
+        if (routesJSON.routes.length > 0) {
+        //if (false) {
+
+            console.log("ROUTING CACHED");
+            processRoute(routesArray[placeID]);
+
+        } else {
+            // call API
+            console.log("ROUTING VIA API");
+            router.calculateRoute(routeRequestParams, onSuccess, onError);
+        }
+
     }
 
 
-    //
+    // Map functions
     map.on("viewreset", update);
     map.on("moveend", update);
+    map.on("move", update);
 
-    //初期レンダリング
+    // Inital Update to render Map
     update(500);
-
-    // Use MapboxGL projection for d3 features
-
 
     var basemap_select = document.getElementById('basemap_select');
     var basemap_select_options = basemap_select.options;
@@ -330,17 +309,18 @@ function mapDraw(geojson) {
     };
 
     function switchLayer(layer) {
-        if (layer == 'DIGENTI') {
+        if (layer === 'DIGENTI') {
             map.setStyle('mapbox://styles/jorditost/cipseaugm001ycunimvr00zea');
-        } else if (layer == 'DIGENTI-Light') {
+        } else if (layer === 'DIGENTI-Light') {
             map.setStyle('mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi');
-        } else if (layer == 'fos-outdoor') {
+        } else if (layer === 'DIGENTI-Dark') {
+            map.setStyle('mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t');
+        } else if (layer === 'fos-outdoor') {
             map.setStyle('mapbox://styles/jorditost/cip44ooh90013cjnkmwmwd2ft');
         } else {
             map.setStyle('mapbox://styles/mapbox/' + layer);
         }
     }
-
 
 
     // Returns overlapping geometry of two path arrays of points of a line
@@ -359,9 +339,6 @@ function mapDraw(geojson) {
         return overlappingGeometry;
 
     }
-
-
-
 
 
     // c = collection of existing routes
@@ -401,24 +378,13 @@ function mapDraw(geojson) {
 
                             pushToKnotpoint(overlapping_route[0]);
                             pushToKnotpoint(overlapping_route[overlapping_route.length-1]);
-                            var feature = new Object();
+                            var feature = {};
                             feature.type = "Feature";
-                            feature.geometry = new Object();
+                            feature.geometry = {};
                             feature.geometry.type = "LineString";
                             feature.geometry.coordinates = overlapping_route;
-                            feature.properties = new Object();
-                            feature.properties.prop1 = "test123";
+                            feature.properties = {};
                             resultingGEOJSON.features.push(feature);
-
-                            // generate lineGraph
-                            /*var lineGraph = gRouteParts.append("path")
-                                .attr("data-id", test)
-                                .attr("class", "route")
-                                .attr("d", lineFunction(overlapping_route))
-                                .attr("stroke-width", 2);
-
-                            // push lineGraph to array routes_paths
-                            routes_paths.push(lineGraph);*/
 
                         }
 
@@ -452,12 +418,7 @@ function mapDraw(geojson) {
 
         if (enable_push) {
 
-            //var ledata = {"geometry": { "coordinates": point } };
-            var pt1 = turf.point([-point[0], point[1]]);
-            //console.log(pt1);
-
-
-            kps.append("circle")
+            /*kps.append("circle")
                     .attr({ "r": 8 })
                     .attr("class", "knotpoint")
                     .attr("data-coord-x", point[0])
@@ -465,7 +426,7 @@ function mapDraw(geojson) {
                     .attr("cx", function() { return project(point).x; } )
                     .attr("cy", function() { return project(point).y; } );
 
-            knotpoints.push(point);
+            knotpoints.push(point);*/
 
         }
 
@@ -483,7 +444,7 @@ function mapDraw(geojson) {
 function update(transition_time) {
 
 
-    if (view === "smallmultiples") {
+    if (config.view === "smallmultiples") {
 
         // RENDERING OF SMALL MULTIPLES VIEW
 
@@ -494,23 +455,17 @@ function update(transition_time) {
         var rows = 7;
         var cols = 6;
 
-        var gap_hor = (w*0.8)/(cols+1);
+        //var gap_hor = (w*0.8)/(cols+1);
         var gap_ver = 20;
-
 
         var max_path_w = 0;
         var max_path_h = 0;
 
 
-        gSM.selectAll("g").each(function(d, i) {
-
-            var current_el = d3.select(this);
-
-            //gSM.append(current_el);
-
-            var current_path_w = current_el.node().getBBox().width;
-            var current_path_h = current_el.node().getBBox().height;
-
+        gSM.selectAll("g").each(function() {
+            var bbox = d3.select(this).node().getBBox();
+            var current_path_w = bbox.width;
+            var current_path_h = bbox.height;
             if (current_path_h>max_path_h) { max_path_h = current_path_h; }
             if (current_path_w>max_path_w) { max_path_w = current_path_w; }
         });
@@ -523,12 +478,8 @@ function update(transition_time) {
         var faktor_height = heightperelement/max_path_h;
         var faktor_width = widthperelement/max_path_w;
 
-        console.log("max_path_w: "+max_path_w);
-        console.log("max_path_h: "+max_path_h);
-
         var scaleFactor = faktor_height;
         if (faktor_width<scaleFactor) { scaleFactor=faktor_width; }
-
 
         gSM.selectAll("g").each(function(d, i) {
 
@@ -546,83 +497,69 @@ function update(transition_time) {
                         iy++;
                         if (iy === rows) { iy = 0; }
                         return "scale("+scaleFactor+") translate("+x+","+y+")";
-                    })
-                    .selectAll("path")
-                        .attr("stroke-width", function() {
-                            return 2/scaleFactor;
-                        });
+                    });
+
+        });
+
+        gSM.selectAll("g").each(function() {
+
+            var current_el = d3.select(this);
+
+            current_el.selectAll("path")
+                .transition()
+                .duration(transition_time)
+                    .attr("stroke-width", function() { return 2/scaleFactor; });
+
             current_el.selectAll("circle")
-                .attr({
-                    "r": 4/scaleFactor
-                });
+                .transition()
+                .duration(transition_time)
+                    .attr({ "r": 4/scaleFactor });
 
         });
 
         setMapOpacity(0.08);
+        disableMapInteraction();
+
 
     } else {
 
         setMapOpacity(1);
+        enableMapInteraction();
 
-
-        if (routes_paths.length > 0) {
-            var test = routes_paths.length;
-            for (var i=0; i < test; i++) {
-                /*routes_paths[i][0]
-                    .attr("d", lineFunction(pathData));*/
-            }
-        }
-
-        if (routes_points.length > 0) {
-            for (var i = 0; i < routes_points.length; i++) {
-                routes_points[i]
-                    .attr({
-                        cx: function(d) { return project(d).x; },
-                        cy: function(d) { return project(d).y; },
-                    });
-            }
-        }
-
-
-        gSM.selectAll("g").each(function(d, i) {
+        gSM.selectAll("g").each(function() {
 
             var current_el = d3.select(this);
+
             current_el
                 .transition()
-                //.delay(20 * i)
                 .duration(transition_time)
                     .style("opacity", 1)
                     .attr("stroke-width", 2)
                     .attr("transform", function() {
-                        return "none";
+                        return "";
                     });
 
+            current_el.selectAll("path")
+                .each(function() {
+                    var current_path = d3.select(this);
+                    current_path.attr("d", lineFunction(routes_geo[current_path.attr("data-id")]));
+                })
+                .transition()
+                .duration(transition_time)
+                    .attr("stroke-width", function() { return 2; });
+
+            current_el.selectAll("circle")
+                .attr({
+                    cx: function(d) { return project(d.geometry.coordinates).x; },
+                    cy: function(d) { return project(d.geometry.coordinates).y; },
+                })
+                .transition()
+                .duration(transition_time)
+                    .attr({ "r": 8 });
+
         });
-
-        kps.selectAll("circle").each(function(d, i) {
-            var el = d3.select(this);
-            el.attr({
-                cx: function() { return project([el.attr("data-coord-x"), el.attr("data-coord-y")]).x; },
-                cy: function() { return project([el.attr("data-coord-x"), el.attr("data-coord-y")]).y; },
-            });
-        });
-
-
-        featureElement
-            .attr({
-                cx: function(d) { return project(d.geometry.coordinates).x; },
-                cy: function(d) { return project(d.geometry.coordinates).y; },
-            });
-
-        gSM.selectAll("g").selectAll("circle")
-            .attr({
-                cx: function(d) { return project(d.geometry.coordinates).x; },
-                cy: function(d) { return project(d.geometry.coordinates).y; },
-            });
 
     }
-
-        console.log("UPDATE");
 
 }
 
@@ -641,7 +578,7 @@ function triggerMapView() {
     d3.selectAll(".view").classed("active", false);
     d3.selectAll(".mapview").classed("active", true);
     d3.selectAll("#orderby").classed("disabled", true);
-    view = "";
+    config.view = "";
     update(500);
 }
 
@@ -649,7 +586,7 @@ function triggerSmallMultiplesView() {
     d3.selectAll(".view").classed("active", false);
     d3.selectAll(".smallmultiplesview").classed("active", true);
     d3.selectAll("#orderby").classed("disabled", false);
-    view = "smallmultiples";
+    config.view = "smallmultiples";
     update(500);
 }
 
@@ -689,33 +626,16 @@ function activateButtons() {
 
 
 
-function uniqueArrayOfArrays(array) {
 
-    var currentI;
-
-    for (var i=0; i<array.length; i++) {
-        var arrayToRemove = [];
-        currentI = array[i];
-        for (var j=i; j<array.length; j++) {
-            var equals = true;
-            for (var k=0; k<currentI.length-1; k++) {
-                if (currentI[k] !== array[j]) { equals = false; }
-            }
-            if (equals) {
-                arrayToRemove.push(j);
-            }
-        }
-        for (var j=arrayToRemove.length-1; j>=0; j--) {
-            array.remove(j);
-        }
-    }
-
-    return array;
-
+function enableMapInteraction() {
+    map.scrollZoom.enable();
+    map.dragPan.enable();
 }
 
-
-
+function disableMapInteraction(m) {
+    map.scrollZoom.enable();
+    map.dragPan.enable();
+}
 
 
 
@@ -725,43 +645,3 @@ function uniqueArrayOfArrays(array) {
 function project(d) {
     return map.project(new mapboxgl.LngLat(+d[0], +d[1]));
 }
-
-
-
-
-
-
-
-
-
-
-
-// Warn if overriding existing method
-if(Array.prototype.equals)
-    console.warn("Overriding existing Array.prototype.equals. Possible causes: New API defines the method, there's a framework conflict or you've got double inclusions in your code.");
-// attach the .equals method to Array's prototype to call it on any array
-Array.prototype.equals = function (array) {
-    // if the other array is a falsy value, return
-    if (!array)
-        return false;
-
-    // compare lengths - can save a lot of time
-    if (this.length != array.length)
-        return false;
-
-    for (var i = 0, l=this.length; i < l; i++) {
-        // Check if we have nested arrays
-        if (this[i] instanceof Array && array[i] instanceof Array) {
-            // recurse into the nested arrays
-            if (!this[i].equals(array[i]))
-                return false;
-        }
-        else if (this[i] != array[i]) {
-            // Warning - two different object instances will never be equal: {x:20} != {x:20}
-            return false;
-        }
-    }
-    return true;
-}
-// Hide method from for-in loops
-Object.defineProperty(Array.prototype, "equals", {enumerable: false});

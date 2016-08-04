@@ -92,13 +92,6 @@ var platform = new H.service.Platform({
 
 var router = platform.getRoutingService();
 
-$.fn.d3Click = function() {
-    this.each(function(i, e) {
-        var evt = new MouseEvent("click");
-        e.dispatchEvent(evt);
-    });
-};
-
 var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 
 var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
@@ -226,7 +219,6 @@ function mapDraw(geojson) {
             gSM.selectAll("g[data-id='" + route.id + "']").append("path").attr("data-id", route.id).attr("data-traveltime", route.travelTime).attr("class", "route").attr("d", route.path).attr("stroke-width", 2);
             routes_geo[route.id] = route.geometry;
             routes_collection.push(route);
-            compareRouteWithCollection(route, routes_collection);
             update(500);
         }
         function onSuccess(r) {

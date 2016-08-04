@@ -20,14 +20,6 @@ var router = platform.getRoutingService();
 
 
 
-$.fn.d3Click = function () {
-  this.each(function (i, e) {
-    var evt = new MouseEvent("click");
-    e.dispatchEvent(evt);
-  });
-};
-
-
 
 
 
@@ -248,7 +240,7 @@ function mapDraw(geojson) {
 
             // push route to collection-array and compare it with existing routes
             routes_collection.push(route);
-            compareRouteWithCollection(route, routes_collection);
+            //compareRouteWithCollection(route, routes_collection);
 
             update(500);
 

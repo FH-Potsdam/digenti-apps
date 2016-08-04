@@ -11,7 +11,7 @@ Array.prototype.equals = function(array) {
     if (!array) {
         return false;
     }
-    if (this.length != array.length) {
+    if (this.length !== array.length) {
         return false;
     }
     for (var i = 0, l = this.length; i < l; i++) {
@@ -62,6 +62,29 @@ Array.prototype.remove = function(from, to) {
     return this.push.apply(this, rest);
 };
 
+function uniqueArrayOfArrays(array) {
+    var currentI;
+    for (var i = 0; i < array.length; i++) {
+        var arrayToRemove = [];
+        currentI = array[i];
+        for (var j = i; j < array.length; j++) {
+            var equals = true;
+            for (var k = 0; k < currentI.length - 1; k++) {
+                if (currentI[k] !== array[j]) {
+                    equals = false;
+                }
+            }
+            if (equals) {
+                arrayToRemove.push(j);
+            }
+        }
+        for (var j = arrayToRemove.length - 1; j >= 0; j--) {
+            array.remove(j);
+        }
+    }
+    return array;
+}
+
 var platform = new H.service.Platform({
     app_id: "EOg7UyuSFbPF0IG5ANjz",
     app_code: "iRnqNl0dyzX_8FOlchD0ZQ"
@@ -76,17 +99,9 @@ $.fn.d3Click = function() {
     });
 };
 
-d3.json("../../data/places_aoi.json", function(err, data) {
-    mapDraw(data);
-});
-
 var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 
 var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-
-var routes_points = [];
-
-var routes_paths = [];
 
 var routing_history = [];
 
@@ -100,15 +115,39 @@ var knotpoints = [];
 
 var overlapping_routes = [];
 
-var gRoutes, lineFunction, gRouteParts, gSM, currentMode, kps, view, featureElement, map;
+var lineFunction, gRouteParts, gSM, currentMode, map;
 
 var routes_geo = [];
+
+var routesArray = [];
+
+var routesJSON = {};
+
+routesJSON.routes = [];
 
 var resultingGEOJSON = {};
 
 resultingGEOJSON.type = "FeatureCollection";
 
 resultingGEOJSON.features = [];
+
+var config = {};
+
+config.view = "";
+
+d3.json("../../data/places_aoi.json", function(err, data) {
+    $.get("data/routes_cached.json").done(function() {
+        d3.json("data/routes_cached.json", function(error, data2) {
+            routesJSON = data2;
+            for (var i = 0; i < routesJSON.routes.length; i++) {
+                routesArray[routesJSON.routes[i].id] = routesJSON.routes[i].route;
+            }
+            mapDraw(data);
+        });
+    }).fail(function() {
+        mapDraw(data);
+    });
+});
 
 function mapDraw(geojson) {
     mapboxgl.accessToken = "pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A";
@@ -146,18 +185,8 @@ function mapDraw(geojson) {
     }
     var container = map.getCanvasContainer();
     var svg = d3.select(container).append("svg").attr("class", "map-features");
-    gRoutes = svg.append("g").attr("class", "routes");
     gRouteParts = svg.append("g").attr("class", "routeparts");
     gSM = svg.append("g").attr("class", "smallmultiples");
-    featureElement = svg.append("g").attr("class", "villages").selectAll("circle").data(geojson.features).enter().append("circle").attr({
-        r: 8
-    }).attr("class", "village").attr("data-id", function(d) {
-        return d.properties.osm_id;
-    }).on("click", function(d) {
-        d3.select(this).classed("selected", true);
-        var objectID = d3.select(this).attr("data-id");
-        click(d, objectID);
-    });
     gSM.selectAll("circle").data(geojson.features).enter().append("g").attr("data-id", function(d) {
         return d.properties.osm_id;
     }).append("circle").attr({
@@ -173,14 +202,8 @@ function mapDraw(geojson) {
         return project(d).y;
     }).interpolate("linear");
     triggerMapView();
-    function click(d) {
-        var coordinates = d.geometry.coordinates;
-        if (currentMode === "routing") {
-            routing_history.push(coordinates[1] + "," + coordinates[0]);
-            routingCar(coordinates);
-        }
-    }
-    featureElement.each(function(d) {
+    function click(d) {}
+    gSM.selectAll("g").each(function(d) {
         var current_el = d3.select(this);
         var coord_valledupar = "10.471667,-73.25";
         var coord_end = d.geometry.coordinates[1] + "," + d.geometry.coordinates[0];
@@ -199,27 +222,40 @@ function mapDraw(geojson) {
         function onError(e) {
             console.log(e);
         }
+        function processRoute(route) {
+            gSM.selectAll("g[data-id='" + route.id + "']").append("path").attr("data-id", route.id).attr("data-traveltime", route.travelTime).attr("class", "route").attr("d", route.path).attr("stroke-width", 2);
+            routes_geo[route.id] = route.geometry;
+            routes_collection.push(route);
+            compareRouteWithCollection(route, routes_collection);
+            update(500);
+        }
         function onSuccess(r) {
-            var response = r.response;
             var route = {
                 init: function() {
                     this.id = placeID;
-                    this.geometry = transformHEREgeometry(response.route[0].shape);
-                    this.travelTime = response.route[0].summary.travelTime;
+                    this.geometry = transformHEREgeometry(r.response.route[0].shape);
+                    this.travelTime = r.response.route[0].summary.travelTime;
                     this.path = lineFunction(this.geometry);
                     return this;
                 }
             }.init();
-            routes_collection.push(route);
-            gSM.selectAll("g[data-id='" + route.id + "']").append("path").attr("data-id", route.id).attr("data-traveltime", route.travelTime).attr("class", "route").attr("d", route.path).attr("stroke-width", 2);
-            routes_geo[route.id] = route.geometry;
-            compareRouteWithCollection(route, routes_collection);
-            update(500);
+            var routeasjson = {};
+            routeasjson.id = placeID;
+            routeasjson.route = route;
+            routesJSON.routes.push(routeasjson);
+            processRoute(route);
         }
-        router.calculateRoute(routeRequestParams, onSuccess, onError);
+        if (routesJSON.routes.length > 0) {
+            console.log("ROUTING CACHED");
+            processRoute(routesArray[placeID]);
+        } else {
+            console.log("ROUTING VIA API");
+            router.calculateRoute(routeRequestParams, onSuccess, onError);
+        }
     }
     map.on("viewreset", update);
     map.on("moveend", update);
+    map.on("move", update);
     update(500);
     var basemap_select = document.getElementById("basemap_select");
     var basemap_select_options = basemap_select.options;
@@ -275,7 +311,6 @@ function mapDraw(geojson) {
                             feature.geometry.type = "LineString";
                             feature.geometry.coordinates = overlapping_route;
                             feature.properties = {};
-                            feature.properties.prop1 = "test123";
                             resultingGEOJSON.features.push(feature);
                         }
                     }
@@ -301,7 +336,7 @@ function mapDraw(geojson) {
 }
 
 function update(transition_time) {
-    if (view === "smallmultiples") {
+    if (config.view === "smallmultiples") {
         console.log("triggerSmallMultiplesView");
         var ix = 0;
         var iy = 0;
@@ -311,9 +346,9 @@ function update(transition_time) {
         var max_path_w = 0;
         var max_path_h = 0;
         gSM.selectAll("g").each(function() {
-            var current_el = d3.select(this);
-            var current_path_w = current_el.node().getBBox().width;
-            var current_path_h = current_el.node().getBBox().height;
+            var bbox = d3.select(this).node().getBBox();
+            var current_path_w = bbox.width;
+            var current_path_h = bbox.height;
             if (current_path_h > max_path_h) {
                 max_path_h = current_path_h;
             }
@@ -356,66 +391,40 @@ function update(transition_time) {
             });
         });
         setMapOpacity(.08);
-        gRoutes.transition().duration(transition_time).style("opacity", 0);
-        featureElement.transition().duration(transition_time).style("opacity", 0);
+        disableMapInteraction();
     } else {
         setMapOpacity(1);
-        if (routes_paths.length > 0) {
-            var test = routes_paths.length;
-            for (var i = 0; i < test; i++) {}
-        }
-        if (routes_points.length > 0) {
-            for (var i = 0; i < routes_points.length; i++) {
-                routes_points[i].attr({
-                    cx: function(d) {
-                        return project(d).x;
-                    },
-                    cy: function(d) {
-                        return project(d).y;
-                    }
-                });
-            }
-        }
+        enableMapInteraction();
         gSM.selectAll("g").each(function() {
             var current_el = d3.select(this);
             current_el.transition().duration(transition_time).style("opacity", 1).attr("stroke-width", 2).attr("transform", function() {
                 return "";
             });
-        });
-        gSM.selectAll("g").each(function() {
-            var current_el = d3.select(this);
-            current_el.selectAll("path").transition().duration(transition_time).attr("stroke-width", function() {
+            current_el.selectAll("path").each(function() {
+                var current_path = d3.select(this);
+                current_path.attr("d", lineFunction(routes_geo[current_path.attr("data-id")]));
+            }).transition().duration(transition_time).attr("stroke-width", function() {
                 return 2;
             });
-            current_el.selectAll("circle").transition().duration(transition_time).attr({
+            current_el.selectAll("circle").attr({
+                cx: function(d) {
+                    return project(d.geometry.coordinates).x;
+                },
+                cy: function(d) {
+                    return project(d.geometry.coordinates).y;
+                }
+            }).transition().duration(transition_time).attr({
                 r: 8
             });
         });
-        featureElement.attr({
-            cx: function(d) {
-                return project(d.geometry.coordinates).x;
-            },
-            cy: function(d) {
-                return project(d.geometry.coordinates).y;
-            }
-        });
-        gSM.selectAll("g").selectAll("circle").attr({
-            cx: function(d) {
-                return project(d.geometry.coordinates).x;
-            },
-            cy: function(d) {
-                return project(d.geometry.coordinates).y;
-            }
-        });
     }
-    console.log("UPDATE");
 }
 
 function triggerMapView() {
     d3.selectAll(".view").classed("active", false);
     d3.selectAll(".mapview").classed("active", true);
     d3.selectAll("#orderby").classed("disabled", true);
-    view = "";
+    config.view = "";
     update(500);
 }
 
@@ -423,7 +432,7 @@ function triggerSmallMultiplesView() {
     d3.selectAll(".view").classed("active", false);
     d3.selectAll(".smallmultiplesview").classed("active", true);
     d3.selectAll("#orderby").classed("disabled", false);
-    view = "smallmultiples";
+    config.view = "smallmultiples";
     update(500);
 }
 
@@ -436,56 +445,16 @@ function activateButtons() {
     d3.selectAll(".disabled").attr("disabled", null);
 }
 
-function uniqueArrayOfArrays(array) {
-    var currentI;
-    for (var i = 0; i < array.length; i++) {
-        var arrayToRemove = [];
-        currentI = array[i];
-        for (var j = i; j < array.length; j++) {
-            var equals = true;
-            for (var k = 0; k < currentI.length - 1; k++) {
-                if (currentI[k] !== array[j]) {
-                    equals = false;
-                }
-            }
-            if (equals) {
-                arrayToRemove.push(j);
-            }
-        }
-        for (var j = arrayToRemove.length - 1; j >= 0; j--) {
-            array.remove(j);
-        }
-    }
-    return array;
+function enableMapInteraction() {
+    map.scrollZoom.enable();
+    map.dragPan.enable();
+}
+
+function disableMapInteraction(m) {
+    map.scrollZoom.enable();
+    map.dragPan.enable();
 }
 
 function project(d) {
     return map.project(new mapboxgl.LngLat(+d[0], +d[1]));
 }
-
-if (Array.prototype.equals) {
-    console.warn("Overriding existing Array.prototype.equals. Possible causes: New API defines the method, there's a framework conflict or you've got double inclusions in your code.");
-}
-
-Array.prototype.equals = function(array) {
-    if (!array) {
-        return false;
-    }
-    if (this.length !== array.length) {
-        return false;
-    }
-    for (var i = 0, l = this.length; i < l; i++) {
-        if (this[i] instanceof Array && array[i] instanceof Array) {
-            if (!this[i].equals(array[i])) {
-                return false;
-            }
-        } else if (this[i] !== array[i]) {
-            return false;
-        }
-    }
-    return true;
-};
-
-Object.defineProperty(Array.prototype, "equals", {
-    enumerable: false
-});

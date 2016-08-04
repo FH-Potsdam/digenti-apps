@@ -1,0 +1,166 @@
+@import url("/digenti-framework/scss/digenti-framework.scss");
+#menu {
+  position: absolute;
+  top: 1vw;
+  left: 1vw;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  /* flex-direction: row; */
+  /*justify-content: space-between;
+  align-items: center;*/
+  border-radius: 6px;
+  padding: 10px;
+  max-width: 18vw; }
+
+#menu > * {
+  padding: 10px; }
+
+html, body, #wrapper {
+  font-family: 'Source Sans Pro', sans-serif;
+  width: 100%;
+  height: 100%;
+  padding: 0px;
+  margin: 0px; }
+
+#map {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  margin: auto auto;
+  overflow: visible; }
+
+svg {
+  position: absolute;
+  width: 100%;
+  height: 100%; }
+
+svg.map-morphed {
+  overflow: visible; }
+
+.hidden {
+  display: none; }
+
+path {
+  stroke: #099;
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round; }
+
+path.route,
+path.distance {
+  stroke: #099; }
+
+path.foot {
+  stroke-dasharray: 4, 10;
+  /*stroke: #50E3C2*/ }
+
+path.time {
+  stroke: #225BB1; }
+
+.villages {
+  cursor: pointer;
+  fill: #f33;
+  stroke: none;
+  fill-opacity: 0.4; }
+
+.villages .selected {
+  fill: #088;
+  fill-opacity: 0.8; }
+
+.villages circle:hover, .villages circle.active {
+  fill-opacity: 1.0;
+  transition: fill-opacity 0.6s; }
+
+.route-dots {
+  fill: #099;
+  fill-opacity: 0.5; }
+
+.route-lines {
+  stroke-opacity: 0.6; }
+
+.ui-brush {
+  background: #f8f8f8;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  height: 100px; }
+
+.brush .extent {
+  stroke: #fff;
+  fill-opacity: 0.125;
+  shape-rendering: crispEdges; }
+
+button {
+  background: grey;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  margin-top: 8px;
+  width: 100%; }
+
+button.active {
+  background: #ff5050; }
+
+.isoline {
+  fill: rgba(255, 0, 0, 0.1);
+  stroke-width: 1;
+  stroke: rgba(255, 0, 0, 0.4); }
+
+.isoline:hover {
+  fill: rgba(255, 0, 0, 0.5);
+  transition: fill 0.3s; }
+
+h1 {
+  font-size: 24px; }
+
+h2 {
+  font-size: 20px; }
+
+p {
+  font-size: 16px; }
+
+button {
+  background: grey;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  display: inline-block;
+  cursor: pointer;
+  background-color: #464b57;
+  /*border: 3px solid #333;*/
+  transition: all 0.2s ease;
+  margin-bottom: 5px;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important; }
+
+button:hover,
+button.active {
+  background: #ff5050;
+  /*background: #ff5050;*/ }
+
+#orderby {
+  top: 1vw;
+  right: 9%;
+  /*right: 1vw;*/
+  width: auto;
+  max-width: none;
+  transition: all 0.5s ease;
+  opacity: 1.0; }
+
+#orderby.disabled {
+  opacity: 0.0; }
+
+#orderby h3 {
+  display: inline-block;
+  margin-right: 10px; }
+
+#orderby button {
+  width: 80px;
+  display: inline-block;
+  margin-bottom: 0; }

@@ -11,7 +11,7 @@ Array.prototype.equals = function(array) {
     if (!array) {
         return false;
     }
-    if (this.length != array.length) {
+    if (this.length !== array.length) {
         return false;
     }
     for (var i = 0, l = this.length; i < l; i++) {
@@ -61,6 +61,29 @@ Array.prototype.remove = function(from, to) {
     this.length = from < 0 ? this.length + from : from;
     return this.push.apply(this, rest);
 };
+
+function uniqueArrayOfArrays(array) {
+    var currentI;
+    for (var i = 0; i < array.length; i++) {
+        var arrayToRemove = [];
+        currentI = array[i];
+        for (var j = i; j < array.length; j++) {
+            var equals = true;
+            for (var k = 0; k < currentI.length - 1; k++) {
+                if (currentI[k] !== array[j]) {
+                    equals = false;
+                }
+            }
+            if (equals) {
+                arrayToRemove.push(j);
+            }
+        }
+        for (var j = arrayToRemove.length - 1; j >= 0; j--) {
+            array.remove(j);
+        }
+    }
+    return array;
+}
 
 var platform = new H.service.Platform({
     app_id: "EOg7UyuSFbPF0IG5ANjz",

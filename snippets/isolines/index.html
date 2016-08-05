@@ -17,12 +17,12 @@
 
         <script src="../../lib/bundle.js"></script>
 
-        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,600,300" rel="stylesheet" type="text/css">
-        <link href="main.css" rel="stylesheet" />
+        <!-- DIGENTI Framework -->
+        <link href="../../digenti-framework/css/main.css" rel="stylesheet" />
     </head>
 
-    <body>
-        <div id="menu">
+    <body class="time-mode">
+        <div id="menu" class="modal">
             <h1>DIGENTI Isolines</h1>
 
             <div>
@@ -51,14 +51,15 @@
                     <label id="range"></label>
                 </div>
                 <div class="button-wrapper">
-                    <button class="mode isoline" onclick="setMode('isoline')">Isoline</button>
-                    <button class="mode isoline-all" onclick="isolineAll()">Isoline All</button>
+                    <button class="mode mode-isoline" onclick="setMode('isoline')">Isoline</button>
+                    <button class="mode mode-isoline-all" onclick="isolineAll()">Isoline All</button>
                 </div>
             </div>
         </div>
 
-        <div id="map" class="dark"></div>
+        <div id="map"></div>
 
-        <script src="min/main-min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../digenti-framework/js/min/digenti-framework-min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="main.js" type="text/javascript" charset="utf-8"></script>
     </body>
 </html>

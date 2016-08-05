@@ -1,4 +1,3 @@
-// @codekit-prepend "js/digenti-framework.js"
 /*global d3:true */
 /*global mapboxgl:true */
 /*global turf:true */
@@ -176,7 +175,7 @@ function update(transition_time) {
                         return gap;
                     });
 
-            current_el.select(".road")
+            current_el.select(".nearest-road")
                 .transition()
                 .duration(transition_time)
                     .style("opacity", 1)
@@ -239,7 +238,7 @@ function update(transition_time) {
                         return 0;
                     });
 
-            current_el.select(".road")
+            current_el.select(".nearest-road")
                 .transition()
                 .duration(transition_time)
                     .style("opacity", 1)
@@ -290,7 +289,7 @@ function update(transition_time) {
                         return 0;
                     });
 
-            current_el.select(".road")
+            current_el.select(".nearest-road")
                 .transition()
                 .duration(transition_time)
                     .style("opacity", 0);
@@ -427,7 +426,7 @@ function calculateDistance(coordinates, objectID, feature) {
 
             current_el.append("circle")
                 .attr({ "r": 4 })
-                .attr("class", "road");
+                .attr("class", "nearest-road");
 
             current_el.append("text")
                 .text(d.properties.name)

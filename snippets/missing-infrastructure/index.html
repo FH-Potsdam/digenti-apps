@@ -16,11 +16,11 @@
         <script src="../../lib/jquery-1.10.2.js"></script>
         <!-- <script src="https://code.jquery.com/jquery-1.10.2.js"></script> -->
 
-        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,600,300" rel="stylesheet" type="text/css">
-        <link href="main.css" rel="stylesheet" />
+        <!-- DIGENTI Framework -->
+        <link href="../../digenti-framework/css/main.css" rel="stylesheet" />
     </head>
 
-    <body>
+    <body class="missing-mode">
         <div id="menu" class="modal">
             <h1>DIGENTI Missing Infrastructure</h1>
             <div>
@@ -61,8 +61,9 @@
             <button class="orderby distance" onclick="reorderSmallMultiples('distance')">Distance</button>
         </div>
 
-        <div id="map" class="dark"></div>
+        <div id="map"></div>
 
-        <script src="min/main-min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../digenti-framework/js/min/digenti-framework-min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="main.js" type="text/javascript" charset="utf-8"></script>
     </body>
 </html>

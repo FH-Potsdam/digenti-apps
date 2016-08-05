@@ -1,6 +1,3 @@
-// @codekit-prepend "js/digenti-framework.js"
-// @codekit-prepend "api.js"
-
 
 /* #############
         HERE CONFIG
@@ -34,8 +31,6 @@ var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
 
 var routing_history = [];
 var routes_collection = [];
-var map_data_sources = [];
-var map_data_layers = [];
 var knotpoints = [];
 var overlapping_routes = [];
 var lineFunction, gRouteParts, gSM, currentMode, map;
@@ -85,128 +80,7 @@ d3.json("../../data/places_aoi.json", function(err, data) {
 
 
 
-
-
-
-function mapDraw(geojson) {
-
-    mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
-
-    map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
-        zoom: 11,
-        center: [-73.02, 10.410]
-    });
-
-    map.addControl(new mapboxgl.Navigation());
-
-    // Add data layers at style load
-    map.on('style.load', function () {
-
-        // Areas
-        /*var sourcePlacesObj = new mapboxgl.GeoJSONSource({ data: geojson });
-        map.addSource('places', sourcePlacesObj);
-        map.addLayer({
-            "id": "places",
-            "interactive": true,
-            "type": "circle",
-            "source": "places",
-            "paint": {
-                "circle-radius": 8,
-                "circle-opacity": 0.3,
-                "circle-color": "#f00"
-            }
-        });*/
-
-        $.each(map_data_sources, function(index, source) {
-            map.addSource(source[0], source[1]);
-        });
-
-        $.each(map_data_layers, function(index, layer) {
-            map.addLayer(layer);
-        });
-
-    });
-
-
-    function addLayer(name, layerID) {
-
-        var layers = document.getElementById('switch');
-        var div = document.createElement('div');
-        layers.appendChild(div);
-
-        // Add checkbox and label elements for the layer.
-          var input = document.createElement('input');
-          input.type = 'checkbox';
-          input.id = layerID;
-          input.checked = true;
-          div.appendChild(input);
-
-          var label = document.createElement('label');
-          label.setAttribute('for', layerID);
-          label.textContent = name;
-          div.appendChild(label);
-
-          // When the checkbox changes, update the visibility of the layer.
-          input.addEventListener('change', function(e) {
-              map.setLayoutProperty(layerID, 'visibility',
-                  e.target.checked ? 'visible' : 'none');
-          });
-    }
-
-
-
-
-    // MapboxGL container
-    var container = map.getCanvasContainer();
-
-    // d3 canvas
-    var svg = d3.select(container).append("svg").attr("class", "map-features");
-
-    gRouteParts = svg.append("g").attr("class", "routeparts");
-    gSM = svg.append("g").attr("class", "smallmultiples");
-
-
-    gSM
-        .selectAll("circle")
-        .data(geojson.features)
-        .enter()
-        .append("g")
-            .attr("data-id", function(d) { return d.properties.osm_id; })
-            .append("circle")
-                .attr({
-                    "r": 8
-                })
-                .attr("class", "village")
-                .on("click", function(d) {
-                    d3.select(this).classed("selected", true);
-                    var objectID = d3.select(this).attr("data-id");
-                    click(d, objectID);
-                });
-
-    //This is the accessor function we talked about above
-    lineFunction = d3.svg.line()
-                        .x(function(d) { return project(d).x; })
-                        .y(function(d) { return project(d).y; })
-                        .interpolate("linear");
-
-
-    triggerMapView();
-
-
-    // This callback is called when clicking on a location
-    function click(d) {}
-
-
-    gSM.selectAll("g").each(function(d) {
-
-        var current_el = d3.select(this);
-        var coord_valledupar = "10.471667,-73.25";
-        var coord_end = (d.geometry.coordinates[1]+","+d.geometry.coordinates[0]);
-        routingCar(coord_valledupar, coord_end, current_el.attr("data-id"));
-
-    });
+function initGSM(svg, geojson) {
 
     function routingCar(start, end, placeID) {
 
@@ -227,19 +101,20 @@ function mapDraw(geojson) {
         function processRoute(route) {
 
             // Add route path to svg
-            gSM.selectAll("g[data-id='"+route.id+"']")
-                .append("path")
-                .attr("data-id", route.id)
-                .attr("data-traveltime", route.travelTime)
-                .attr("class", "route")
-                .attr("d", route.path)
-                .attr("stroke-width", 2);
+            gSM.selectAll("g[data-id='"+route.id+"']").selectAll("g")
+                    .append("path")
+                    .attr("data-id", route.id)
+                    .attr("data-traveltime", route.travelTime)
+                    .attr("class", "route")
+                    .attr("d", route.path)
+                    .attr("stroke-width", 2);
+
 
             // push route geometry to routes_geo-Array
             routes_geo[route.id] = route.geometry;
 
             // push route to collection-array and compare it with existing routes
-            routes_collection.push(route);
+            //routes_collection.push(route);
             //compareRouteWithCollection(route, routes_collection);
 
             update(500);
@@ -270,11 +145,9 @@ function mapDraw(geojson) {
         }
 
         if (routesJSON.routes.length > 0) {
-        //if (false) {
-
+            // take route from cache
             console.log("ROUTING CACHED");
             processRoute(routesArray[placeID]);
-
         } else {
             // call API
             console.log("ROUTING VIA API");
@@ -284,10 +157,74 @@ function mapDraw(geojson) {
     }
 
 
+
+    gSM = svg.append("g").attr("class", "smallmultiples");
+
+
+    gSM.selectAll("g")
+        .data(geojson.features)
+        .enter()
+        .append("g")
+            .attr("class", "smallmultiple")
+            .attr("data-id", function(d) { return d.properties.osm_id; })
+            .each(function(d) {
+                var current_el = d3.select(this);
+                current_el.append("text")
+                    .text(function(d) { return d.properties.name; })
+                    .attr("text-anchor", "middle")
+                    .attr("class", "title")
+                    .attr("y", "30");
+            })
+            .append("g")
+                .attr("class", "sm_vis")
+                .append("circle")
+                    .attr({ "r": 8 })
+                    .attr("class", "village")
+                .each(function(d) {
+                    var current_el = d3.select(this);
+                    var coord_valledupar = "10.471667,-73.25";
+                    var coord_end = (d.geometry.coordinates[1]+","+d.geometry.coordinates[0]);
+                    routingCar(coord_valledupar, coord_end, d.properties.osm_id);
+                });
+
+}
+
+
+
+
+
+function mapDraw(geojson) {
+
+    mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+
+    map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
+        zoom: 11,
+        center: [-73.02, 10.410]
+    });
+
+    map.addControl(new mapboxgl.Navigation());
+
     // Map functions
     map.on("viewreset", update);
     map.on("moveend", update);
     map.on("move", update);
+
+    // d3 canvas
+    var svg = d3.select(map.getCanvasContainer()).append("svg").attr("class", "map-features");
+
+    //This is the accessor function we talked about above
+    lineFunction = d3.svg.line()
+                        .x(function(d) { return project(d).x; })
+                        .y(function(d) { return project(d).y; })
+                        .interpolate("linear");
+
+    gRouteParts = svg.append("g").attr("class", "routeparts");
+
+    initGSM(svg, geojson);
+
+    triggerMapView();
 
     // Inital Update to render Map
     update(500);
@@ -312,116 +249,6 @@ function mapDraw(geojson) {
         } else {
             map.setStyle('mapbox://styles/mapbox/' + layer);
         }
-    }
-
-
-    // Returns overlapping geometry of two path arrays of points of a line
-    function getOverlappingGeometry(geometry1, geometry2) {
-
-        var overlappingGeometry = [];
-
-        for (var i=0; i<geometry1.length; i++) {
-            for (var j=0; j<geometry2.length; j++) {
-                if (geometry1[i].equals(geometry2[j])) {
-                    overlappingGeometry.push(geometry1[i]);
-                }
-            }
-        }
-
-        return overlappingGeometry;
-
-    }
-
-
-    // c = collection of existing routes
-    // r = new route to add
-    function compareRouteWithCollection(r, c) {
-
-        //pushToKnotpoint(r.geometry[0]);
-        //pushToKnotpoint(r.geometry[r.geometry.length-1]);
-
-        // there are several routes in the collection
-        if (c.length > 1) {
-
-            // there are existing routes
-            // for all existing routes
-            for (var i=0; i<c.length; i++) {
-
-                // current route is equal to current route in collection
-                if (r.id !== c[i].id) {
-
-                    var overlapping_route = getOverlappingGeometry(r.geometry, c[i].geometry);
-
-                    if (overlapping_route.length>0) {
-
-                        var test = overlapping_route.length.toString().concat(overlapping_route[0][0].toString()).concat(overlapping_route[0][1].toString());
-
-                        var overlapping_route_exists = false;
-                        for (var j=0; j<overlapping_routes.length; j++) {
-                            if (overlapping_routes[j] === test) {
-                                overlapping_route_exists = true;
-                                break;
-                            }
-                        }
-
-                        if (!overlapping_route_exists) {
-
-                            overlapping_routes.push(test);
-
-                            pushToKnotpoint(overlapping_route[0]);
-                            pushToKnotpoint(overlapping_route[overlapping_route.length-1]);
-                            var feature = {};
-                            feature.type = "Feature";
-                            feature.geometry = {};
-                            feature.geometry.type = "LineString";
-                            feature.geometry.coordinates = overlapping_route;
-                            feature.properties = {};
-                            resultingGEOJSON.features.push(feature);
-
-                        }
-
-                    }
-
-
-                }
-            }
-        }
-    }
-
-
-
-
-    function pushToKnotpoint(point) {
-
-        var enable_push = true;
-
-        for (var i=0; i<knotpoints.length; i++) {
-
-            var point_equals = true;
-            for (var j=0; j<point.length-1; j++) {
-                if (knotpoints[i][j] !== point[j]) { point_equals = false; }
-            }
-
-            if (point_equals) {
-                enable_push = false;
-            }
-
-        }
-
-        if (enable_push) {
-
-            /*kps.append("circle")
-                    .attr({ "r": 8 })
-                    .attr("class", "knotpoint")
-                    .attr("data-coord-x", point[0])
-                    .attr("data-coord-y", point[1])
-                    .attr("cx", function() { return project(point).x; } )
-                    .attr("cy", function() { return project(point).y; } );
-
-            knotpoints.push(point);*/
-
-        }
-
     }
 
 
@@ -450,11 +277,10 @@ function update(transition_time) {
         //var gap_hor = (w*0.8)/(cols+1);
         var gap_ver = 20;
 
+        // Calculate max. width and height of
         var max_path_w = 0;
         var max_path_h = 0;
-
-
-        gSM.selectAll("g").each(function() {
+        gSM.selectAll(".smallmultiple").selectAll("g").each(function() {
             var bbox = d3.select(this).node().getBBox();
             var current_path_w = bbox.width;
             var current_path_h = bbox.height;
@@ -473,36 +299,56 @@ function update(transition_time) {
         var scaleFactor = faktor_height;
         if (faktor_width<scaleFactor) { scaleFactor=faktor_width; }
 
-        gSM.selectAll("g").each(function(d, i) {
+        gSM.selectAll(".smallmultiple").each(function() {
 
             var current_el = d3.select(this);
+
             current_el
                 .transition()
-                //.delay(20 * i)
                 .duration(transition_time)
                     .style("opacity", 1)
                     .attr("transform", function() {
-                        var x = (gap_left/scaleFactor)+(ix+0.5)*(widthperelement/scaleFactor)-current_el.node().getBBox().x-((current_el.node().getBBox().width)/2);
-                        var y = (iy+0.5)*((heightperelement+gap_ver)/scaleFactor)-current_el.node().getBBox().y-((current_el.node().getBBox().height)/2);
+                        var x = (gap_left)+(ix)*(widthperelement);
+                        var y = (iy)*((heightperelement+gap_ver));
+                        //var x = (gap_left)+(ix+0.5)*(widthperelement)-current_el.node().getBBox().x-((current_el.node().getBBox().width)/2);
+                        //var y = (iy+0.5)*((heightperelement+gap_ver))-current_el.node().getBBox().y-((current_el.node().getBBox().height)/2);
                         ix++;
                         if (ix === cols) { ix = 0; }
                         iy++;
                         if (iy === rows) { iy = 0; }
+                        return "translate("+x+","+y+")";
+                    });
+
+            current_el
+                .append("rect")
+                    .attr("fill", "none")
+                    .attr("width", widthperelement)
+                    .attr("height", heightperelement);
+
+            current_el.selectAll("text")
+                .attr("x", widthperelement/2)
+                .attr("y", heightperelement)
+                .transition().duration(transition_time)
+                    .style("opacity", 1);
+
+            current_el.selectAll("g")
+                .transition()
+                .duration(transition_time)
+                    .style("opacity", 1)
+                    .attr("transform", function() {
+                        var bbox = d3.select(this).node().getBBox();
+                        var x = ((widthperelement/scaleFactor)-(bbox.width+bbox.x))/2;
+                        //var y = -bbox.y;
+                        var y = ((heightperelement/scaleFactor)-(bbox.width+bbox.y))/2;
                         return "scale("+scaleFactor+") translate("+x+","+y+")";
                     });
 
-        });
-
-        gSM.selectAll("g").each(function() {
-
-            var current_el = d3.select(this);
-
-            current_el.selectAll("path")
+            current_el.selectAll("g").selectAll("path")
                 .transition()
                 .duration(transition_time)
                     .attr("stroke-width", function() { return 2/scaleFactor; });
 
-            current_el.selectAll("circle")
+            current_el.selectAll("g").selectAll("circle")
                 .transition()
                 .duration(transition_time)
                     .attr({ "r": 4/scaleFactor });
@@ -518,7 +364,7 @@ function update(transition_time) {
         setMapOpacity(1);
         enableMapInteraction();
 
-        gSM.selectAll("g").each(function() {
+        gSM.selectAll(".smallmultiple").each(function() {
 
             var current_el = d3.select(this);
 
@@ -531,7 +377,18 @@ function update(transition_time) {
                         return "";
                     });
 
-            current_el.selectAll("path")
+            current_el.selectAll("text")
+                .transition().duration(transition_time)
+                    .style("opacity", 0);
+
+            current_el.selectAll("g")
+                .transition()
+                .duration(transition_time)
+                    .attr("transform", function() {
+                        return "";
+                    });
+
+            current_el.selectAll("g").selectAll("path")
                 .each(function() {
                     var current_path = d3.select(this);
                     current_path.attr("d", lineFunction(routes_geo[current_path.attr("data-id")]));
@@ -540,7 +397,7 @@ function update(transition_time) {
                 .duration(transition_time)
                     .attr("stroke-width", function() { return 2; });
 
-            current_el.selectAll("circle")
+            current_el.selectAll("g").selectAll("circle")
                 .attr({
                     cx: function(d) { return project(d.geometry.coordinates).x; },
                     cy: function(d) { return project(d.geometry.coordinates).y; },
@@ -625,8 +482,8 @@ function enableMapInteraction() {
 }
 
 function disableMapInteraction(m) {
-    map.scrollZoom.enable();
-    map.dragPan.enable();
+    map.scrollZoom.disable();
+    map.dragPan.disable();
 }
 
 

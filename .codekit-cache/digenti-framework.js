@@ -19,9 +19,6 @@ function OpenInNewTab(url) {
 }
 
 
-
-
-
 /* ####################
     Bugfix to compare Arrays
     See http://stackoverflow.com/questions/7837456/how-to-compare-arrays-in-javascript for details
@@ -37,7 +34,7 @@ Array.prototype.equals = function (array) {
     if (!array) { return false; }
 
     // compare lengths - can save a lot of time
-    if (this.length != array.length) { return false; }
+    if (this.length !== array.length) { return false; }
 
     for (var i = 0, l=this.length; i < l; i++) {
         // Check if we have nested arrays
@@ -117,3 +114,33 @@ Array.prototype.remove = function(from, to) {
   this.length = from < 0 ? this.length + from : from;
   return this.push.apply(this, rest);
 };
+
+
+
+
+
+
+function uniqueArrayOfArrays(array) {
+
+    var currentI;
+
+    for (var i=0; i<array.length; i++) {
+        var arrayToRemove = [];
+        currentI = array[i];
+        for (var j=i; j<array.length; j++) {
+            var equals = true;
+            for (var k=0; k<currentI.length-1; k++) {
+                if (currentI[k] !== array[j]) { equals = false; }
+            }
+            if (equals) {
+                arrayToRemove.push(j);
+            }
+        }
+        for (var j=arrayToRemove.length-1; j>=0; j--) {
+            array.remove(j);
+        }
+    }
+
+    return array;
+
+}

@@ -464,25 +464,20 @@ function activateButtons() {
 
 
 
-
-////////////////
-// Math Utils
-////////////////
-
-
-
-
-
-
+//////////////////////
+// Map Interactions
+//////////////////////
 
 function enableMapInteraction() {
     map.scrollZoom.enable();
     map.dragPan.enable();
+    d3.select("#map").classed("disabled", false);
 }
 
-function disableMapInteraction(m) {
+function disableMapInteraction() {
     map.scrollZoom.disable();
     map.dragPan.disable();
+    d3.select("#map").classed("disabled", true);
 }
 
 

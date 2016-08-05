@@ -84,19 +84,18 @@ function mapDraw(geojson) {
                     });
 
 
-    //
+    // Map interaction
     map.on("viewreset", update);
-
+    // map.on("move", update);
 
     map.on("movestart", function() {
-        //svg.classed("hidden", true);
+        svg.classed("hidden", true);
     });
 
     map.on("moveend", function() {
         update(0);
-        //svg.classed("hidden", false);
+        svg.classed("hidden", false);
     });
-
 
     update(0);
 
@@ -111,7 +110,7 @@ function mapDraw(geojson) {
 
 function update(transition_time) {
 
-    transition_time = (typeof transition_time === undefined) ? 0 : transition_time;
+    transition_time = typeof transition_time !== 'undefined' ? transition_time : 0;
 
     w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
     h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
@@ -445,6 +444,23 @@ function calculateDistance(coordinates, objectID, feature) {
 }
 
 
+//////////////////////
+// Map Interactions
+//////////////////////
+
+function enableMapInteraction() {
+    map.scrollZoom.enable();
+    map.dragPan.enable();
+    d3.select("#map").classed("disabled", false);
+}
+
+function disableMapInteraction() {
+    map.scrollZoom.disable();
+    map.dragPan.disable();
+    d3.select("#map").classed("disabled", true);
+}
+
+
 ////////////////////////
 // GUI / Interactions
 ////////////////////////
@@ -487,6 +503,9 @@ function triggerMapView() {
     d3.selectAll(".view").classed("active", false);
     d3.selectAll(".mapview").classed("active", true);
     d3.selectAll("#orderby").classed("disabled", true);
+
+    enableMapInteraction();
+
     view = "";
     update(500);
 }
@@ -495,6 +514,9 @@ function triggerMapDistancesView() {
     d3.selectAll(".view").classed("active", false);
     d3.selectAll(".mapdistancesview").classed("active", true);
     d3.selectAll("#orderby").classed("disabled", true);
+
+    enableMapInteraction();
+
     view = "map-distances";
     update(500);
 }
@@ -503,6 +525,9 @@ function triggerSmallMultiplesView() {
     d3.selectAll(".view").classed("active", false);
     d3.selectAll(".smallmultiplesview").classed("active", true);
     d3.selectAll("#orderby").classed("disabled", false);
+
+    disableMapInteraction();
+
     view = "smallmultiples";
     update(500);
 }

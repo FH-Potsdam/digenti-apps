@@ -179,14 +179,15 @@ function mapDraw(geojson) {
 
     // Map Interaction
     map.on("viewreset", update);
-    map.on("movestart", function() {
-        svg.classed("hidden", true);
-    });
+    map.on("move", update);
+    // map.on("movestart", function() {
+    //     svg.classed("hidden", true);
+    // });
 
-    map.on("moveend", function() {
-        update();
-        svg.classed("hidden", false);
-    });
+    // map.on("moveend", function() {
+    //     update();
+    //     svg.classed("hidden", false);
+    // });
 
     // Update d3 map features
     update();

@@ -418,6 +418,23 @@ function projectPoint(lon, lat) {
 }
 
 
+//////////////////////
+// Map Interactions
+//////////////////////
+
+function enableMapInteraction() {
+    map.scrollZoom.enable();
+    map.dragPan.enable();
+    d3.select("#map").classed("disabled", false);
+}
+
+function disableMapInteraction() {
+    map.scrollZoom.disable();
+    map.dragPan.disable();
+    d3.select("#map").classed("disabled", true);
+}
+
+
 ////////////////////////
 // GUI / Interactions
 ////////////////////////
@@ -469,6 +486,9 @@ function triggerMapView() {
     d3.selectAll(".view").classed("active", false);
     d3.selectAll(".mapview").classed("active", true);
     d3.selectAll("#orderby").classed("disabled", true);
+
+    enableMapInteraction();
+
     view = "map";
     update(500);
     // changeView(500);
@@ -478,6 +498,9 @@ function triggerSmallMultiplesView() {
     d3.selectAll(".view").classed("active", false);
     d3.selectAll(".smallmultiplesview").classed("active", true);
     d3.selectAll("#orderby").classed("disabled", false);
+
+    disableMapInteraction();
+
     view = "smallmultiples";
     update(500);
     // changeView(500);

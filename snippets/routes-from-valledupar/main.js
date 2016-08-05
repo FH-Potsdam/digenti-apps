@@ -417,7 +417,6 @@ function update(transition_time) {
 
 
 
-
 ///////////////////
 // TRIGGER VIEWS
 ///////////////////

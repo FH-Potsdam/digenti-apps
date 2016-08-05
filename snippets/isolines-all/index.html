@@ -16,20 +16,18 @@
         <script src="//api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
 
         <script src="../../lib/bundle.js"></script>
-        <script src="../../digenti-framework/js/digenti-framework.js"></script>
 
-        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,600,300" rel="stylesheet" type="text/css">
-        <link href="main.css" rel="stylesheet" />
+        <!-- DIGENTI Framework -->
+        <link href="../../digenti-framework/css/main.css" rel="stylesheet" />
     </head>
 
-    <body>
-        <div id="menu">
+    <body class="time-mode">
+        <div id="menu" class="modal">
             <h1>DIGENTI Isolines</h1>
 
             <div>
                 <h3>Select Basemap</h3>
                 <select id="basemap_select">
-                    <!-- <option value="fos-outdoor selected">FOS outdoor</option> -->
                     <option value="DIGENTI-Light" selected>DIGENTI Light</option>
                     <option value="DIGENTI-Dark">DIGENTI Dark</option>
                     <option value="DIGENTI">DIGENTI</option>
@@ -58,12 +56,16 @@
                 <button class="view mapview active disabled" onclick="triggerMapView()" disabled>Map View</button>
                 <button class="view smallmultiplesview disabled" onclick="triggerSmallMultiplesView()" disabled>Small Multiples View</button>
             </div>
+
+            <div>
+                <h3>Export</h3>
+                <button class="" onclick="getGEOJSON(isolinesGeoJSON)">Get JSON with Routes</button>
+            </div>
         </div>
 
-        <div id="map" class="dark"></div>
-        <div id="svg"></div>
+        <div id="map"></div>
 
+        <script src="../../digenti-framework/js/min/digenti-framework-min.js" type="text/javascript" charset="utf-8"></script>
         <script src="main.js" type="text/javascript" charset="utf-8"></script>
-        <!-- <script src="min/main-min.js" type="text/javascript" charset="utf-8"></script> -->
     </body>
 </html>

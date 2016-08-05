@@ -53,7 +53,7 @@ function mapDraw(geojson) {
         container: 'map',
         style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
         zoom: 11,
-        center: [-73.06, 10.410]
+        center: [-73.12, 10.410]
     });
 
     console.log(map);
@@ -101,18 +101,22 @@ function mapDraw(geojson) {
 
     // This callback is called when clicking on a location
     function click(d, objectID) {
-        var coordinates = d.geometry.coordinates;
+        // var coordinates = d.geometry.coordinates;
         if (currentMode === "isoline" || currentMode === "isoline-all") {
-            getIsoline(coordinates, objectID);
+            // getIsoline(coordinates, objectID);
+            getIsoline(d, objectID);
         }
     }
 
-    function getIsoline(coordinates, objectID) {
+    // function getIsoline(coordinates, objectID) {
+    function getIsoline(d, objectID) {
 
-        var coords = coordinates[1]+','+coordinates[0],
+        var coordinates = d.geometry.coordinates;
+
+        var coordsStr = coordinates[1]+','+coordinates[0],
             range = parseInt($("#range__slider").val());
 
-        var uri = 'http://localhost:61002/api/isoline/' + coords + '/' + range;
+        var uri = 'http://localhost:61002/api/isoline/' + coordsStr + '/' + range;
 
         // Define a callback function to process the isoline response.
         var onIsolineResult = function(result) {
@@ -121,7 +125,7 @@ function mapDraw(geojson) {
 
             var polygon = result;
 
-            polygon.properties.objectID = objectID;
+            // polygon.properties.objectsID = objectID;
 
             var settlementPoint = {
                 "type": "Feature",
@@ -157,6 +161,11 @@ function mapDraw(geojson) {
                 //     }
                 // });
 
+                // Add OSM ID to polygon
+                polygon.properties.osm_id = d.properties.osm_id;
+                polygon.properties.name = d.properties.name;
+
+                // Save polygon in GeoJSON FeaturesCollection
                 isolinesGeoJSON.features.push(polygon);
 
                 // Isoline group

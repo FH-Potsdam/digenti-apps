@@ -19,19 +19,16 @@
         <script src="//code.jquery.com/jquery-1.10.2.js"></script>
         <script src="//api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
 
-        <link href="//fonts.googleapis.com/css?family=Source+Sans+Pro" rel="stylesheet">
-        <link href='css/main.css' rel='stylesheet' />
-
+        <!-- DIGENTI Framework -->
+        <link href="../../digenti-framework/css/main.css" rel="stylesheet" />
     </head>
 
-    <body>
-
-
-        <div id='menu'>
+    <body class="infrastructure-mode">
+        <div id="menu" class="modal">
             <h1>DIGENTI Routing Test</h1>
 
             <div>
-                <h2>Basemap</h2>
+                <h3>Basemap</h3>
                 <p>Select a basemap out of this list.</p>
                 <select id="basemap_select">
                     <!-- <option value="fos-outdoor selected">FOS outdoor</option> -->
@@ -51,8 +48,13 @@
             </div>
 
             <div>
+                <h3>Views</h3>
                 <button class="view mapview active" onclick="triggerMapView()">Map View</button>
                 <button class="view smallmultiplesview" onclick="triggerSmallMultiplesView()">Small Multiples View</button>
+            </div>
+
+            <div>
+                <h3>Export</h3>
                 <button class="" onclick="getGEOJSON(routesJSON)">Get JSON with Routes</button>
             </div>
 
@@ -60,12 +62,13 @@
 
         <div id="orderby" class="modal disabled">
             <h3>Order by</h3>
-            <button class="orderby size active" onclick="reorderSmallMultiples('size')">Size</button>
-            <button class="orderby distance" onclick="reorderSmallMultiples('distance')">Distance</button>
+            <button class="orderby size active" onclick="reorderSmallMultiples('size')" disabled>Size</button>
+            <button class="orderby distance" onclick="reorderSmallMultiples('distance')" disabled>Distance</button>
         </div>
 
-        <div id='map' class='dark'></div>
+        <div id="map"></div>
 
+        <script src="../../digenti-framework/js/min/digenti-framework-min.js" type="text/javascript" charset="utf-8"></script>
         <script src="min/main-min.js" type="text/javascript" charset="utf-8"></script>
 
     </body>

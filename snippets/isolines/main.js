@@ -1,4 +1,3 @@
-// @codekit-prepend "js/digenti-framework.js"
 /*global d3:true */
 /*global mapboxgl:true */
 /*global turf:true */
@@ -81,14 +80,16 @@ function mapDraw(geojson) {
 
     // This callback is called when clicking on a location
     function click(d, objectID) {
-        var coordinates = d.geometry.coordinates;
+        // var coordinates = d.geometry.coordinates;
         // console.log(d);
         if (currentMode === "isoline" || currentMode === "isoline-all") {
-            getIsoline(coordinates, objectID);
+            getIsoline(d, objectID);
         }
     }
 
-    function getIsoline(coordinates, objectID) {
+    function getIsoline(d, objectID) {
+
+        var coordinates = d.geometry.coordinates;
 
         var coords = coordinates[1]+','+coordinates[0],
             range = parseInt($("#range__slider").val());

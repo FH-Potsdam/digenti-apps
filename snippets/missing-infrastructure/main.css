@@ -45,6 +45,10 @@ html, body, #wrapper {
         padding: 15px;
     }
 
+    #menu button, #menu select {
+        width: 100%;
+    }
+
 #orderby {
     top: 1vw;
     right: 9%;
@@ -75,11 +79,6 @@ html, body, #wrapper {
     margin-top: 15px;
 }
 
-button, select {
-    width: 100%;
-    box-sizing: border-box;
-}
-
 .range-wrapper {
     * {
         display: inline-block;
@@ -96,8 +95,11 @@ button, select {
     padding-top: 3px;
 }
 
+button, select {
+    box-sizing: border-box;
+}
+
 button {
-    background: grey;
     border: none;
     color: white;
     padding: 8px 16px;

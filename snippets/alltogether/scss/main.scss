@@ -1,0 +1,99 @@
+html, body, #wrapper {
+    width: 100%;
+    height: 100%;
+    padding: 0px;
+    margin: 0px;
+}
+
+#map {
+  position:relative;
+  width: 100vw;
+  height: 100vh;
+  margin: auto auto;
+  overflow: visible;
+}
+
+svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+svg.map-morphed {
+    overflow: visible;
+}
+
+.hidden {
+    display: none;
+}
+
+path {
+    stroke: #099;
+    fill: none;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+path.route,
+path.distance {
+    stroke: #099;
+}
+
+path.foot {
+    stroke-dasharray: 4, 10;
+    /*stroke: #50E3C2*/
+}
+
+path.time {
+    stroke: #225BB1;
+}
+
+.village {
+    cursor: pointer;
+    fill: #f33;
+    stroke: none;
+    fill-opacity: 0.4;
+}
+
+.villages .selected {
+    fill: #088;
+    fill-opacity: 0.8;
+}
+
+.villages circle:hover, .villages circle.active {
+    fill-opacity: 1.0;
+    transition: fill-opacity 0.6s;
+}
+
+.route-dots {
+    fill: #099;
+    fill-opacity: 0.5;
+}
+
+.route-lines {
+    stroke-opacity: 0.6;
+}
+
+.ui-brush {
+    background:#f8f8f8;
+    position:absolute;
+    bottom:0;right:0;left:0;
+    height:100px;
+}
+
+.brush .extent {
+    stroke: #fff;
+    fill-opacity: 0.125;
+    shape-rendering: crispEdges;
+}
+
+.isoline {
+    fill: rgba(255,0,0,0.1);
+    stroke-width: 1;
+    stroke: rgba(255,0,0, 0.4);
+}
+
+.isoline:hover {
+    fill: rgba(255,0,0,0.5);
+    transition: fill 0.3s;
+}

@@ -102,10 +102,7 @@ function mapDraw(geojson) {
     // This callback is called when clicking on a location
     function click(d, objectID) {
         // var coordinates = d.geometry.coordinates;
-        if (currentMode === "isoline" || currentMode === "isoline-all") {
-            // getIsoline(coordinates, objectID);
-            getIsoline(d, objectID);
-        }
+        getIsoline(d, objectID);
     }
 
     // function getIsoline(coordinates, objectID) {

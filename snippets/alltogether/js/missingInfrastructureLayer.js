@@ -21,6 +21,7 @@ function missingInfrastructureLayer(svg) {
        "features":[]
     };
 
+    this.bcr = [];
 
     //////////////////////
     // Functions
@@ -53,9 +54,9 @@ function missingInfrastructureLayer(svg) {
                             .append("g")
                                 .attr("class", "village-group")
                                 .append("circle")
-                                    .attr({ "r": 8 })
+                                    .attr({ "r": config.circleRadius })
                                     .attr("class", "village")
-                                    .attr("data-id", function() { return generateUniqueID(); })
+                                    .attr("data-id", function(d) { return d.properties.osm_id; })
                                     .on("click", function(d) {
                                         d3.select(this).classed("selected", true);
                                         var objectID = d3.select(this).attr("data-id");
@@ -105,7 +106,6 @@ function missingInfrastructureLayer(svg) {
 
                 current_el
                     .transition()
-                    //.delay(20 * i)
                     .duration(transition_time)
                         .style("opacity", 1)
                         .attr("transform", function() {
@@ -135,14 +135,16 @@ function missingInfrastructureLayer(svg) {
 
 
                 current_el.select(".village")
-                    .transition()
-                    .duration(transition_time)
-                        .attr("cy", positionSmallVisY)
-                        .attr("cx", function() {
-                            var gap = 8;
-                            if (d.properties.connections.distance_to_street > 0) { gap = 2*faktor*d.properties.connections.distance_to_street; }
-                            return gap;
-                        });
+                    .attr("cy", positionSmallVisY)
+                    .attr("cx", function() {
+                        var gap = 8;
+                        if (d.properties.connections.distance_to_street > 0) { gap = 2*faktor*d.properties.connections.distance_to_street; }
+                        return gap;
+                    })
+                    .each(function() {
+                        parent.bcr[d3.select(this).attr("data-id")] = d3.select(this).node().getBoundingClientRect();
+                    });
+
 
                 current_el.select(".nearest-road")
                     .transition()
@@ -193,20 +195,21 @@ function missingInfrastructureLayer(svg) {
                 var y2 = project(d.properties.connections.nearest_point).y - y1;
 
                 current_el
-                    .transition()
-                    .duration(transition_time)
+                    //.transition()
+                    //.duration(transition_time)
                         .style("opacity", 1)
                         .attr("transform", function() {
                             return "translate("+x1+","+y1+")";
                         });
 
                 current_el.select(".village")
-                    .transition()
-                    .duration(transition_time)
-                        .attr("cy", 0)
-                        .attr("cx", function() {
-                            return 0;
-                        });
+                    .attr("cy", 0)
+                    .attr("cx", function() {
+                        return 0;
+                    })
+                    .each(function() {
+                        parent.bcr[d3.select(this).attr("data-id")] = d3.select(this).node().getBoundingClientRect();
+                    });
 
                 current_el.select(".nearest-road")
                     .transition()
@@ -245,18 +248,19 @@ function missingInfrastructureLayer(svg) {
                 var y1 = project(d.geometry.coordinates).y;
 
                 current_el
-                    .transition()
-                    .duration(transition_time)
+                    //.transition()
+                    //.duration(transition_time)
                         .style("opacity", 1)
                         .attr("transform", function() {
                             return "translate("+x1+","+y1+")";
                         });
 
                 current_el.select(".village")
-                    .transition()
-                    .duration(transition_time)
-                        .attr("cy", 0)
-                        .attr("cx", 0);
+                    .attr("cy", 0)
+                    .attr("cx", 0)
+                    .each(function() {
+                        parent.bcr[d3.select(this).attr("data-id")] = d3.select(this).node().getBoundingClientRect();
+                    });
 
                 current_el.select(".nearest-road")
                     .transition()
@@ -374,7 +378,7 @@ function missingInfrastructureLayer(svg) {
                     .attr("class", "missing");
 
                 current_el.append("circle")
-                    .attr({ "r": 4 })
+                    .attr({ "r": 3 })
                     .attr("class", "nearest-road");
 
                 var current_el_text = current_el.append("text").attr("y", "0");

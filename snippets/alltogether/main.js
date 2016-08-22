@@ -30,6 +30,7 @@ var router = platform.getRoutingService();
 var layoutdebug = false;
 var map;
 var svg;
+var settlementPointLayer;
 var lineFunction;
 var places_aoi, street_points_aoi;
 var routesArray = [];
@@ -43,20 +44,11 @@ config.mode = "";
 config.orderby = "size";
 
 config.layout = {};
-config.layout.w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-config.layout.h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-config.layout.rows = 7;
-config.layout.cols = 6;
-config.layout.gap_hor = (config.layout.w*0.8)/(config.layout.cols+1);
-config.layout.gap_ver = (config.layout.h)/(config.layout.rows+1);
-config.layout.offsetLeft = config.layout.w*0.25;
-config.layout.offsetRight = 30;
-config.layout.offsetTop = config.layout.h*0.1;
-config.layout.offsetBottom = 30;
-config.layout.gapX = 15;
-config.layout.gapY = 10;
+
+config.circleRadius = 5;
 
 config.layers = {};
+
 
 
 
@@ -68,38 +60,43 @@ $.getScript("js/routesLayer.js", function(data, textStatus, jqxhr) {
 
         config.layers.missingInfrastructure = new missingInfrastructureLayer();
 
-        d3.json("../../data/places_aoi.json", function(err, data) {
+        $.getScript("js/isolinesLayer.js", function(data, textStatus, jqxhr) {
 
-            places_aoi = data;
+            config.layers.isolines = new isolinesLayer();
 
-            d3.json("../../data/street_points_aoi.json", function(err, data2) {
+            d3.json("../../data/places_aoi.json", function(err, data) {
 
-                street_points_aoi = data2;
-                //console.log(street_points_aoi);
+                places_aoi = data;
 
-                $.get("data/routes_cached.json")
-                    .done(function() {
-                        d3.json("data/routes_cached.json", function(error, data3) {
-                            routesJSON = data3;
+                d3.json("../../data/street_points_aoi.json", function(err, data2) {
 
-                            for (var i = 0; i<routesJSON.routes.length; i++) {
-                                routesArray[routesJSON.routes[i].id] = routesJSON.routes[i].route
-                            }
+                    street_points_aoi = data2;
+                    //console.log(street_points_aoi);
 
+                    $.get("data/routes_cached.json")
+                        .done(function() {
+                            d3.json("data/routes_cached.json", function(error, data3) {
+                                routesJSON = data3;
+
+                                for (var i = 0; i<routesJSON.routes.length; i++) {
+                                    routesArray[routesJSON.routes[i].id] = routesJSON.routes[i].route
+                                }
+
+                                mapDraw(data);
+
+                            });
+                        })
+                        .fail(function() {
                             mapDraw(data);
                         });
-                    })
-                    .fail(function() {
-                        mapDraw(data);
-                    });
+
+                });
 
             });
 
         });
 
-
     });
-
 
 });
 
@@ -130,6 +127,15 @@ function mapDraw(geojson) {
     map.on("moveend", update);
     map.on("move", update);
 
+    map.on("load", test456);
+
+    function test456() {
+        $("#loader").removeClass("show");
+        setTimeout(function() {
+            $("#loader").removeClass("displayed");
+        }, 1000);
+    }
+
     // d3 canvas
     svg = d3.select(map.getCanvasContainer()).append("svg").attr("class", "map-features");
 
@@ -140,16 +146,28 @@ function mapDraw(geojson) {
                         .y(function(d) { return project(d).y; })
                         .interpolate("linear");
 
+    settlementPointLayer = svg.append("g").attr("class", "settlementPointLayer").style("opacity", 0);
+
+    settlementPointLayer.selectAll("circle")
+        .data(places_aoi.features)
+        .enter()
+        .append("circle")
+            .attr("fill", "green")
+            .attr("r", config.circleRadius)
+            .attr("data-id", function(d) { return d.properties.osm_id; });
 
     // Initialize the Layers
     config.layers.gsm.init(svg, geojson);
     config.layers.missingInfrastructure.init(svg, geojson);
+    config.layers.isolines.init(svg, geojson);
 
     triggerMapView();
     setMode("missinginfrastructure");
 
     // Inital Update to render Map
     update(0);
+
+
 
     var basemap_select = document.getElementById('basemap_select');
     var basemap_select_options = basemap_select.options;
@@ -174,6 +192,9 @@ function mapDraw(geojson) {
     }
 
 
+
+
+
 }
 
 
@@ -183,8 +204,13 @@ function update(transition_time) {
     // Set transition time if it is undefined
     if (isNaN(transition_time)) { transition_time = 0; }
 
+    config.layout = calculateLayoutVars();
+
     config.layers.gsm.update(transition_time);
     config.layers.missingInfrastructure.update(transition_time);
+    config.layers.isolines.update(transition_time);
+
+    updateSettlementPointLayer();
 
 }
 
@@ -211,17 +237,37 @@ function setMode(mode) {
     config.mode = mode;
     console.log("Set Mode: "+config.mode);
 
+    settlementPointLayer
+        //.transition()
+        //.duration(500)
+            .style("opacity", 1);
+
     d3.selectAll(".mode").classed("active", false);
 
     if (config.mode === "missinginfrastructure") {
         d3.selectAll(".mode.missinginfrastructure").classed("active", true);
         config.layers.missingInfrastructure.setActive(true);
         config.layers.gsm.setActive(false);
+        config.layers.isolines.setActive(false);
+        update(500);
     } else if (config.mode === "routesfromvalledupar") {
         d3.selectAll(".mode.routesfromvalledupar").classed("active", true);
         config.layers.missingInfrastructure.setActive(false);
         config.layers.gsm.setActive(true);
+        config.layers.isolines.setActive(false);
+        update(500);
+    } else if (config.mode === "isolines") {
+        d3.selectAll(".mode.isolines").classed("active", true);
+        config.layers.missingInfrastructure.setActive(false);
+        config.layers.gsm.setActive(false);
+        config.layers.isolines.setActive(true);
+        update(500);
     }
+
+    settlementPointLayer
+        //.transition()
+        //.duration(500)
+            .style("opacity", 0);
 
 }
 
@@ -284,6 +330,45 @@ function activateButtons() {
 
 
 
+function updateSettlementPointLayer() {
+
+    if (config.mode === "isolines") {
+        test123(config.layers.isolines.bcr)
+    } else if (config.mode === "routesfromvalledupar") {
+        test123(config.layers.gsm.bcr);
+    } else if (config.mode === "missinginfrastructure") {
+        test123(config.layers.missingInfrastructure.bcr);
+    }
+
+}
+
+function test123(bcr) {
+
+    if (isDefined(bcr)) {
+
+        settlementPointLayer.selectAll("circle")
+            .each(function() {
+                var current_el = d3.select(this);
+                var current_id = current_el.attr("data-id");
+                if (isDefined(bcr[current_id])) {
+                    current_el
+                        .transition()
+                        .duration(500)
+                            .attr("cx", bcr[current_id].left+config.circleRadius)
+                            .attr("cy", bcr[current_id].top+config.circleRadius);
+                }
+            });
+
+
+    }
+
+}
+
+
+
+
+
+
 //////////////////////
 // Map Interactions
 //////////////////////
@@ -312,9 +397,38 @@ function selectSettlement(id) {
 }
 
 
+function calculateLayoutVars() {
+
+    var layoutVars = {};
+    layoutVars.w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    layoutVars.h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+    layoutVars.rows = 7;
+    layoutVars.cols = 6;
+    layoutVars.gap_hor = (layoutVars.w*0.8)/(layoutVars.cols+1);
+    layoutVars.gap_ver = (layoutVars.h)/(layoutVars.rows+1);
+    layoutVars.offsetLeft = layoutVars.w*0.25;
+    layoutVars.offsetRight = 30;
+    layoutVars.offsetTop = layoutVars.h*0.1;
+    layoutVars.offsetBottom = 30;
+    layoutVars.gapX = 15;
+    layoutVars.gapY = 10;
+
+    return layoutVars;
+
+}
 
 
 
 function project(d) {
     return map.project(new mapboxgl.LngLat(+d[0], +d[1]));
+}
+
+function projectPoint(lon, lat) {
+    var point = map.project(new mapboxgl.LngLat(lon, lat));
+    this.stream.point(point.x, point.y);
+}
+
+
+function isDefined(v) {
+    return (typeof v !== 'undefined' && v !== null);
 }

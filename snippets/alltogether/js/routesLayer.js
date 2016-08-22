@@ -12,6 +12,7 @@ function routesLayer(svg) {
     //////////////////////
     this.svglayer = "";
     this.routes_geo = [];
+    this.bcr = [];
 
 
     //////////////////////
@@ -36,7 +37,7 @@ function routesLayer(svg) {
      */
     this.init = function (svg, geojson) {
 
-        this.svglayer = svg.append("g").attr("class", "smallmultiples");
+        this.svglayer = svg.append("g").attr("class", "routesfromvalledupar");
         this.setActive(false);
 
         function routingCar(start, end, placeID) {
@@ -126,7 +127,8 @@ function routesLayer(svg) {
                 .append("g")
                     .attr("class", "sm_vis")
                     .append("circle")
-                        .attr({ "r": 8 })
+                        .attr("data-id", function(d) { return d.properties.osm_id; })
+                        .attr({ "r": config.circleRadius })
                         .attr("class", "village")
                     .each(function(d) {
                         var current_el = d3.select(this);
@@ -209,6 +211,7 @@ function routesLayer(svg) {
                     .transition().duration(transition_time)
                         .style("opacity", 1);
 
+
                 current_el.selectAll("g")
                     .transition()
                     .duration(transition_time)
@@ -226,9 +229,12 @@ function routesLayer(svg) {
                         .attr("stroke-width", function() { return 2/scaleFactor; });
 
                 current_el.selectAll("g").selectAll("circle")
-                    .transition()
-                    .duration(transition_time)
-                        .attr({ "r": 4/scaleFactor });
+                    .attr({ "r": config.circleRadius/scaleFactor });
+
+                current_el.selectAll("g").selectAll("circle")
+                    .each(function() {
+                        parent.bcr[d3.select(this).attr("data-id")] = d3.select(this).node().getBoundingClientRect();
+                    });
 
             });
 
@@ -281,7 +287,7 @@ function routesLayer(svg) {
                     })
                     .transition()
                     .duration(transition_time)
-                        .attr({ "r": 8 });
+                        .attr({ "r": config.circleRadius });
 
             });
 

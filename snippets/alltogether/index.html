@@ -23,6 +23,11 @@
     </head>
 
     <body class="infrastructure-mode">
+
+        <div id="loader" class="show displayed">
+            <div class="spinner"></div>
+        </div>
+
         <div id="menu" class="modal">
             <h1>DIGENTI</h1>
 
@@ -49,6 +54,7 @@
                 <h3>Modes</h3>
                 <button class="mode missinginfrastructure active" onclick="setMode('missinginfrastructure')">Missing Infrastructure</button>
                 <button class="mode routesfromvalledupar" onclick="setMode('routesfromvalledupar')">Routes from Valledupar</button>
+                <button class="mode isolines" onclick="setMode('isolines')">Isolines</button>
             </div>
 
             <div>

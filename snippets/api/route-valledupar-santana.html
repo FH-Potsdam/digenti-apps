@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+
+<script>
+
+var routeColor = '#099';
+var missingColor = '#ff5050';
+
+
+mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
+    center: [-73.0270699,10.3910411],
+    zoom: 12
+});
+
+var url = 'http://localhost:61002/api/route/10.471667,-73.25/10.4644542,-72.933264199999982/';
+// var source = new mapboxgl.GeoJSONSource({
+//     data: url
+// });
+
+
+map.on('load', function () {
+
+    $.ajax({
+        dataType: "json",
+        url: url,
+        success: onRouteLoaded,
+        error: function(error) {
+            alert(error);
+        }
+    });
+});
+
+function onRouteLoaded(data) {
+
+    console.log("route loaded");
+    console.log(data);
+
+    var source = new mapboxgl.GeoJSONSource({
+        data: data
+    });
+
+    // Route
+    map.addSource('route', source);
+    map.addLayer({
+        "id": "route",
+        "type": "line",
+        "source": "route",
+        "layout": {
+            "line-join": "round",
+            "line-cap": "round"
+        },
+        "paint": {
+            'line-color': routeColor,
+            'line-opacity': 1,
+            'line-width': 6
+        }
+    });
+
+    console.log(data.properties.waypoints);
+
+    // Waypoints 0
+
+    map.addSource("line-0", {
+        "type": "geojson",
+        "data": {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    data.properties.waypoints[1].originalPosition,
+                    data.properties.waypoints[1].mappedPosition
+                ]
+            }
+        }
+    });
+
+    map.addLayer({
+        "id": "line-0",
+        "type": "line",
+        "source": "line-0",
+        "layout": {
+            "line-join": "round",
+            "line-cap": "round"
+        },
+        "paint": {
+            "line-color": missingColor,
+            "line-width": 1
+        }
+    });
+
+    map.addSource("points-0", {
+        "type": "geojson",
+        "data": {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": data.properties.waypoints[0].originalPosition
+                },
+                "properties": {
+                    "title": "Santana"
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": data.properties.waypoints[0].mappedPosition
+                },
+                "properties": {
+                    "title": "Closest Street"
+                }
+            }]
+        }
+    });
+
+    map.addLayer({
+        "id": "points-0",
+        "source": "points-0",
+        "type": "circle",
+        "paint": {
+            "circle-radius": 4,
+            "circle-color": missingColor
+        }
+    });
+
+    // Waypoint 1
+
+    map.addSource("line-1", {
+        "type": "geojson",
+        "data": {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    data.properties.waypoints[1].originalPosition,
+                    data.properties.waypoints[1].mappedPosition
+                ]
+            }
+        }
+    });
+
+    map.addLayer({
+        "id": "line-1",
+        "type": "line",
+        "source": "line-1",
+        "layout": {
+            "line-join": "round",
+            "line-cap": "round"
+        },
+        "paint": {
+            "line-color": missingColor,
+            "line-width": 1,
+            // "line-dasharray": [2, 4]
+        }
+    });
+
+    map.addSource("points-1", {
+        "type": "geojson",
+        "data": {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": data.properties.waypoints[1].originalPosition
+                },
+                "properties": {
+                    "title": "Santana"
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": data.properties.waypoints[1].mappedPosition
+                },
+                "properties": {
+                    "title": "Closest Street"
+                }
+            }]
+        }
+    });
+
+    map.addLayer({
+        "id": "points-1",
+        "source": "points-1",
+        "type": "circle",
+        "paint": {
+            "circle-radius": 4,
+            "circle-color": missingColor
+        }
+    });
+
+};
+
+</script>
+
+</body>
+</html>

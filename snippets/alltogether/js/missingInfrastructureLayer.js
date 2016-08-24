@@ -23,10 +23,15 @@ function missingInfrastructureLayer(svg) {
 
     this.bcr = [];
 
+
     //////////////////////
     // Functions
     //////////////////////
 
+    /**
+     * toogle opacity of the layer
+     * @param {state} boolean
+     */
     this.setActive = function (state) {
         this.active = state;
         this.svglayer
@@ -65,7 +70,7 @@ function missingInfrastructureLayer(svg) {
 
         this.setActive(false);
 
-        distanceAll();
+        calculateAllDistances();
 
     }
 
@@ -80,25 +85,23 @@ function missingInfrastructureLayer(svg) {
         // Small multiples
         if (config.view === "smallmultiples") {
 
+            // counter for rows and cols of single smallmultiple-elements
             var ix = 0;
             var iy = 0;
 
+            // Calculate size (width and height) for each smallmultiple
             var widthperelement = (config.layout.w - config.layout.offsetLeft - config.layout.offsetRight - (config.layout.cols-1)*config.layout.gapX) / config.layout.cols;
             var heightperelement = (config.layout.h - config.layout.offsetTop - config.layout.offsetBottom - (config.layout.rows-1)*config.layout.gapY) / config.layout.rows;
 
-            var positionSmallVisY = (heightperelement-20)/2;
+            // position of vis in smallmultiple-container
+            var positionSmallVisY = (heightperelement-40);
 
-            var arr = [],
-                orderedArray = [];
-
+            // Calculate Faktor for resizing the missing routes length
+            var arr = [];
             for (var i=0; i<parent.places_aoi_street_distance.features.length; i++) {
                 arr.push(parent.places_aoi_street_distance.features[i].properties.connections.distance_to_street);
             }
-
-            // console.log(arr);
-            var max = Math.max.apply(null, arr);
-
-            var faktor = (config.layout.gap_hor*0.8)/(max*2);
+            var faktor = (config.layout.gap_hor * 0.8) / (Math.max.apply(null, arr) * 2);
 
             parent.svglayer.selectAll(".village-group").each(function(d) {
 
@@ -133,7 +136,6 @@ function missingInfrastructureLayer(svg) {
                         .attr("height", heightperelement);
                 }
 
-
                 current_el.select(".village")
                     .attr("cy", positionSmallVisY)
                     .attr("cx", function() {
@@ -144,7 +146,6 @@ function missingInfrastructureLayer(svg) {
                     .each(function() {
                         parent.bcr[d3.select(this).attr("data-id")] = d3.select(this).node().getBoundingClientRect();
                     });
-
 
                 current_el.select(".nearest-road")
                     .transition()
@@ -180,6 +181,7 @@ function missingInfrastructureLayer(svg) {
                     iy++;
                     if (iy === config.layout.rows) { iy = 0; }
                 }
+
             });
 
         // Map with missing infrastructure
@@ -195,8 +197,8 @@ function missingInfrastructureLayer(svg) {
                 var y2 = project(d.properties.connections.nearest_point).y - y1;
 
                 current_el
-                    //.transition()
-                    //.duration(transition_time)
+                    .transition()
+                    .duration(transition_time)
                         .style("opacity", 1)
                         .attr("transform", function() {
                             return "translate("+x1+","+y1+")";
@@ -204,9 +206,7 @@ function missingInfrastructureLayer(svg) {
 
                 current_el.select(".village")
                     .attr("cy", 0)
-                    .attr("cx", function() {
-                        return 0;
-                    })
+                    .attr("cx", 0)
                     .each(function() {
                         parent.bcr[d3.select(this).attr("data-id")] = d3.select(this).node().getBoundingClientRect();
                     });
@@ -244,15 +244,12 @@ function missingInfrastructureLayer(svg) {
 
                 var current_el = d3.select(this);
 
-                var x1 = project(d.geometry.coordinates).x;
-                var y1 = project(d.geometry.coordinates).y;
-
                 current_el
-                    //.transition()
-                    //.duration(transition_time)
+                    .transition()
+                    .duration(transition_time)
                         .style("opacity", 1)
                         .attr("transform", function() {
-                            return "translate("+x1+","+y1+")";
+                            return "translate("+project(d.geometry.coordinates).x+","+project(d.geometry.coordinates).y+")";
                         });
 
                 current_el.select(".village")
@@ -282,122 +279,151 @@ function missingInfrastructureLayer(svg) {
 
                 setMapOpacity(1);
 
-
             });
 
         }
 
 
     }
+
+
+
+
+
+
+
+
+
+
 
 
     /////////////////////////
     // Calculate Distances
     /////////////////////////
 
-    function distanceAll() {
+    function calculateAllDistances() {
 
         for (var i=0; i<places_aoi.features.length; i++) {
-            var current_feature = places_aoi.features[i];
-            calculateDistance(current_feature.geometry.coordinates, current_feature.properties.osm_id, current_feature);
-        }
-
-        var features = parent.places_aoi_street_distance.features;
-
-        var mapped = features.map(function(el, i) {
-            return { index: i, value: el };
-        });
-
-        // Sort by distance to street, descendent
-        mapped.sort(function(a,b) {
-            return b.value.properties.connections.distance_to_street - a.value.properties.connections.distance_to_street;
-        })
-
-        // We use the keys of the array to set now the position
-        for (var i=0; i<mapped.length; i++) {
-            parent.places_aoi_street_distance.features[mapped[i].index].properties.connections.distance_order = i;
+            calculateSingleDistance(places_aoi.features[i]);
         }
 
     }
 
 
-    function calculateDistance(coordinates, objectID, feature) {
+    function calculateSingleDistance(feature) {
 
         var json_result;
 
         var current_point = {
           "type": "Feature", "properties": { "marker-color": "#f00" },
-          "geometry": { "type": "Point", "coordinates": coordinates }
+          "geometry": { "type": "Point", "coordinates": feature.geometry.coordinates }
         };
 
-        // get the neareast point
-        var nearest_point = turf.nearest(current_point, street_points_aoi);
-        var distance = turf.distance(current_point, nearest_point, "kilometers");
+        var coord_settlement = feature.geometry.coordinates[1]+","+feature.geometry.coordinates[0];
 
-        if (distance < 0.2) {
-            json_result = {
-                "touches_street": true,
-                "distance_to_street": distance*1000,
-                "nearest_point": nearest_point.geometry.coordinates
-            };
-        } else {  // Point is not Inside Polygon and therefor not connected to street
-            json_result = {
-                "touches_street": false,
-                "distance_to_street": distance*1000,
-                "nearest_point": nearest_point.geometry.coordinates
-            };
+        $.ajax({
+            dataType: "json",
+            url: "http://localhost:61002/api/route/"+coord_valledupar+"/"+coord_settlement,
+            success: onSuccess,
+            error: function(error) {
+                alert(error);
+            }
+        });
+
+        function onSuccess(r) {
+
+            var nearest_point = r.properties.waypoints[1].mappedPosition;
+            var distance = r.properties.waypoints[1].distance;
+
+            if (distance < 200) {
+                json_result = {
+                    "touches_street": true,
+                    "distance_to_street": distance,
+                    "nearest_point": nearest_point
+                };
+            } else {  // Point is not Inside Polygon and therefor not connected to street
+                json_result = {
+                    "touches_street": false,
+                    "distance_to_street": distance,
+                    "nearest_point": nearest_point
+                };
+            }
+
+            feature.properties.connections = json_result;
+            parent.places_aoi_street_distance.features.push(feature);
+
+            if (parent.places_aoi_street_distance.features.length === places_aoi.features.length) {
+
+
+                var features = parent.places_aoi_street_distance.features;
+
+                var mapped = features.map(function(el, i) {
+                    return { index: i, value: el };
+                });
+
+                // Sort by distance to street, descendent
+                mapped.sort(function(a,b) {
+                    return b.value.properties.connections.distance_to_street - a.value.properties.connections.distance_to_street;
+                })
+
+
+                // We use the keys of the array to set now the position
+                for (var i=0; i<mapped.length; i++) {
+                    parent.places_aoi_street_distance.features[mapped[i].index].properties.connections.distance_order = i;
+                }
+
+
+
+                activateButtons();
+
+                parent.places_aoi_street_distance.features.sort(function (a, b) {
+                    return d3.ascending(a.properties.name, b.properties.name);
+                });
+
+
+                // Village dots
+
+                parent.villages
+                        .data(parent.places_aoi_street_distance.features)
+                        .attr("data-distance", function(d) { return d.properties.connections.distance_to_street; })
+                        .attr("data-touches", function(d) { return d.properties.connections.touches_street; })
+                        .enter();
+
+                // Village group
+                parent.svglayer.selectAll(".village-group").each(function(d) {
+
+                    var current_el = d3.select(this);
+
+                    current_el.append("rect")
+                        .attr("class", "layoutdebug");
+
+                    current_el.append("line")
+                        .attr("class", "missing");
+
+                    current_el.append("circle")
+                        .attr({ "r": 3 })
+                        .attr("class", "nearest-road");
+
+                    var current_el_text = current_el.append("text").attr("y", "0");
+
+                    current_el_text.append("tspan")
+                        .text(d.properties.name)
+                        .attr("class", "title")
+                        .attr("x", 0)
+                        .attr("dy", "0");
+
+                    current_el_text.append("tspan")
+                        .text(Math.round(d.properties.connections.distance_to_street)+" m to street")
+                        .attr("x", 0)
+                        .attr("dy", "-1em");
+
+                });
+
+                update(0);
+            }
+
         }
 
-        feature.properties.connections = json_result;
-        parent.places_aoi_street_distance.features.push(feature);
-
-        if (parent.places_aoi_street_distance.features.length === places_aoi.features.length) {
-
-            activateButtons();
-
-            parent.places_aoi_street_distance.features.sort(function (a, b) {
-                return d3.ascending(a.properties.name, b.properties.name);
-            });
-
-            // Village dots
-            parent.villages.selectAll(".village")
-                    .data(parent.places_aoi_street_distance.features)
-                    .attr("data-distance", function(d) { return d.properties.connections.distance_to_street; })
-                    .attr("data-touches", function(d) { return d.properties.connections.touches_street; })
-                    .enter();
-
-            // Village group
-            parent.svglayer.selectAll(".village-group").each(function(d) {
-
-                var current_el = d3.select(this);
-
-                current_el.append("rect")
-                    .attr("class", "layoutdebug");
-
-                current_el.append("line")
-                    .attr("class", "missing");
-
-                current_el.append("circle")
-                    .attr({ "r": 3 })
-                    .attr("class", "nearest-road");
-
-                var current_el_text = current_el.append("text").attr("y", "0");
-
-                current_el_text.append("tspan")
-                    .text(d.properties.name)
-                    .attr("class", "title")
-                    .attr("x", 0)
-                    .attr("dy", "0");
-
-                current_el_text.append("tspan")
-                    .text(Math.round(d.properties.connections.distance_to_street)+" m to street")
-                    .attr("x", 0)
-                    .attr("dy", "-1em");
-
-            });
-
-            update(0);
-        }
     }
 
 }

@@ -27,6 +27,7 @@ var router = platform.getRoutingService();
         VARS
    ############# */
 
+var coord_valledupar = "10.471667,-73.25";
 var layoutdebug = false;
 var map;
 var svg;
@@ -76,10 +77,10 @@ $.getScript("js/routesLayer.js", function(data, textStatus, jqxhr) {
                     $.get("data/routes_cached.json")
                         .done(function() {
                             d3.json("data/routes_cached.json", function(error, data3) {
-                                routesJSON = data3;
+                                //routesJSON = data3;
 
                                 for (var i = 0; i<routesJSON.routes.length; i++) {
-                                    routesArray[routesJSON.routes[i].id] = routesJSON.routes[i].route
+                                    //routesArray[routesJSON.routes[i].id] = routesJSON.routes[i].route
                                 }
 
                                 mapDraw(data);
@@ -117,7 +118,7 @@ function mapDraw(geojson) {
         container: 'map',
         style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
         zoom: 11,
-        center: [-73.02, 10.410]
+        center: [-73.12, 10.410]
     });
 
     map.addControl(new mapboxgl.Navigation());
@@ -146,13 +147,13 @@ function mapDraw(geojson) {
                         .y(function(d) { return project(d).y; })
                         .interpolate("linear");
 
-    settlementPointLayer = svg.append("g").attr("class", "settlementPointLayer").style("opacity", 0);
+    settlementPointLayer = svg.append("g").attr("class", "settlementPointLayer").style("opacity", 1);
 
     settlementPointLayer.selectAll("circle")
         .data(places_aoi.features)
         .enter()
         .append("circle")
-            .attr("fill", "green")
+            .attr("class", "village")
             .attr("r", config.circleRadius)
             .attr("data-id", function(d) { return d.properties.osm_id; });
 
@@ -210,8 +211,6 @@ function update(transition_time) {
     config.layers.missingInfrastructure.update(transition_time);
     config.layers.isolines.update(transition_time);
 
-    updateSettlementPointLayer();
-
 }
 
 
@@ -237,37 +236,40 @@ function setMode(mode) {
     config.mode = mode;
     console.log("Set Mode: "+config.mode);
 
-    settlementPointLayer
-        //.transition()
-        //.duration(500)
-            .style("opacity", 1);
+    var timeout = 0;
+    if (config.view === "smallmultiples") { timeout = 500; }
 
     d3.selectAll(".mode").classed("active", false);
 
     if (config.mode === "missinginfrastructure") {
         d3.selectAll(".mode.missinginfrastructure").classed("active", true);
-        config.layers.missingInfrastructure.setActive(true);
         config.layers.gsm.setActive(false);
         config.layers.isolines.setActive(false);
-        update(500);
+        if (config.view === "smallmultiples") { updateSettlementPointLayer(); }
+        setTimeout(function() {
+            config.layers.missingInfrastructure.setActive(true);
+            update(500);
+        }, timeout);
     } else if (config.mode === "routesfromvalledupar") {
         d3.selectAll(".mode.routesfromvalledupar").classed("active", true);
         config.layers.missingInfrastructure.setActive(false);
-        config.layers.gsm.setActive(true);
         config.layers.isolines.setActive(false);
-        update(500);
+        if (config.view === "smallmultiples") { updateSettlementPointLayer(); }
+        setTimeout(function() {
+            config.layers.gsm.setActive(true);
+            update(500);
+        }, timeout);
     } else if (config.mode === "isolines") {
         d3.selectAll(".mode.isolines").classed("active", true);
         config.layers.missingInfrastructure.setActive(false);
         config.layers.gsm.setActive(false);
-        config.layers.isolines.setActive(true);
-        update(500);
+        if (config.view === "smallmultiples") { updateSettlementPointLayer(); }
+        setTimeout(function() {
+            config.layers.isolines.setActive(true);
+            update(500);
+        }, timeout);
     }
 
-    settlementPointLayer
-        //.transition()
-        //.duration(500)
-            .style("opacity", 0);
 
 }
 
@@ -352,7 +354,14 @@ function test123(bcr) {
                 var current_id = current_el.attr("data-id");
                 if (isDefined(bcr[current_id])) {
                     current_el
+                        .attr("opacity", "1")
                         .transition()
+                        .each("end", function() {
+                            current_el
+                                .transition()
+                                .duration(500)
+                                    .attr("opacity", "0");
+                        })
                         .duration(500)
                             .attr("cx", bcr[current_id].left+config.circleRadius)
                             .attr("cy", bcr[current_id].top+config.circleRadius);

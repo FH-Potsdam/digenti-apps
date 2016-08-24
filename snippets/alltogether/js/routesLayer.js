@@ -42,21 +42,12 @@ function routesLayer(svg) {
 
         function routingCar(start, end, placeID) {
 
-            // set parametes for API-call
-            var routeRequestParams = {
-                    mode: 'fastest;car',
-                    representation: 'display',
-                    routeattributes: 'waypoints,summary,shape,legs',
-                    maneuverattributes: 'direction,action',
-                    waypoint0: start, // start
-                    waypoint1: end, // finish
-                    returnelevation: 'true'
-                };
 
             // case of error (hopefully not…)
             function onError(e) { console.log(e); }
 
             function processRoute(route) {
+
 
                 // Add route path to svg
                 parent.svglayer.selectAll("g[data-id='"+route.id+"']").selectAll("g")
@@ -64,11 +55,11 @@ function routesLayer(svg) {
                         .attr("data-id", route.id)
                         .attr("data-traveltime", route.travelTime)
                         .attr("class", "route")
-                        .attr("d", route.path)
-                        .attr("stroke-width", 2);
+                        .attr("stroke-width", 3)
+                        .attr("d", route.path);
 
                 // push route geometry to routes_geo-Array
-                parent.routes_geo[route.id] = route.geometry;
+                parent.routes_geo[route.id] = route.geometry.coordinates;
 
             }
 
@@ -79,9 +70,9 @@ function routesLayer(svg) {
                 var route = {
                         init: function() {
                             this.id = placeID;
-                            this.geometry = transformHEREgeometry(r.response.route[0].shape);
-                            this.travelTime = r.response.route[0].summary.travelTime;
-                            this.path = lineFunction(this.geometry);
+                            this.geometry = r.geometry;
+                            this.travelTime = r.properties.travelTime;
+                            this.path = lineFunction(this.geometry.coordinates);
                             return this;
                         }
                     }.init();
@@ -102,7 +93,18 @@ function routesLayer(svg) {
             } else {
                 // call API
                 console.log("ROUTING VIA API");
-                router.calculateRoute(routeRequestParams, onSuccess, onError);
+                //router.calculateRoute(routeRequestParams, onSuccess, onError);
+
+                $.ajax({
+                    dataType: "json",
+                    url: "http://localhost:61002/api/route/"+start+"/"+end,
+                    success: onSuccess,
+                    error: function(error) {
+                        alert(error);
+                    }
+                });
+
+
             }
 
         }
@@ -132,7 +134,6 @@ function routesLayer(svg) {
                         .attr("class", "village")
                     .each(function(d) {
                         var current_el = d3.select(this);
-                        var coord_valledupar = "10.471667,-73.25";
                         var coord_end = (d.geometry.coordinates[1]+","+d.geometry.coordinates[0]);
                         routingCar(coord_valledupar, coord_end, d.properties.osm_id);
                     });
@@ -211,7 +212,6 @@ function routesLayer(svg) {
                     .transition().duration(transition_time)
                         .style("opacity", 1);
 
-
                 current_el.selectAll("g")
                     .transition()
                     .duration(transition_time)
@@ -256,9 +256,7 @@ function routesLayer(svg) {
                     .duration(transition_time)
                         .style("opacity", 1)
                         .attr("stroke-width", 2)
-                        .attr("transform", function() {
-                            return "";
-                        });
+                        .attr("transform", "");
 
                 current_el.selectAll("text")
                     .transition().duration(transition_time)
@@ -267,9 +265,7 @@ function routesLayer(svg) {
                 current_el.selectAll("g")
                     .transition()
                     .duration(transition_time)
-                        .attr("transform", function() {
-                            return "";
-                        });
+                        .attr("transform", "");
 
                 current_el.selectAll("g").selectAll("path")
                     .each(function() {

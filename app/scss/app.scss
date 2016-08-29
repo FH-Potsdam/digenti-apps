@@ -1,0 +1,183 @@
+// This is the main style file for the applications
+
+/////////////
+// Imports
+/////////////
+
+@import '../../digenti-framework/scss/base';
+
+$button-size: 115px;
+$button-margin: 20px;
+$modal-padding: 20px;
+$modal-width: $button-size + 2*$modal-padding;
+
+/////////
+// App
+/////////
+
+.modal {
+    padding: 0;
+    width: $modal-width;
+
+    & > * {
+        padding: 20px;
+        width: 100%;
+        @include border-box();
+    }
+
+    opacity: 1.0;
+    &.disabled {
+        opacity: 0.0;
+    }
+}
+
+// Main sidebar
+#nav {
+    top: 0;
+    bottom: 0;
+    left: 0;
+
+    #page-title {
+        margin-top: 5px;
+
+        & > * {
+            font-size: 1em;
+            border-left: 3px solid $color-blue;
+            margin-bottom: 0;
+            padding-left: 6px;
+
+            letter-spacing: 0.5px;
+            line-height: 1em;
+            padding-bottom: 3px;
+
+            &:last-child {
+                padding-bottom: 0;
+            }
+        }
+    }
+
+    button {
+        @include block($button-size, $button-size);
+        @include no-text();
+        padding: 0;
+    }
+
+    #modes {
+        position: absolute;
+        top: 50%;
+        margin-top: -0.5*3*($button-size+$button-margin) - 0.25*$modal-width;
+
+        button {
+            @include border-radius(100%);
+            margin-bottom: 20px;
+
+            &.routesfromvalledupar {
+                @include background-image('../img/icon-routes.svg', center center);
+            }
+
+            &.missinginfrastructure {
+                @include background-image('../img/icon-missing.svg', center center);
+            }
+
+            &.isolines {
+                @include background-image('../img/icon-isolines.svg', center center);
+            }
+        }
+    }
+
+    #view {
+        padding: 0;
+        position: absolute;
+        bottom: 0;
+
+        .button-wrapper {
+            @include block($modal-width, $modal-width);
+        }
+
+        button {
+            @include background-image('../img/icon-small-multiples.svg', center 2*$modal-padding);
+            background-color: transparent;
+            @include expand();
+
+            &.active,
+            &:hover {
+                // background-color: rgba(255, 255, 255, 0.1);
+                background-color: $color-active;
+
+                .dark & {
+                    background-color: $color-active-dark;
+                }
+            }
+        }
+
+        label {
+            position: absolute;
+            bottom: $modal-padding + 15px;
+            width: 100%;
+
+            text-align: center;
+            display: block;
+        }
+    }
+}
+
+// UI for isolines
+#isolines-ui {
+    bottom: 0;
+    left: 50%;
+
+    .range-wrapper {
+        margin: 0;
+        padding: 15px 10px 10px;
+    }
+
+    #range__slider {
+        display: block;
+        padding: 5px 0;
+        margin: 0;
+    }
+
+    #range {
+        display: block;
+        text-align: center;
+        margin-top: 15px;
+    }
+}
+
+#info {
+    right: 0;
+    bottom: 0;
+}
+
+// Filters
+#filters {
+    top: 1vw;
+    right: 1vw;
+    /*right: 1vw;*/
+
+    background: transparent;
+
+    width: auto;
+    max-width: none;
+
+    transition: opacity 0.5s ease;
+
+    h3, h4 {
+        display: inline-block;
+        margin-right: 10px;
+    }
+
+    button {
+        // width: 90px;
+        display: inline-block;
+        margin-bottom: 0;
+    }
+}
+
+////////////
+// Mapbox
+////////////
+
+.mapboxgl-ctrl {
+    display: none;
+}

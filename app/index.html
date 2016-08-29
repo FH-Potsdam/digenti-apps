@@ -20,22 +20,28 @@
 
         <!-- DIGENTI Framework -->
         <!-- <link href="../digenti-framework/css/main.css" rel="stylesheet" /> -->
-        <link href="../digenti-framework/css/app.css" rel="stylesheet" />
+        <link href="css/app.css" rel="stylesheet" />
     </head>
 
     <body class="dark">
 
         <div id="nav" class="modal">
-            <h3>DIGENTI</h3>
+            <div id="page-title">
+                <h4>DIGENTI</h4>
+                <h4>Accessibility</h4>
+            </div>
 
             <div id="modes">
-                <button class="mode routesfromvalledupar" onclick="setMode('routesfromvalledupar')">Routes from Valledupar</button>
-                <button class="mode missinginfrastructure active" onclick="setMode('missinginfrastructure')">Missing Infrastructure</button>
-                <button class="mode isolines" onclick="setMode('isolines')">Isolines</button>
+                <button title="Routes from Valledupar" class="mode routesfromvalledupar" onclick="setMode('routesfromvalledupar')">Routes from Valledupar</button>
+                <button title="Missing infrastructure" class="mode missinginfrastructure active" onclick="setMode('missinginfrastructure')">Missing Infrastructure</button>
+                <button title="Isolines" class="mode isolines" onclick="setMode('isolines')">Isolines</button>
             </div>
 
             <div id="view">
-                <button class="view mapview" onclick="triggerMapView()">Small Multiples</button>
+                <div class="button-wrapper">
+                    <button name="toggle-view" id="toggle-view" class="view smallmultiplesview" onclick="triggerSmallMultiplesView()">Small Multiples</button>
+                    <label for="toggle-view">Small Multiples</label>
+                </div>
             </div>
         </div>
 

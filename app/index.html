@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset=utf-8 />
+        <title>DIGENTI – Accessibility</title>
+        <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+        <script src='../lib/mapbox-gl.js'></script>
+        <link href='../lib/mapbox-gl.css' rel='stylesheet' />
+
+        <!-- This example requires d3 for AJAX and the brush, though you can bring your own library. -->
+        <script src='../lib/d3.min.js' charset="utf-8"></script>
+        <script src='../lib/turf.min.js' charset='utf-8'></script>
+        <script src='../lib/polymorph.js' charset='utf-8'></script>
+        <script src='../lib/morphpath.js' charset='utf-8'></script>
+
+        <script src="//js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
+        <script src="//js.api.here.com/v3/3.0/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
+        <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+
+        <!-- DIGENTI Framework -->
+        <!-- <link href="../digenti-framework/css/main.css" rel="stylesheet" /> -->
+        <link href="../digenti-framework/css/app.css" rel="stylesheet" />
+    </head>
+
+    <body class="dark">
+
+        <div id="nav" class="modal">
+            <h3>DIGENTI</h3>
+
+            <div id="modes">
+                <button class="mode routesfromvalledupar" onclick="setMode('routesfromvalledupar')">Routes from Valledupar</button>
+                <button class="mode missinginfrastructure active" onclick="setMode('missinginfrastructure')">Missing Infrastructure</button>
+                <button class="mode isolines" onclick="setMode('isolines')">Isolines</button>
+            </div>
+
+            <div id="view">
+                <button class="view mapview" onclick="triggerMapView()">Small Multiples</button>
+            </div>
+        </div>
+
+        <div id="info" class="modal">
+            <h3>Info</h3>
+            <p class="objectID"></p>
+        </div>
+
+        <div id="isolines-ui" class="modal disabled">
+            <div class="range-wrapper">
+                <input id="range__slider" type="range" min="0" max="60" value="30" step="5" oninput="showValue()" onchange="showValue()" />
+                <label id="range">20 min</label>
+            </div>
+        </div>
+
+        <div id="filters" class="modal disabled">
+            <div id="orderby">
+                <h4>Order by</h4>
+                <button class="orderby size active" onclick="reorderSmallMultiples('size')">Size</button>
+                <button class="orderby distance" onclick="reorderSmallMultiples('distance')">Distance</button>
+            </div>
+        </div>
+
+        <div id="map"></div>
+
+        <div id="loader" class="show displayed">
+            <div>
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <script src="../digenti-framework/js/min/digenti-framework-min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="js/min/main-min.js" type="text/javascript" charset="utf-8"></script>
+
+    </body>
+
+</html>

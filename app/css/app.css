@@ -325,7 +325,10 @@ text {
 #nav {
   top: 0;
   bottom: 0;
-  left: 0; }
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; }
   #nav #page-title {
     margin-top: 5px; }
     #nav #page-title > * {
@@ -344,54 +347,46 @@ text {
     height: 115px;
     text-indent: -9999px;
     padding: 0; }
-  #nav #modes {
+  #nav #modes button {
+    -webkit-border-radius: 100%;
+    -moz-border-radius: 100%;
+    -ms-border-radius: 100%;
+    border-radius: 100%;
+    margin-bottom: 20px; }
+    #nav #modes button.routesfromvalledupar {
+      background-image: url("../img/icon-routes.svg");
+      background-position: center center;
+      background-repeat: no-repeat; }
+    #nav #modes button.missinginfrastructure {
+      background-image: url("../img/icon-missing.svg");
+      background-position: center center;
+      background-repeat: no-repeat; }
+    #nav #modes button.isolines {
+      background-image: url("../img/icon-isolines.svg");
+      background-position: center center;
+      background-repeat: no-repeat; }
+  #nav #view .button-wrapper {
+    display: block;
+    width: 155px;
+    height: 155px; }
+  #nav #view button {
+    background-image: url("../img/icon-small-multiples.svg");
+    background-position: center 40px;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    display: block;
+    width: 100%;
+    height: 100%; }
+    #nav #view button.active, #nav #view button:hover {
+      background-color: #3dc8e7; }
+      .dark #nav #view button.active, .dark #nav #view button:hover {
+        background-color: #4B565F; }
+  #nav #view label {
     position: absolute;
-    top: 50%;
-    margin-top: -241.25px; }
-    #nav #modes button {
-      -webkit-border-radius: 100%;
-      -moz-border-radius: 100%;
-      -ms-border-radius: 100%;
-      border-radius: 100%;
-      margin-bottom: 20px; }
-      #nav #modes button.routesfromvalledupar {
-        background-image: url("../img/icon-routes.svg");
-        background-position: center center;
-        background-repeat: no-repeat; }
-      #nav #modes button.missinginfrastructure {
-        background-image: url("../img/icon-missing.svg");
-        background-position: center center;
-        background-repeat: no-repeat; }
-      #nav #modes button.isolines {
-        background-image: url("../img/icon-isolines.svg");
-        background-position: center center;
-        background-repeat: no-repeat; }
-  #nav #view {
-    padding: 0;
-    position: absolute;
-    bottom: 0; }
-    #nav #view .button-wrapper {
-      display: block;
-      width: 155px;
-      height: 155px; }
-    #nav #view button {
-      background-image: url("../img/icon-small-multiples.svg");
-      background-position: center 40px;
-      background-repeat: no-repeat;
-      background-color: transparent;
-      display: block;
-      width: 100%;
-      height: 100%; }
-      #nav #view button.active, #nav #view button:hover {
-        background-color: #3dc8e7; }
-        .dark #nav #view button.active, .dark #nav #view button:hover {
-          background-color: #4B565F; }
-    #nav #view label {
-      position: absolute;
-      bottom: 35px;
-      width: 100%;
-      text-align: center;
-      display: block; }
+    bottom: 35px;
+    width: 100%;
+    text-align: center;
+    display: block; }
 
 #isolines-ui {
   bottom: 0;

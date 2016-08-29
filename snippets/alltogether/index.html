@@ -37,8 +37,8 @@
                 <h3>Basemap</h3>
                 <select id="basemap_select">
                     <!-- <option value="fos-outdoor selected">FOS outdoor</option> -->
-                    <option value="DIGENTI-Light" selected>DIGENTI Light</option>
-                    <option value="DIGENTI-Dark">DIGENTI Dark</option>
+                    <option value="DIGENTI-Light">DIGENTI Light</option>
+                    <option value="DIGENTI-Dark" selected>DIGENTI Dark</option>
                     <option value="DIGENTI">DIGENTI</option>
                     <option value="outdoors-v9">outdoors</option>
                     <option value="basic-v9">basic</option>
@@ -54,7 +54,7 @@
 
             <div>
                 <h3>Modes</h3>
-                <button class="mode missinginfrastructure active" onclick="setMode('missinginfrastructure')">Missing Infrastructure</button>
+                <button class="mode missinginfrastructure" onclick="setMode('missinginfrastructure')">Missing Infrastructure</button>
                 <button class="mode routesfromvalledupar" onclick="setMode('routesfromvalledupar')">Routes from Valledupar</button>
                 <button class="mode isolines" onclick="setMode('isolines')">Isolines</button>
             </div>
@@ -62,7 +62,6 @@
             <div>
                 <h3>Views</h3>
                 <button class="view mapview active" onclick="triggerMapView()">Map View</button>
-                <button class="view mapdistancesview disabled" onclick="triggerMapDistancesView()" disabled>Map View + Missing Roads</button>
                 <button class="view smallmultiplesview" onclick="triggerSmallMultiplesView()">Small Multiples View</button>
             </div>
 

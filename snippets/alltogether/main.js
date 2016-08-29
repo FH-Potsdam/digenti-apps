@@ -48,22 +48,29 @@ config.layout = {};
 
 config.circleRadius = 5;
 
-config.layers = {};
+config.layers = [];
 
+
+
+function addLayer(name, state, blueprint) {
+    config.layers[name] = {};
+    config.layers[name].active = state;
+    config.layers[name].layer = new blueprint();
+}
 
 
 
 $.getScript("js/routesLayer.js", function(data, textStatus, jqxhr) {
 
-    config.layers.gsm = new routesLayer();
+    addLayer("routesfromvalledupar", false, routesLayer);
 
     $.getScript("js/missingInfrastructureLayer.js", function(data, textStatus, jqxhr) {
 
-        config.layers.missingInfrastructure = new missingInfrastructureLayer();
+        addLayer("missinginfrastructure", false, missingInfrastructureLayer);
 
         $.getScript("js/isolinesLayer.js", function(data, textStatus, jqxhr) {
 
-            config.layers.isolines = new isolinesLayer();
+            addLayer("isolines", false, isolinesLayer);
 
             d3.json("../../data/places_aoi.json", function(err, data) {
 
@@ -116,10 +123,11 @@ function mapDraw(geojson) {
 
     map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
         zoom: 11,
         center: [-73.12, 10.410]
     });
+
+    switchLayer("DIGENTI-Dark");
 
     map.addControl(new mapboxgl.Navigation());
 
@@ -158,25 +166,20 @@ function mapDraw(geojson) {
             .attr("data-id", function(d) { return d.properties.osm_id; });
 
     // Initialize the Layers
-    config.layers.gsm.init(svg, geojson);
-    config.layers.missingInfrastructure.init(svg, geojson);
-    config.layers.isolines.init(svg, geojson);
+    config.layers["routesfromvalledupar"].layer.init(svg, geojson);
+    config.layers["missinginfrastructure"].layer.init(svg, geojson);
+    config.layers["isolines"].layer.init(svg, geojson);
 
-    triggerMapView();
-    setMode("missinginfrastructure");
+    //triggerMapView();
+    //setMode("missinginfrastructure");
 
     // Inital Update to render Map
-    update(0);
+    //update(0);
 
 
-
-    var basemap_select = document.getElementById('basemap_select');
-    var basemap_select_options = basemap_select.options;
-
-    basemap_select.onchange = function() {
-        var selectedValue = basemap_select_options[basemap_select.selectedIndex].value;
-        switchLayer(selectedValue);
-    };
+    $("#basemap_select").change(function() {
+        switchLayer($(this).val());
+    });
 
     function switchLayer(layer) {
         if (layer === 'DIGENTI') {
@@ -207,9 +210,9 @@ function update(transition_time) {
 
     config.layout = calculateLayoutVars();
 
-    config.layers.gsm.update(transition_time);
-    config.layers.missingInfrastructure.update(transition_time);
-    config.layers.isolines.update(transition_time);
+    config.layers["routesfromvalledupar"].layer.update(transition_time);
+    config.layers["missinginfrastructure"].layer.update(transition_time);
+    config.layers["isolines"].layer.update(transition_time);
 
 }
 
@@ -231,47 +234,30 @@ function reorderSmallMultiples(ob) {
     update(500);
 }
 
+
+
 function setMode(mode) {
 
     config.mode = mode;
-    console.log("Set Mode: "+config.mode);
+    //console.log("Set Mode: "+config.mode);
 
     var timeout = 0;
     if (config.view === "smallmultiples") { timeout = 500; }
 
-    d3.selectAll(".mode").classed("active", false);
+    config.layers[mode].active = !config.layers[mode].active;
 
-    if (config.mode === "missinginfrastructure") {
-        d3.selectAll(".mode.missinginfrastructure").classed("active", true);
-        config.layers.gsm.setActive(false);
-        config.layers.isolines.setActive(false);
-        if (config.view === "smallmultiples") { updateSettlementPointLayer(); }
-        setTimeout(function() {
-            config.layers.missingInfrastructure.setActive(true);
-            update(500);
-        }, timeout);
-    } else if (config.mode === "routesfromvalledupar") {
-        d3.selectAll(".mode.routesfromvalledupar").classed("active", true);
-        config.layers.missingInfrastructure.setActive(false);
-        config.layers.isolines.setActive(false);
-        if (config.view === "smallmultiples") { updateSettlementPointLayer(); }
-        setTimeout(function() {
-            config.layers.gsm.setActive(true);
-            update(500);
-        }, timeout);
-    } else if (config.mode === "isolines") {
-        d3.selectAll(".mode.isolines").classed("active", true);
-        config.layers.missingInfrastructure.setActive(false);
-        config.layers.gsm.setActive(false);
-        if (config.view === "smallmultiples") { updateSettlementPointLayer(); }
-        setTimeout(function() {
-            config.layers.isolines.setActive(true);
-            update(500);
-        }, timeout);
-    }
+    d3.selectAll(".mode."+mode).classed("active", config.layers[mode].active);
 
+    if (config.view === "smallmultiples") { updateSettlementPointLayer(); }
+
+    setTimeout(function() {
+        config.layers[mode].layer.setActive(config.layers[mode].active);
+        update(500);
+    }, timeout);
 
 }
+
+
 
 function triggerMapView() {
     d3.selectAll(".view").classed("active", false);
@@ -284,16 +270,6 @@ function triggerMapView() {
     update(500);
 }
 
-function triggerMapDistancesView() {
-    d3.selectAll(".view").classed("active", false);
-    d3.selectAll(".mapdistancesview").classed("active", true);
-    d3.selectAll("#orderby").classed("disabled", true);
-
-    enableMapInteraction();
-
-    config.view = "map-distances";
-    update(500);
-}
 
 function triggerSmallMultiplesView() {
     d3.selectAll(".view").classed("active", false);
@@ -335,11 +311,11 @@ function activateButtons() {
 function updateSettlementPointLayer() {
 
     if (config.mode === "isolines") {
-        test123(config.layers.isolines.bcr)
+        test123(config.layers["isolines"].layer.bcr)
     } else if (config.mode === "routesfromvalledupar") {
-        test123(config.layers.gsm.bcr);
+        test123(config.layers["routesfromvalledupar"].layer.bcr);
     } else if (config.mode === "missinginfrastructure") {
-        test123(config.layers.missingInfrastructure.bcr);
+        test123(config.layers["missinginfrastructure"].layer.bcr);
     }
 
 }

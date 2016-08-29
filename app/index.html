@@ -33,13 +33,16 @@
 
             <div id="modes">
                 <button title="Routes from Valledupar" class="mode routesfromvalledupar" onclick="setMode('routesfromvalledupar')">Routes from Valledupar</button>
-                <button title="Missing infrastructure" class="mode missinginfrastructure active" onclick="setMode('missinginfrastructure')">Missing Infrastructure</button>
+                <!-- <label for="toggle-view">Small Multiples</label> -->
+                <button title="Missing infrastructure" class="mode missinginfrastructure" onclick="setMode('missinginfrastructure')">Missing Infrastructure</button>
+                <!-- <label for="toggle-view">Small Multiples</label> -->
                 <button title="Isolines" class="mode isolines" onclick="setMode('isolines')">Isolines</button>
+                <!-- <label for="toggle-view">Small Multiples</label> -->
             </div>
 
             <div id="view">
                 <div class="button-wrapper">
-                    <button name="toggle-view" id="toggle-view" class="view smallmultiplesview" onclick="triggerSmallMultiplesView()">Small Multiples</button>
+                    <button name="toggle-view" id="toggle-view" class="view smallmultiplesview" onclick="toggleViews()">Small Multiples</button>
                     <label for="toggle-view">Small Multiples</label>
                 </div>
             </div>

@@ -36,6 +36,7 @@ $modal-width: $button-size + 2*$modal-padding;
     top: 0;
     bottom: 0;
     left: 0;
+
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -69,7 +70,7 @@ $modal-width: $button-size + 2*$modal-padding;
 
         button {
             @include border-radius(100%);
-            margin-bottom: 20px;
+            margin-bottom: 10px;
 
             &.routesfromvalledupar {
                 @include background-image('../img/icon-routes.svg', center center);
@@ -83,9 +84,17 @@ $modal-width: $button-size + 2*$modal-padding;
                 @include background-image('../img/icon-isolines.svg', center center);
             }
         }
+
+        label {
+            text-align: center;
+            display: block;
+            margin-bottom: 25px;
+        }
     }
 
     #view {
+
+        padding: 0;
 
         .button-wrapper {
             @include block($modal-width, $modal-width);

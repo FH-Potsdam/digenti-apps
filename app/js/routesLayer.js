@@ -13,22 +13,32 @@ function routesLayer(svg) {
     this.svglayer = "";
     this.routes_geo = [];
     this.bcr = [];
-
+    this.active = true;
 
     //////////////////////
     // Functions
     //////////////////////
 
-    this.setActive = function (state) {
-        this.active = state;
-        this.svglayer
-            .transition()
-            .duration(500)
-                .style("opacity", function() {
-                    if (state) { return 1; }
-                    else { return 0; }
-                });
-    }
+    /**
+     * toogle opacity of the layer
+     * @param {state} boolean
+     */
+     this.setActive = function (state) {
+
+         if (state == null) {
+             this.active = !this.active;
+         } else {
+             this.active = state;
+         }
+
+         this.svglayer
+             .transition()
+             .duration(500)
+                 .style("opacity", function() {
+                     if (parent.active) { return 1; }
+                     else { return 0; }
+                 });
+     }
 
     /**
      * initializes the layer
@@ -82,6 +92,49 @@ function routesLayer(svg) {
                 routeasjson.route = route;
                 routesJSON.routes.push(routeasjson);
 
+                if (routesJSON.routes.length === geojson.features.length) {
+                    /*console.log("42");
+
+                    function onSuccess2(r) {
+                        console.log(r);
+                    }
+
+                    console.log(routesJSON.routes[0]);
+                    console.log({ name: "John", time: "2pm" });
+
+                    var test = { "0": routesJSON.routes[0], "1": routesJSON.routes[1] };
+                    console.log(test);
+
+                    function toObject(arr) {
+                        var rv = {};
+                        //for (var i = 0; i < arr.length; ++i) {
+                        for (var i = 0; i < arr.length; ++i) {
+                            rv[i] = arr[i];
+                        }
+                        return rv;
+                    }
+
+                    var obj = toObject(routesJSON.routes);
+
+                    console.log(obj);
+
+                    $.ajax({
+                        method: "POST",
+                        url: "http://localhost:61002/api/geoprocessing/routeparts",
+                        //data: JSON.stringify({ name: "John", time: "2pm" }),
+                        data: JSON.stringify(obj),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: onSuccess2,
+                        error: function(error) {
+                            alert(error);
+                        }
+                    });*/
+
+
+
+                }
+
                 processRoute(route);
 
             }
@@ -103,7 +156,6 @@ function routesLayer(svg) {
                         alert(error);
                     }
                 });
-
 
             }
 

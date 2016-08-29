@@ -22,6 +22,7 @@ function missingInfrastructureLayer(svg) {
     };
 
     this.bcr = [];
+    this.active = true;
 
 
     //////////////////////
@@ -32,17 +33,22 @@ function missingInfrastructureLayer(svg) {
      * toogle opacity of the layer
      * @param {state} boolean
      */
-    this.setActive = function (state) {
-        this.active = state;
-        this.svglayer
-            .transition()
-            .duration(500)
-                .style("opacity", function() {
-                    if (state) { return 1; }
-                    else { return 0; }
-                });
-    }
+     this.setActive = function (state) {
 
+         if (state == null) {
+             this.active = !this.active;
+         } else {
+             this.active = state;
+         }
+
+         this.svglayer
+             .transition()
+             .duration(500)
+                 .style("opacity", function() {
+                     if (parent.active) { return 1; }
+                     else { return 0; }
+                 });
+     }
     /**
      * initializes the layer
      * @param {Number} svg
@@ -184,8 +190,8 @@ function missingInfrastructureLayer(svg) {
 
             });
 
-        // Map with missing infrastructure
-    } else if (config.view === "map-distances") {
+    // Map with missing infrastructure
+    } else {
 
             parent.svglayer.selectAll(".village-group").each(function(d) {
 
@@ -238,50 +244,7 @@ function missingInfrastructureLayer(svg) {
             });
 
         // Map view
-        } else {
-
-            parent.svglayer.selectAll(".village-group").each(function(d) {
-
-                var current_el = d3.select(this);
-
-                current_el
-                    .transition()
-                    .duration(transition_time)
-                        .style("opacity", 1)
-                        .attr("transform", function() {
-                            return "translate("+project(d.geometry.coordinates).x+","+project(d.geometry.coordinates).y+")";
-                        });
-
-                current_el.select(".village")
-                    .attr("cy", 0)
-                    .attr("cx", 0)
-                    .each(function() {
-                        parent.bcr[d3.select(this).attr("data-id")] = d3.select(this).node().getBoundingClientRect();
-                    });
-
-                current_el.select(".nearest-road")
-                    .transition()
-                    .duration(transition_time)
-                        .style("opacity", 0);
-
-                current_el.select("line")
-                    .transition()
-                    .duration(transition_time)
-                        .attr("x1", 0)
-                        .attr("y1", 0)
-                        .attr("x2", 0)
-                        .attr("y2", 0);
-
-                current_el.selectAll("text")
-                    .transition()
-                    .duration(transition_time)
-                        .style("opacity", 0);
-
-                setMapOpacity(1);
-
-            });
-
-        }
+    }
 
 
     }
@@ -326,7 +289,7 @@ function missingInfrastructureLayer(svg) {
             url: "http://localhost:61002/api/route/"+coord_valledupar+"/"+coord_settlement,
             success: onSuccess,
             error: function(error) {
-                alert(error);
+                console.log(error);
             }
         });
 

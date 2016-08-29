@@ -16,6 +16,7 @@ function isolinesLayer(svg) {
     this.isolineOpacity = 0.35;
     this.isolinesQueried = 0;
     this.bcr = [];
+    this.active = true;
 
     this.isolinesGeoJSON = {
         "type":"FeatureCollection",
@@ -33,17 +34,26 @@ function isolinesLayer(svg) {
     // Functions
     //////////////////////
 
-    this.setActive = function (state) {
-        this.active = state;
-        this.svglayer
-            .transition()
-            .duration(500)
-                .style("opacity", function() {
-                    if (state) { return 1; }
-                    else { return 0; }
-                });
-    }
+    /**
+     * toogle opacity of the layer
+     * @param {state} boolean
+     */
+     this.setActive = function (state) {
 
+         if (state == null) {
+             this.active = !this.active;
+         } else {
+             this.active = state;
+         }
+
+         this.svglayer
+             .transition()
+             .duration(500)
+                 .style("opacity", function() {
+                     if (parent.active) { return 1; }
+                     else { return 0; }
+                 });
+     }
 
 
     // This callback is called when clicking on a location

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="69px" height="41px" viewBox="0 0 69 41" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 39.1 (31720) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 2</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <ellipse id="path-1" cx="31" cy="20.7070155" rx="5" ry="5"></ellipse>
+        <mask id="mask-2" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="10" height="10" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Interface-|-GUI-Last" transform="translate(-47.000000, -727.000000)">
+            <g id="Group-3">
+                <g id="Group-8" transform="translate(21.000000, 412.000000)">
+                    <g id="Group-5" transform="translate(0.000000, 278.000000)">
+                        <g id="Group-2" transform="translate(26.000000, 37.000000)">
+                            <path d="M21.1521314,15.1522992 C28.2278184,11.5022797 29.4702866,0.707015506 35.5759866,0.707015506 C43.5314135,0.707015507 35.2667705,10.6132683 41.8758363,15.1522995 C46.7547775,18.5031008 65.0931108,11.8791739 68.4515619,17.0188605 C72.7036678,23.5261732 51.300959,23.5015105 38.4801025,28.0325828 C31.5787117,30.471632 32.1268616,41.0004268 24.5112502,40.7017161 C16.8956389,40.4030055 26.5237569,28.5771982 21.152132,27.2004032 C9.67831954,24.2595637 3.55610235e-07,29.5734055 0,22.0464621 C-2.91570112e-07,15.8750095 12.2026995,19.768897 21.1521314,15.1522992 Z" id="Rectangle-5" fill="#648AA0"></path>
+                            <use id="Oval-3" stroke="#FFFFFF" mask="url(#mask-2)" stroke-width="4" fill="#242E34" xlink:href="#path-1"></use>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

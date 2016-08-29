@@ -29,6 +29,8 @@ var router = platform.getRoutingService();
 
 var coord_valledupar = "10.471667,-73.25";
 var layoutdebug = false;
+var $body;
+var theme = 'light';
 var map;
 var svg;
 var settlementPointLayer;
@@ -51,45 +53,64 @@ config.circleRadius = 5;
 config.layers = {};
 
 
+/////////////
+// onReady
+/////////////
+
+$(document).ready(function (){
+
+    // Config
+    $body = $('body');
+
+    theme = ($body.hasClass('dark')) ? 'dark' : 'light';
+
+    console.log("theme: " + theme);
+
+    // Init layer configuration and data load
+    init();
+});
 
 
-$.getScript("js/routesLayer.js", function(data, textStatus, jqxhr) {
+function init() {
+    $.getScript("js/routesLayer.js", function(data, textStatus, jqxhr) {
 
-    config.layers.gsm = new routesLayer();
+        config.layers.gsm = new routesLayer();
 
-    $.getScript("js/missingInfrastructureLayer.js", function(data, textStatus, jqxhr) {
+        $.getScript("js/missingInfrastructureLayer.js", function(data, textStatus, jqxhr) {
 
-        config.layers.missingInfrastructure = new missingInfrastructureLayer();
+            config.layers.missingInfrastructure = new missingInfrastructureLayer();
 
-        $.getScript("js/isolinesLayer.js", function(data, textStatus, jqxhr) {
+            $.getScript("js/isolinesLayer.js", function(data, textStatus, jqxhr) {
 
-            config.layers.isolines = new isolinesLayer();
+                config.layers.isolines = new isolinesLayer();
 
-            d3.json("../../data/places_aoi.json", function(err, data) {
+                d3.json("../../data/places_aoi.json", function(err, data) {
 
-                places_aoi = data;
+                    places_aoi = data;
 
-                d3.json("../../data/street_points_aoi.json", function(err, data2) {
+                    d3.json("../../data/street_points_aoi.json", function(err, data2) {
 
-                    street_points_aoi = data2;
-                    //console.log(street_points_aoi);
+                        street_points_aoi = data2;
+                        //console.log(street_points_aoi);
 
-                    $.get("data/routes_cached.json")
-                        .done(function() {
-                            d3.json("data/routes_cached.json", function(error, data3) {
-                                //routesJSON = data3;
+                        $.get("data/routes_cached.json")
+                            .done(function() {
+                                d3.json("data/routes_cached.json", function(error, data3) {
+                                    //routesJSON = data3;
 
-                                for (var i = 0; i<routesJSON.routes.length; i++) {
-                                    //routesArray[routesJSON.routes[i].id] = routesJSON.routes[i].route
-                                }
+                                    for (var i = 0; i<routesJSON.routes.length; i++) {
+                                        //routesArray[routesJSON.routes[i].id] = routesJSON.routes[i].route
+                                    }
 
+                                    mapDraw(data);
+
+                                });
+                            })
+                            .fail(function() {
                                 mapDraw(data);
-
                             });
-                        })
-                        .fail(function() {
-                            mapDraw(data);
-                        });
+
+                    });
 
                 });
 
@@ -98,25 +119,18 @@ $.getScript("js/routesLayer.js", function(data, textStatus, jqxhr) {
         });
 
     });
-
-});
-
-
-
-
-
-
-
-
+}
 
 
 function mapDraw(geojson) {
 
     mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
 
+    var baseMap = (theme == 'dark') ? 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t' : 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi'
+
     map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
+        style: baseMap,
         zoom: 11,
         center: [-73.12, 10.410]
     });

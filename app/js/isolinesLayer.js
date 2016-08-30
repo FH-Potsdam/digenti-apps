@@ -160,9 +160,14 @@ function isolinesLayer(svg) {
                     .attr("data-id", function(d) { return d.properties.osm_id; })
                     .attr("class", "isoline-group")
                     .each(function(d) {
-                        var current_el = d3.select(this);
-                        current_el.append("rect")
-                            .attr("class", "layoutdebug");
+
+                        // Only add helper when 'layoutdebug' is set
+                        if (layoutdebug === true) {
+                            var current_el = d3.select(this);
+                            current_el.append("rect")
+                                .attr("class", "layoutdebug");
+                                // .attr("class", "layoutdebug" + ((layoutdebug === true) ? 'active' : ''));
+                        }
                     })
                     .append("g")
                         .attr("class", "isoline-group-vis")
@@ -170,9 +175,9 @@ function isolinesLayer(svg) {
                             var current_el = d3.select(this);
 
                             current_el.append("circle")
-                                .attr({
-                                    "r": config.circleRadius
-                                })
+                                // .attr({
+                                //     "r": config.circleRadius
+                                // })
                                 .attr("class", "village")
                                 .attr("data-id", function(d) { return d.properties.osm_id; })
                                 .each(function(d) {
@@ -220,11 +225,9 @@ function isolinesLayer(svg) {
 
                 });
 
-                var widthperelement = (config.layout.w - config.layout.offsetLeft - config.layout.offsetRight - (config.layout.cols-1)*config.layout.gapX) / config.layout.cols;
-                var heightperelement = (config.layout.h - config.layout.offsetTop - config.layout.offsetBottom - (config.layout.rows-1)*config.layout.gapY) / config.layout.rows;
 
-                var faktor_height = heightperelement/max_path_h;
-                var faktor_width = widthperelement/max_path_w;
+                var faktor_height = config.layout.heightperelement/max_path_h;
+                var faktor_width = config.layout.widthperelement/max_path_w;
 
                 var scaleFactor = faktor_height;
                 if (faktor_width<scaleFactor) { scaleFactor=faktor_width; }
@@ -235,23 +238,23 @@ function isolinesLayer(svg) {
 
                     if (layoutdebug === true) {
                         current_el.selectAll(".layoutdebug")
-                            .attr("fill", "rgba(255, 0, 255, 0.3)")
-                            .attr("width", widthperelement)
-                            .attr("height", heightperelement);
-                    } else {
+                            // .attr("fill", "rgba(255, 0, 255, 0.3)")
+                            .attr("width", config.layout.widthperelement)
+                            .attr("height", config.layout.heightperelement);
+                    } /*else {
                         current_el.selectAll(".layoutdebug")
-                            .attr("fill", "none")
-                            .attr("width", widthperelement)
-                            .attr("height", heightperelement);
-                    }
+                            // .attr("fill", "none")
+                            .attr("width", config.layout.widthperelement)
+                            .attr("height", config.layout.heightperelement);
+                    }*/
 
                     current_el
                         .transition()
                         .duration(transition_time)
                             .style("opacity", 1)
                             .attr("transform", function() {
-                                var x = config.layout.offsetLeft + (ix-1)*config.layout.gapX + ix*widthperelement;
-                                var y = config.layout.offsetTop + (iy-1)*config.layout.gapY + iy*heightperelement;
+                                var x = config.layout.offsetLeft + (ix-1)*config.layout.gapX + ix*config.layout.widthperelement;
+                                var y = config.layout.offsetTop + (iy-1)*config.layout.gapY + iy*config.layout.heightperelement;
                                 ix++;
                                 if (ix === config.layout.cols) { ix = 0; }
                                 iy++;
@@ -273,8 +276,8 @@ function isolinesLayer(svg) {
                             .style("opacity", 1)
                             .attr("transform", function() {
                                 var bbox = d3.select(this).node().getBBox();
-                                var x = -bbox.x + ((widthperelement/scaleFactor)/2) - (bbox.width/2);
-                                var y = -bbox.y + ((heightperelement/scaleFactor)/2) - (bbox.height/2);
+                                var x = -bbox.x + ((config.layout.widthperelement/scaleFactor)/2) - (bbox.width/2);
+                                var y = -bbox.y + ((config.layout.heightperelement/scaleFactor)/2) - (bbox.height/2);
                                 return "scale("+scaleFactor+") translate("+x+","+y+")";
                             });
 
@@ -308,7 +311,7 @@ function isolinesLayer(svg) {
                         .transition()
                         .duration(transition_time)
                             .style("opacity", 1)
-                            .attr("stroke-width", 2)
+                            // .attr("stroke-width", 2)
                             .attr("transform", function() { return ""; });
 
                 });

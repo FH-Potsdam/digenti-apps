@@ -180,6 +180,14 @@ svg {
 .hidden {
   display: none; }
 
+.map-features > g {
+  opacity: 1;
+  pointer-events: all;
+  transition: opacity 0.6s; }
+  .map-features > g.disabled {
+    opacity: 0;
+    pointer-events: none; }
+
 path {
   stroke: black;
   fill: none;
@@ -214,15 +222,15 @@ text {
   cursor: pointer;
   fill: #ff5050;
   stroke: none;
-  fill-opacity: 0.6; }
+  fill-opacity: 0.6;
+  transition: fill-opacity 0.6s; }
   .village:hover, .village.active {
-    fill-opacity: 1.0;
-    transition: fill-opacity 0.6s; }
+    fill-opacity: 1.0; }
 
 .village-group .nearest-road {
   fill: #ff5050; }
 .village-group .missing {
-  stroke-width: 2px;
+  stroke-width: 2;
   stroke: #ff5050;
   stroke-dasharray: 0,4;
   /*stroke-dasharray: 1,1;*/
@@ -236,6 +244,9 @@ text {
   transition: fill-opacity 0.3s ease; }
   .isoline:hover {
     fill-opacity: 0.25; }
+
+.route {
+  stroke-width: 3; }
 
 .route-dots {
   fill: #099;
@@ -256,6 +267,9 @@ text {
   stroke: #fff;
   fill-opacity: 0.125;
   shape-rendering: crispEdges; }
+
+.layoutdebug {
+  fill: rgba(255, 0, 255, 0.3); }
 
 #loader {
   width: 100vw;

@@ -62,11 +62,11 @@ function routesLayer(svg) {
                 // Add route path to svg
                 parent.svglayer.selectAll("g[data-id='"+route.id+"']").selectAll("g")
                         .append("path")
-                        .attr("data-id", route.id)
-                        .attr("data-traveltime", route.travelTime)
-                        .attr("class", "route")
-                        .attr("stroke-width", 3)
-                        .attr("d", route.path);
+                            .attr("data-id", route.id)
+                            .attr("data-traveltime", route.travelTime)
+                            .attr("class", "route")
+                            // .attr("stroke-width", 3)
+                            .attr("d", route.path);
 
                 // push route geometry to routes_geo-Array
                 parent.routes_geo[route.id] = route.geometry.coordinates;
@@ -175,8 +175,11 @@ function routesLayer(svg) {
                         //.attr("text-anchor", "middle")
                         .attr("class", "title")
                         .attr("y", "30");
-                    current_el.append("rect")
-                        .attr("class", "layoutdebug");
+
+                    if (layoutdebug == true) {
+                        current_el.append("rect")
+                            .attr("class", "layoutdebug");
+                    }
                 })
                 .append("g")
                     .attr("class", "sm_vis")
@@ -218,13 +221,9 @@ function routesLayer(svg) {
                 if (bbox.width > max_path_w) { max_path_w = bbox.width; }
             });
 
-            // Calculate Width for each element
-            var widthperelement = (config.layout.w - config.layout.offsetLeft - config.layout.offsetRight - (config.layout.cols-1)*config.layout.gapX) / config.layout.cols;
-            var heightperelement = (config.layout.h - config.layout.offsetTop - config.layout.offsetBottom - (config.layout.rows-1)*config.layout.gapY) / config.layout.rows;
-
             // Calculate scaleFactor
-            var faktor_height = (heightperelement-20)/max_path_h;
-            var faktor_width = widthperelement/max_path_w;
+            var faktor_height = (config.layout.heightperelement-20)/max_path_h;
+            var faktor_width = config.layout.widthperelement/max_path_w;
             var scaleFactor = faktor_height;
             if (faktor_width<scaleFactor) { scaleFactor=faktor_width; }
 
@@ -237,8 +236,8 @@ function routesLayer(svg) {
                     .duration(transition_time)
                         .style("opacity", 1)
                         .attr("transform", function() {
-                            var x = config.layout.offsetLeft + (ix-1)*config.layout.gapX + ix*widthperelement;
-                            var y = config.layout.offsetTop + (iy-1)*config.layout.gapY + iy*heightperelement;
+                            var x = config.layout.offsetLeft + (ix-1)*config.layout.gapX + ix*config.layout.widthperelement;
+                            var y = config.layout.offsetTop + (iy-1)*config.layout.gapY + iy*config.layout.heightperelement;
                             ix++;
                             if (ix === config.layout.cols) { ix = 0; }
                             iy++;
@@ -248,19 +247,19 @@ function routesLayer(svg) {
 
                 if (layoutdebug === true) {
                     current_el.selectAll(".layoutdebug")
-                        .attr("fill", "rgba(255, 0, 255, 0.3)")
-                        .attr("width", widthperelement)
-                        .attr("height", heightperelement);
-                } else {
+                        // .attr("fill", "rgba(255, 0, 255, 0.3)")
+                        .attr("width", config.layout.widthperelement)
+                        .attr("height", config.layout.heightperelement);
+                } /*else {
                     current_el.selectAll(".layoutdebug")
                         .attr("fill", "none")
-                        .attr("width", widthperelement)
-                        .attr("height", heightperelement);
-                }
+                        .attr("width", config.layout.widthperelement)
+                        .attr("height", config.layout.heightperelement);
+                }*/
 
                 current_el.selectAll("text")
                     .attr("x", 0)
-                    .attr("y", heightperelement)
+                    .attr("y", config.layout.heightperelement)
                     .transition().duration(transition_time)
                         .style("opacity", 1);
 
@@ -271,14 +270,14 @@ function routesLayer(svg) {
                         .attr("transform", function() {
                             var bbox = d3.select(this).node().getBBox();
                             var x = -bbox.x;
-                            var y = -bbox.y-bbox.height+(heightperelement-20)/scaleFactor;
+                            var y = -bbox.y-bbox.height+(config.layout.heightperelement-20)/scaleFactor;
                             return "scale("+scaleFactor+") translate("+x+","+y+")";
                         });
 
                 current_el.selectAll("g").selectAll("path")
                     .transition()
                     .duration(transition_time)
-                        .attr("stroke-width", function() { return 2/scaleFactor; });
+                        .style("stroke-width", function() { return 2/scaleFactor; });
 
                 current_el.selectAll("g").selectAll("circle")
                     .attr({ "r": config.circleRadius/scaleFactor });
@@ -307,7 +306,7 @@ function routesLayer(svg) {
                     .transition()
                     .duration(transition_time)
                         .style("opacity", 1)
-                        .attr("stroke-width", 2)
+                        // .attr("stroke-width", 2)
                         .attr("transform", "");
 
                 current_el.selectAll("text")
@@ -326,7 +325,7 @@ function routesLayer(svg) {
                     })
                     .transition()
                     .duration(transition_time)
-                        .attr("stroke-width", function() { return 2; });
+                        // .attr("stroke-width", function() { return 2; });
 
                 current_el.selectAll("g").selectAll("circle")
                     .attr({

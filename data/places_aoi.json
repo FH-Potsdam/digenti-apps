@@ -3,8 +3,8 @@
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 
 "features": [
-{ "type": "Feature", "properties": { "osm_id": "468769318", "name": "Manaure Balcón del Cesar", "type": "town", "population": null }, "geometry": { "type": "Point", "coordinates": [ -73.027069899999987, 10.3910411 ] } },
-{ "type": "Feature", "properties": { "osm_id": "703170190", "name": "La Jagua del Pilar", "type": "town", "population": null }, "geometry": { "type": "Point", "coordinates": [ -73.070995599999975, 10.5102023 ] } },
+{ "type": "Feature", "properties": { "osm_id": "468769318", "name": "Manaure Balcón del Cesar", "type": "town", "population": 14855 }, "geometry": { "type": "Point", "coordinates": [ -73.027069899999987, 10.3910411 ] } },
+{ "type": "Feature", "properties": { "osm_id": "703170190", "name": "La Jagua del Pilar", "type": "town", "population": 3253 }, "geometry": { "type": "Point", "coordinates": [ -73.070995599999975, 10.5102023 ] } },
 { "type": "Feature", "properties": { "osm_id": "703273611", "name": "Vda-Resguardo Caño Padilla", "type": "village", "population": null }, "geometry": { "type": "Point", "coordinates": [ -73.083120099999988, 10.2968203 ] } },
 { "type": "Feature", "properties": { "osm_id": "703273765", "name": "Caracoli Hueco", "type": "hamlet", "population": null }, "geometry": { "type": "Point", "coordinates": [ -73.118906, 10.3043226 ] } },
 { "type": "Feature", "properties": { "osm_id": "703273768", "name": "El Silenio", "type": "hamlet", "population": null }, "geometry": { "type": "Point", "coordinates": [ -73.024731799999984, 10.2916755 ] } },

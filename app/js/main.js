@@ -4,32 +4,18 @@
 /*global console:true */
 
 
-/* #############
-        HERE CONFIG
-   ############# */
+//////////
+// DOM
+//////////
 
-var platform = new H.service.Platform({
-  'app_id': 'EOg7UyuSFbPF0IG5ANjz',
-  'app_code': 'iRnqNl0dyzX_8FOlchD0ZQ'
-});
+var $body;
 
-// Get an instance of the normal routing service:
-var router = platform.getRoutingService();
-
-
-
-
-
-
-
-
-/* #############
-        VARS
-   ############# */
+//////////
+// Vars
+//////////
 
 var coord_valledupar = "10.471667,-73.25";
 var layoutdebug = false;
-var $body;
 var theme = 'light';
 var map;
 var svg;
@@ -135,6 +121,8 @@ function mapDraw(geojson) {
 
     var baseMap = (theme == 'dark') ? 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t' : 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi'
 
+    console.log(baseMap);
+
     map = new mapboxgl.Map({
         container: 'map',
         style: baseMap,
@@ -142,7 +130,7 @@ function mapDraw(geojson) {
         center: [-73.12, 10.410]
     });
 
-    switchLayer("DIGENTI-Dark");
+    // switchLayer("DIGENTI-Dark");
 
     map.addControl(new mapboxgl.Navigation());
 
@@ -324,11 +312,6 @@ function activateButtons() {
 
 
 
-
-
-
-
-
 function updateSettlementPointLayer() {
 
     if (config.mode === "isolines") {
@@ -410,14 +393,18 @@ function calculateLayoutVars() {
     layoutVars.h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
     layoutVars.rows = 7;
     layoutVars.cols = 6;
-    layoutVars.gap_hor = (layoutVars.w*0.8)/(layoutVars.cols+1);
-    layoutVars.gap_ver = (layoutVars.h)/(layoutVars.rows+1);
-    layoutVars.offsetLeft = layoutVars.w*0.25;
-    layoutVars.offsetRight = 30;
-    layoutVars.offsetTop = layoutVars.h*0.1;
-    layoutVars.offsetBottom = 30;
-    layoutVars.gapX = 15;
-    layoutVars.gapY = 10;
+    //layoutVars.gap_hor = (layoutVars.w*0.8)/(layoutVars.cols+1);
+    //layoutVars.gap_ver = (layoutVars.h)/(layoutVars.rows+1);
+    layoutVars.offsetLeft = layoutVars.w*0.15;
+    layoutVars.offsetRight = layoutVars.w*0.01;
+    layoutVars.offsetTop = layoutVars.offsetRight;
+    layoutVars.offsetBottom = 2*layoutVars.offsetRight;
+    //layoutVars.gapX = layoutVars.x - layoutVars.offsetLeft - layoutVars.offsetRight;
+    layoutVars.gapX = layoutVars.w*0.008;
+    layoutVars.gapY = layoutVars.gapX;
+
+    layoutVars.widthperelement = (config.layout.w - config.layout.offsetLeft - config.layout.offsetRight - (config.layout.cols-2)*config.layout.gapX) / config.layout.cols;
+    layoutVars.heightperelement = (config.layout.h - config.layout.offsetTop - config.layout.offsetBottom - (config.layout.rows-2)*config.layout.gapY) / config.layout.rows;
 
     return layoutVars;
 

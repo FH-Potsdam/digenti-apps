@@ -95,12 +95,9 @@ function missingInfrastructureLayer(svg) {
             var ix = 0;
             var iy = 0;
 
-            // Calculate size (width and height) for each smallmultiple
-            var widthperelement = (config.layout.w - config.layout.offsetLeft - config.layout.offsetRight - (config.layout.cols-1)*config.layout.gapX) / config.layout.cols;
-            var heightperelement = (config.layout.h - config.layout.offsetTop - config.layout.offsetBottom - (config.layout.rows-1)*config.layout.gapY) / config.layout.rows;
 
             // position of vis in smallmultiple-container
-            var positionSmallVisY = (heightperelement-40);
+            var positionSmallVisY = (config.layout.heightperelement-40);
 
             // Calculate Faktor for resizing the missing routes length
             var arr = [];
@@ -125,22 +122,22 @@ function missingInfrastructureLayer(svg) {
                                 ix = Math.round(config.layout.cols*((pos/config.layout.cols)-iy));
                             }
 
-                            var x = config.layout.offsetLeft + (ix-1)*config.layout.gapX + ix*widthperelement;
-                            var y = config.layout.offsetTop + (iy-1)*config.layout.gapY + iy*heightperelement;
+                            var x = config.layout.offsetLeft + (ix-1)*config.layout.gapX + ix*config.layout.widthperelement;
+                            var y = config.layout.offsetTop + (iy-1)*config.layout.gapY + iy*config.layout.heightperelement;
                             return "translate("+x+","+y+")";
                         });
 
                 if (layoutdebug === true) {
                     current_el.selectAll(".layoutdebug")
-                        .attr("fill", "rgba(255, 0, 255, 0.3)")
-                        .attr("width", widthperelement)
-                        .attr("height", heightperelement);
-                } else {
+                        // .attr("fill", "rgba(255, 0, 255, 0.3)")
+                        .attr("width", config.layout.widthperelement)
+                        .attr("height", config.layout.heightperelement);
+                } /*else {
                     current_el.selectAll(".layoutdebug")
                         .attr("fill", "none")
-                        .attr("width", widthperelement)
-                        .attr("height", heightperelement);
-                }
+                        .attr("width", config.layout.widthperelement)
+                        .attr("height", config.layout.heightperelement);
+                }*/
 
                 current_el.select(".village")
                     .attr("cy", positionSmallVisY)
@@ -174,7 +171,7 @@ function missingInfrastructureLayer(svg) {
 
                 current_el.selectAll("text")
                     .attr("x", 0)
-                    .attr("y", heightperelement)
+                    .attr("y", config.layout.heightperelement)
                     .transition()
                     .duration(500)
                         .style("opacity", 1);
@@ -357,8 +354,10 @@ function missingInfrastructureLayer(svg) {
 
                     var current_el = d3.select(this);
 
-                    current_el.append("rect")
-                        .attr("class", "layoutdebug");
+                    if (layoutdebug == true) {
+                        current_el.append("rect")
+                            .attr("class", "layoutdebug");
+                    }
 
                     current_el.append("line")
                         .attr("class", "missing");

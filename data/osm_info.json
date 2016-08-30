@@ -1,0 +1,9 @@
+{
+    "description" : "Some infos about OSM data",
+    "places": [
+        { "type": "town", "count-aoi": 2, "population": null, "description": "An important urban centre, between a village and a city in size." },
+        { "type": "village", "count-aoi": 4, "population": "between 1.000-10.000 inhabitants", "description": "Larger isolated settlement." },
+        { "type": "hamlet", "count-aoi": 10, "population": "less than 100-200 inhabitants", "description": "Isolated settlement." },
+        { "type": "locality", "count-aoi": 26, "population": "no population", "description": "A named place that has no population." }
+    ]
+}

@@ -1,15 +1,20 @@
+//////////////////
+// Routes Layer
+//////////////////
+
 function routesLayer(svg) {
 
-
-    //////////////////////
+    ///////////
     // Base
-    //////////////////////
+    ///////////
+
     var parent = this;
 
 
-    //////////////////////
+    ////////////////////////////
     // Variables of the Layer
-    //////////////////////
+    ////////////////////////////
+
     this.svglayer = "";
     this.routes_geo = [];
     this.bcr = [];
@@ -23,22 +28,23 @@ function routesLayer(svg) {
      * toogle opacity of the layer
      * @param {state} boolean
      */
-     this.setActive = function (state) {
+    this.setActive = function (state) {
 
-         if (state == null) {
-             this.active = !this.active;
-         } else {
-             this.active = state;
-         }
+        if (state == null) {
+            this.active = !this.active;
+        } else {
+            this.active = state;
+        }
 
-         this.svglayer
-             .transition()
-             .duration(500)
-                 .style("opacity", function() {
-                     if (parent.active) { return 1; }
-                     else { return 0; }
-                 });
-     }
+        this.svglayer.classed('disabled', !this.active);
+        //  this.svglayer
+        //      .transition()
+        //      .duration(500)
+        //          .style("opacity", function() {
+        //              if (parent.active) { return 1; }
+        //              else { return 0; }
+        //          });
+    }
 
     /**
      * initializes the layer
@@ -47,7 +53,7 @@ function routesLayer(svg) {
      */
     this.init = function (svg, geojson) {
 
-        this.svglayer = svg.append("g").attr("class", "routesfromvalledupar");
+        this.svglayer = svg.append("g").attr("id", "routesfromvalledupar");
         this.setActive(false);
 
         function routingCar(start, end, placeID) {
@@ -289,14 +295,14 @@ function routesLayer(svg) {
 
             });
 
-            setMapOpacity(0.08);
-            disableMapInteraction();
+            // hideMap();
+            // disableMapInteraction();
 
 
         } else {
 
-            setMapOpacity(1);
-            enableMapInteraction();
+            // showMap();
+            // enableMapInteraction();
 
             this.svglayer.selectAll(".smallmultiple").each(function() {
 
@@ -325,7 +331,8 @@ function routesLayer(svg) {
                     })
                     .transition()
                     .duration(transition_time)
-                        // .attr("stroke-width", function() { return 2; });
+                        .attr("style", ""); // Remove inline 'stroke-width' to get back to CSS default
+                        // .style("stroke-width", function() { return 2; });
 
                 current_el.selectAll("g").selectAll("circle")
                     .attr({

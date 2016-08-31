@@ -1,3 +1,7 @@
+///////////////////////////////
+// DIGENTI Accessibility App
+///////////////////////////////
+
 // This is the main style file for the applications
 
 /////////////
@@ -5,11 +9,17 @@
 /////////////
 
 @import '../../digenti-framework/scss/base';
+@import 'vars';
 
-$button-size: 115px;
-$button-margin: 20px;
-$modal-padding: 20px;
-$modal-width: $button-size + 2*$modal-padding;
+///////////
+// Debug
+///////////
+
+#loader {
+    @if $offline {
+        display: none !important;
+    }
+}
 
 /////////
 // App
@@ -18,6 +28,7 @@ $modal-width: $button-size + 2*$modal-padding;
 .modal {
     padding: 0;
     width: $modal-width;
+    max-width: none;
 
     & > * {
         padding: 20px;
@@ -25,7 +36,8 @@ $modal-width: $button-size + 2*$modal-padding;
         @include border-box();
     }
 
-    opacity: 1.0;
+    opacity: 1;
+
     &.disabled {
         opacity: 0.0;
     }
@@ -34,20 +46,29 @@ $modal-width: $button-size + 2*$modal-padding;
 // Main sidebar
 #nav {
     top: 0;
-    bottom: 0;
     left: 0;
 
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    // width: 8vw;
+    // min-width: $modal-width;
+    height: 100vh;
+
+    @include flexbox();
+    @include flex-direction(column);
+    @include justify-content(space-between);
+    // display: flex;
+    // flex-direction: column;
+    // justify-content: space-between;
 
     #page-title {
         margin-top: 5px;
 
         & > * {
-            font-size: 1em;
-            border-left: 3px solid $color-blue;
+            font-size: 0.933rem;
+            // font-size: 1em;
             margin-bottom: 0;
+
+            // Border
+            border-left: 3px solid $color-blue;
             padding-left: 6px;
 
             letter-spacing: 0.5px;
@@ -101,13 +122,12 @@ $modal-width: $button-size + 2*$modal-padding;
         }
 
         button {
-            @include background-image('../img/icon-small-multiples.svg', center 2*$modal-padding);
+            @include background-image('../img/icon-small-multiples.svg', center 2.2*$modal-padding);
             background-color: transparent;
             @include expand();
 
             &.active,
             &:hover {
-                // background-color: rgba(255, 255, 255, 0.1);
                 background-color: $color-active;
 
                 .dark & {
@@ -134,7 +154,7 @@ $modal-width: $button-size + 2*$modal-padding;
 
     .range-wrapper {
         margin: 0;
-        padding: 15px 10px 10px;
+        // padding: 15px 10px 10px;
     }
 
     #range__slider {
@@ -151,8 +171,23 @@ $modal-width: $button-size + 2*$modal-padding;
 }
 
 #info {
-    right: 0;
-    bottom: 0;
+    right: -$info-width;
+    top: 0;
+    opacity: 0;
+
+    width: $info-width;
+    height: 100%;
+
+    @include transition(all 0.6s ease);
+
+    &.show {
+        right: 0;
+        opacity: 1;
+    }
+
+    .content {
+        padding: 1.5*$modal-padding 2*$modal-padding;
+    }
 }
 
 // Filters
@@ -166,7 +201,7 @@ $modal-width: $button-size + 2*$modal-padding;
     width: auto;
     max-width: none;
 
-    transition: opacity 0.5s ease;
+    @include transition(opacity 0.6s ease);
 
     h3, h4 {
         display: inline-block;

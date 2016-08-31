@@ -1,15 +1,20 @@
+//////////////////////////////////
+// Missing Infrastructure Layer
+//////////////////////////////////
+
 function missingInfrastructureLayer(svg) {
 
-
-    //////////////////////
+    ///////////
     // Base
-    //////////////////////
+    ///////////
+
     var parent = this;
 
 
-    //////////////////////
+    ////////////////////////////
     // Variables of the Layer
-    //////////////////////
+    ////////////////////////////
+
     this.places_aoi_street_distance = {
        "type":"FeatureCollection",
        "crs":{
@@ -33,22 +38,24 @@ function missingInfrastructureLayer(svg) {
      * toogle opacity of the layer
      * @param {state} boolean
      */
-     this.setActive = function (state) {
+    this.setActive = function (state) {
 
-         if (state == null) {
-             this.active = !this.active;
-         } else {
-             this.active = state;
-         }
+        if (state == null) {
+            this.active = !this.active;
+        } else {
+            this.active = state;
+        }
 
-         this.svglayer
-             .transition()
-             .duration(500)
-                 .style("opacity", function() {
-                     if (parent.active) { return 1; }
-                     else { return 0; }
-                 });
-     }
+        this.svglayer.classed('disabled', !this.active);
+        //  this.svglayer
+        //      .transition()
+        //      .duration(500)
+        //          .style("opacity", function() {
+        //              if (parent.active) { return 1; }
+        //              else { return 0; }
+        //          });
+    }
+
     /**
      * initializes the layer
      * @param {Number} svg
@@ -57,7 +64,7 @@ function missingInfrastructureLayer(svg) {
     this.init = function (svg, geojson) {
 
         this.svglayer = svg.append("g")
-                .attr("class", "villages");
+                .attr("id", "missinginfrastructure");
 
         this.villages = this.svglayer.selectAll("g")
                             .data(geojson.features)
@@ -176,7 +183,7 @@ function missingInfrastructureLayer(svg) {
                     .duration(500)
                         .style("opacity", 1);
 
-                setMapOpacity(0.08);
+                // hideMap();
 
                 if (config.orderby == "size") {
                     ix++;
@@ -235,9 +242,7 @@ function missingInfrastructureLayer(svg) {
                     .duration(transition_time)
                         .style("opacity", 0);
 
-                setMapOpacity(1);
-
-
+                // showMap();
             });
 
         // Map view

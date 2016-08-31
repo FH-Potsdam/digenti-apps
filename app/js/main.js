@@ -158,7 +158,8 @@ function mapDraw(geojson) {
                         .y(function(d) { return project(d).y; })
                         .interpolate("linear");
 
-    settlementPointLayer = svg.append("g").attr("class", "settlementPointLayer").style("opacity", 1);
+    settlementPointLayer = svg.append("g").attr("id", "settlementPointLayer");
+    // settlementPointLayer = svg.append("g").attr("id", "settlementPointLayer").style("opacity", 1);
 
     settlementPointLayer.selectAll("circle")
         .data(places_aoi.features)
@@ -242,7 +243,7 @@ function reorderSmallMultiples(ob) {
 function setMode(mode) {
 
     config.mode = mode;
-    //console.log("Set Mode: "+config.mode);
+    console.log("Set Mode: "+config.mode);
 
     var timeout = 0;
     if (config.view === "smallmultiples") { timeout = 500; }
@@ -273,6 +274,7 @@ function triggerMapView() {
     d3.selectAll(".mapview").classed("active", true);
     d3.selectAll("#orderby").classed("disabled", true);
 
+    showMap();
     enableMapInteraction();
 
     config.view = "";
@@ -285,78 +287,12 @@ function triggerSmallMultiplesView() {
     d3.selectAll(".smallmultiplesview").classed("active", true);
     d3.selectAll("#orderby").classed("disabled", false);
 
+    hideMap();
     disableMapInteraction();
 
     config.view = "smallmultiples";
     update(500);
 }
-
-function setMapOpacity(value) {
-
-    d3.selectAll(".mapboxgl-canvas")
-        .transition()
-        .duration(500)
-            .style("opacity", value);
-
-    d3.selectAll(".mapboxgl-control-container")
-        .transition()
-        .duration(500)
-            .style("opacity", value);
-}
-
-
-function activateButtons() {
-    d3.selectAll(".disabled")
-        .attr("disabled", null);
-}
-
-
-
-function updateSettlementPointLayer() {
-
-    if (config.mode === "isolines") {
-        test123(config.layers["isolines"].layer.bcr)
-    } else if (config.mode === "routesfromvalledupar") {
-        test123(config.layers["routesfromvalledupar"].layer.bcr);
-    } else if (config.mode === "missinginfrastructure") {
-        test123(config.layers["missinginfrastructure"].layer.bcr);
-    }
-
-}
-
-function test123(bcr) {
-
-    if (isDefined(bcr)) {
-
-        settlementPointLayer.selectAll("circle")
-            .each(function() {
-                var current_el = d3.select(this);
-                var current_id = current_el.attr("data-id");
-                if (isDefined(bcr[current_id])) {
-                    current_el
-                        .attr("opacity", "1")
-                        .transition()
-                        .each("end", function() {
-                            current_el
-                                .transition()
-                                .duration(500)
-                                    .attr("opacity", "0");
-                        })
-                        .duration(500)
-                            .attr("cx", bcr[current_id].left+config.circleRadius)
-                            .attr("cy", bcr[current_id].top+config.circleRadius);
-                }
-            });
-
-
-    }
-
-}
-
-
-
-
-
 
 //////////////////////
 // Map Interactions
@@ -372,6 +308,94 @@ function disableMapInteraction() {
     map.scrollZoom.disable();
     map.dragPan.disable();
     d3.select("#map").classed("disabled", true);
+}
+
+function showMap() {
+
+    d3.selectAll(".mapboxgl-canvas")
+        .classed('hidden', false);
+
+    d3.selectAll(".mapboxgl-canvas")
+        .classed('hidden', false);
+
+    // setMapOpacity(1);
+    // enableMapInteraction();
+}
+
+function hideMap() {
+
+    d3.selectAll(".mapboxgl-canvas")
+        .classed('hidden', true);
+
+    d3.selectAll(".mapboxgl-canvas")
+        .classed('hidden', true);
+
+    // setMapOpacity(0.08);
+    // disableMapInteraction();
+}
+
+// function setMapOpacity(value) {
+//
+//     d3.selectAll(".mapboxgl-canvas")
+//         .transition()
+//         .duration(500)
+//             .style("opacity", value);
+//
+//     d3.selectAll(".mapboxgl-control-container")
+//         .transition()
+//         .duration(500)
+//             .style("opacity", value);
+// }
+
+
+function activateButtons() {
+    d3.selectAll(".disabled")
+        .attr("disabled", null);
+}
+
+
+
+function updateSettlementPointLayer() {
+
+    console.log("updateSettlementsPointLayer");
+
+    if (config.mode === "isolines") {
+        test123(config.layers["isolines"].layer.bcr)
+    } else if (config.mode === "routesfromvalledupar") {
+        test123(config.layers["routesfromvalledupar"].layer.bcr);
+    } else if (config.mode === "missinginfrastructure") {
+        test123(config.layers["missinginfrastructure"].layer.bcr);
+    }
+
+}
+
+function test123(bcr) {
+
+    console.log("test123, mode: " + config.mode);
+
+    if (isDefined(bcr)) {
+
+        settlementPointLayer.selectAll("circle")
+            .each(function() {
+                var current_el = d3.select(this);
+                var current_id = current_el.attr("data-id");
+                if (isDefined(bcr[current_id])) {
+
+                    current_el
+                        .attr("opacity", "1")
+                        .transition()
+                        .each("end", function() {
+                            current_el
+                                .transition()
+                                .duration(500)
+                                    .attr("opacity", "0");
+                        })
+                        .duration(500)
+                            .attr("cx", bcr[current_id].left+config.circleRadius)
+                            .attr("cy", bcr[current_id].top+config.circleRadius);
+                }
+            });
+    }
 }
 
 

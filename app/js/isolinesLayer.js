@@ -1,15 +1,20 @@
+////////////////////
+// Isolines Layer
+////////////////////
+
 function isolinesLayer(svg) {
 
-
-    //////////////////////
+    ///////////
     // Base
-    //////////////////////
+    ///////////
+
     var parent = this;
 
 
-    //////////////////////
+    ////////////////////////////
     // Variables of the Layer
-    //////////////////////
+    ////////////////////////////
+
     //this.svglayer = "";
     this.circleRadius = 5;
     this.isolineColor = '#3dc8e7';
@@ -38,23 +43,23 @@ function isolinesLayer(svg) {
      * toogle opacity of the layer
      * @param {state} boolean
      */
-     this.setActive = function (state) {
+    this.setActive = function (state) {
 
-         if (state == null) {
-             this.active = !this.active;
-         } else {
-             this.active = state;
-         }
+        if (state == null) {
+            this.active = !this.active;
+        } else {
+            this.active = state;
+        }
 
-         this.svglayer
-             .transition()
-             .duration(500)
-                 .style("opacity", function() {
-                     if (parent.active) { return 1; }
-                     else { return 0; }
-                 });
-     }
-
+        this.svglayer.classed('disabled', !this.active);
+        //  this.svglayer
+        //      .transition()
+        //      .duration(500)
+        //          .style("opacity", function() {
+        //              if (parent.active) { return 1; }
+        //              else { return 0; }
+        //          });
+    }
 
     // This callback is called when clicking on a location
     function click(d, objectID) {
@@ -149,7 +154,7 @@ function isolinesLayer(svg) {
      */
     this.init = function (svg, geojson) {
 
-        this.svglayer = svg.append("g").attr("class", "isolines");
+        this.svglayer = svg.append("g").attr("id", "isolines");
         this.setActive(false);
 
         this.svglayer
@@ -351,16 +356,8 @@ function isolinesLayer(svg) {
                     isoline.attr("d", path);
                 });
 
-                setMapOpacity(1);
-
-
+                // showMap();
             }
-
         }
-
-
-
     }
-
-
 }

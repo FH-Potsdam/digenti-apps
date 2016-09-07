@@ -129,8 +129,8 @@ function missingInfrastructureLayer(svg) {
                                 ix = Math.round(config.layout.cols*((pos/config.layout.cols)-iy));
                             }
 
-                            var x = config.layout.offsetLeft + (ix-1)*config.layout.gapX + ix*config.layout.widthperelement;
-                            var y = config.layout.offsetTop + (iy-1)*config.layout.gapY + iy*config.layout.heightperelement;
+                            var x = config.layout.offsetLeft + ix*(config.layout.gapX+config.layout.widthperelement);
+                            var y = config.layout.offsetTop + iy*(config.layout.gapY+config.layout.heightperelement);
                             return "translate("+x+","+y+")";
                         });
 

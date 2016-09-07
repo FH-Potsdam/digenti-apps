@@ -413,22 +413,31 @@ function selectSettlement(id) {
 function calculateLayoutVars() {
 
     var layoutVars = {};
+
+    // width and height of viewport
     layoutVars.w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
     layoutVars.h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+    // number of rows and cols
     layoutVars.rows = 7;
     layoutVars.cols = 6;
-    //layoutVars.gap_hor = (layoutVars.w*0.8)/(layoutVars.cols+1);
-    //layoutVars.gap_ver = (layoutVars.h)/(layoutVars.rows+1);
-    layoutVars.offsetLeft = layoutVars.w*0.15;
-    layoutVars.offsetRight = layoutVars.w*0.01;
-    layoutVars.offsetTop = layoutVars.offsetRight;
-    layoutVars.offsetBottom = 2*layoutVars.offsetRight;
-    //layoutVars.gapX = layoutVars.x - layoutVars.offsetLeft - layoutVars.offsetRight;
-    layoutVars.gapX = layoutVars.w*0.008;
-    layoutVars.gapY = layoutVars.gapX;
 
-    layoutVars.widthperelement = (config.layout.w - config.layout.offsetLeft - config.layout.offsetRight - (config.layout.cols-2)*config.layout.gapX) / config.layout.cols;
-    layoutVars.heightperelement = (config.layout.h - config.layout.offsetTop - config.layout.offsetBottom - (config.layout.rows-2)*config.layout.gapY) / config.layout.rows;
+    // width of navigation bar at left side of the viewport
+    layoutVars.navWidth = Math.round($("#nav").width());
+
+    // calculate offset of small multiples from viewport
+    layoutVars.offsetRight = Math.round(layoutVars.w*0.01);
+    layoutVars.offsetLeft = layoutVars.navWidth + 50;
+    layoutVars.offsetTop = Math.round(layoutVars.offsetRight);
+    layoutVars.offsetBottom = Math.round(layoutVars.offsetRight);
+
+    // caclulate gaps between single elements
+    layoutVars.gapX = Math.round(layoutVars.w*0.008);
+    layoutVars.gapY = Math.round(layoutVars.gapX);
+
+    // calculate width and height for each element
+    layoutVars.widthperelement = Math.round((layoutVars.w - layoutVars.offsetLeft - layoutVars.offsetRight - (layoutVars.cols-1)*layoutVars.gapX) / layoutVars.cols);
+    layoutVars.heightperelement = Math.round((layoutVars.h - layoutVars.offsetTop - layoutVars.offsetBottom - (layoutVars.rows-1)*layoutVars.gapY) / layoutVars.rows);
 
     return layoutVars;
 

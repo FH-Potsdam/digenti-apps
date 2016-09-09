@@ -364,12 +364,14 @@ function triggerSmallMultiplesView() {
 //////////////////////
 
 function enableMapInteraction() {
+    map.doubleClickZoom.enable();
     map.scrollZoom.enable();
     map.dragPan.enable();
     d3.select("#map").classed("disabled", false);
 }
 
 function disableMapInteraction() {
+    map.doubleClickZoom.disable();
     map.scrollZoom.disable();
     map.dragPan.disable();
     d3.select("#map").classed("disabled", true);

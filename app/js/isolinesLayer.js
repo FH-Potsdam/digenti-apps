@@ -248,8 +248,6 @@ function isolinesLayer() {
                         var isoline_group_vis = d3.select(this);
                         var bbox = d3.select(this).node().getBBox();
 
-                        console.log(bbox);
-
                         var isoline_group_vis_x = (-bbox.x + ((app.layout.widthperelement/parent.scaleFactor)/2) - (bbox.width/2)) * parent.scaleFactor;
                         var isoline_group_vis_y = (-bbox.y + ((app.layout.heightperelement/parent.scaleFactor)/2) - (bbox.height/2))*parent.scaleFactor;
 
@@ -261,7 +259,7 @@ function isolinesLayer() {
 
                         if (bbox.width === 0 && bbox.height === 0) {
                             realX = isoline_group_vis_x + isoline_group_x;
-                            realY = isoline_group_vis_y + isoline_group_y;                            
+                            realY = isoline_group_vis_y + isoline_group_y;
                         } else {
                             realX = parseFloat(project(thedata).x * parent.scaleFactor) + isoline_group_vis_x + isoline_group_x;
                             realY = parseFloat(project(thedata).y * parent.scaleFactor) + isoline_group_vis_y + isoline_group_y;

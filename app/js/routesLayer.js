@@ -1,8 +1,28 @@
+/*global d3:true */
+/*global console:true */
+/*global app:true */
+/*global alert:true */
+/*global project:true */
+/*global updateSettlementPointLayer:true */
+/*global routesArray:true */
+/*global routesJSON:true */
+/*global lineFunction:true */
+/* exported routesLayer */
+
+
+
+
+
+
+
+
+
+
 //////////////////
 // Routes Layer
 //////////////////
 
-function routesLayer(svg) {
+function routesLayer() {
 
     ///////////
     // Base
@@ -17,8 +37,8 @@ function routesLayer(svg) {
 
     this.svglayer = "";
     this.routes_geo = [];
-    this.bcr = [];
     this.active = true;
+    this.scaleFactor = 0;
 
     //////////////////////
     // Functions
@@ -30,21 +50,17 @@ function routesLayer(svg) {
      */
     this.setActive = function (state) {
 
-        if (state == null) {
-            this.active = !this.active;
-        } else {
-            this.active = state;
-        }
-
+        if (state === null) { this.active = !this.active; }
+        else                { this.active = state; }
+        
         this.svglayer.classed('disabled', !this.active);
-        //  this.svglayer
-        //      .transition()
-        //      .duration(500)
-        //          .style("opacity", function() {
-        //              if (parent.active) { return 1; }
-        //              else { return 0; }
-        //          });
-    }
+
+    };
+
+
+
+
+
 
     /**
      * initializes the layer
@@ -53,14 +69,13 @@ function routesLayer(svg) {
      */
     this.init = function (svg, geojson) {
 
+        // add new group for this layer to svg
         this.svglayer = svg.append("g").attr("id", "routesfromvalledupar");
+        // Deactivate this layer by default
         this.setActive(false);
 
         function routingCar(start, end, placeID) {
 
-
-            // case of error (hopefully not…)
-            function onError(e) { console.log(e); }
 
             function processRoute(route) {
 
@@ -151,12 +166,12 @@ function routesLayer(svg) {
                 processRoute(routesArray[placeID]);
             } else {
                 // call API
-                console.log("ROUTING VIA API");
+                //console.log("ROUTING VIA API");
                 //router.calculateRoute(routeRequestParams, onSuccess, onError);
 
                 $.ajax({
                     dataType: "json",
-                    url: "http://localhost:61002/api/route/"+start+"/"+end,
+                    url: app.config.apiBase + "/route/"+start+"/"+end,
                     success: onSuccess,
                     error: function(error) {
                         alert(error);
@@ -174,32 +189,28 @@ function routesLayer(svg) {
             .append("g")
                 .attr("class", "smallmultiple")
                 .attr("data-id", function(d) { return d.properties.osm_id; })
-                .each(function(d) {
+                .each(function() {
                     var current_el = d3.select(this);
                     current_el.append("text")
                         .text(function(d) { return d.properties.name; })
-                        //.attr("text-anchor", "middle")
                         .attr("class", "title")
                         .attr("y", "30");
 
-                    if (layoutdebug == true) {
+                    if (app.config.layoutdebug === true) {
                         current_el.append("rect")
                             .attr("class", "layoutdebug");
                     }
                 })
                 .append("g")
                     .attr("class", "sm_vis")
-                    .append("circle")
-                        .attr("data-id", function(d) { return d.properties.osm_id; })
-                        .attr({ "r": config.circleRadius })
-                        .attr("class", "village")
                     .each(function(d) {
-                        var current_el = d3.select(this);
                         var coord_end = (d.geometry.coordinates[1]+","+d.geometry.coordinates[0]);
-                        routingCar(coord_valledupar, coord_end, d.properties.osm_id);
+                        routingCar(app.config.coordHomeBase, coord_end, d.properties.osm_id);
                     });
 
-    }
+    };
+
+
 
 
 
@@ -208,8 +219,24 @@ function routesLayer(svg) {
      * @param {Number} transition_time
      */
     this.update = function (transition_time) {
+        this.calc();
+        updateSettlementPointLayer(transition_time);
+        this.render(transition_time);
+    };
 
-        if (config.view === "smallmultiples") {
+
+
+
+
+
+
+
+    /**
+     * calculates the view of the layer
+     */
+    this.calc = function () {
+
+        if (app.view === "smallmultiples") {
 
             // RENDERING OF SMALL MULTIPLES VIEW
 
@@ -227,11 +254,87 @@ function routesLayer(svg) {
                 if (bbox.width > max_path_w) { max_path_w = bbox.width; }
             });
 
-            // Calculate scaleFactor
-            var faktor_height = (config.layout.heightperelement-20)/max_path_h;
-            var faktor_width = config.layout.widthperelement/max_path_w;
-            var scaleFactor = faktor_height;
-            if (faktor_width<scaleFactor) { scaleFactor=faktor_width; }
+            // Calculate parent.scaleFactor
+            var faktor_height = (app.layout.heightperelement-20)/max_path_h;
+            var faktor_width = app.layout.widthperelement/max_path_w;
+            parent.scaleFactor = faktor_height;
+            if (faktor_width < parent.scaleFactor) { parent.scaleFactor = faktor_width; }
+
+            this.svglayer.selectAll(".smallmultiple").each(function(d) {
+
+                var smallmultiple = d3.select(this);
+                var thedata = d.geometry.coordinates;
+
+                var smallmultiple_x = app.layout.offsetLeft + ix*(app.layout.gapX+app.layout.widthperelement);
+                var smallmultiple_y = app.layout.offsetTop + iy*(app.layout.gapY+app.layout.heightperelement);
+                ix++;
+                if (ix === app.layout.cols) { ix = 0; }
+                iy++;
+                if (iy === app.layout.rows) { iy = 0; }
+
+                smallmultiple
+                    .attr("data-transformX", smallmultiple_x)
+                    .attr("data-transformY", smallmultiple_y);
+
+                smallmultiple.selectAll("g").each(function() {
+
+                    var smallmultiple_group = d3.select(this);
+                    var bbox = smallmultiple_group.node().getBBox();
+
+                    var smallmultiple_group_x = -bbox.x * parent.scaleFactor;
+                    var smallmultiple_group_y = (-bbox.y-bbox.height + (app.layout.heightperelement-20)/parent.scaleFactor) * parent.scaleFactor;
+
+                    smallmultiple_group
+                        .attr("data-transformX", smallmultiple_group_x)
+                        .attr("data-transformY", smallmultiple_group_y);
+
+
+                    var realX = parseFloat(project(thedata).x * parent.scaleFactor) + smallmultiple_group_x + smallmultiple_x;
+                    var realY = parseFloat(project(thedata).y * parent.scaleFactor) + smallmultiple_group_y + smallmultiple_y;
+
+                    if (parent.active) {
+                        app.villagePositions[smallmultiple.attr("data-id")] = {};
+                        app.villagePositions[smallmultiple.attr("data-id")].x = realX;
+                        app.villagePositions[smallmultiple.attr("data-id")].y = realY;
+                    }
+
+                });
+
+            });
+
+
+        } else {
+            if (parent.active) {
+                app.villagePositions = app.villagePositionsMap.slice();
+            }
+        }
+
+
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     * updates the view of the layer
+     * @param {Number} transition_time
+     */
+    this.render = function (transition_time) {
+
+        if (app.view === "smallmultiples") {
+
+            // RENDERING OF SMALL MULTIPLES VIEW
 
             this.svglayer.selectAll(".smallmultiple").each(function() {
 
@@ -242,30 +345,18 @@ function routesLayer(svg) {
                     .duration(transition_time)
                         .style("opacity", 1)
                         .attr("transform", function() {
-                            var x = config.layout.offsetLeft + ix*(config.layout.gapX+config.layout.widthperelement);
-                            var y = config.layout.offsetTop + iy*(config.layout.gapY+config.layout.heightperelement);
-                            ix++;
-                            if (ix === config.layout.cols) { ix = 0; }
-                            iy++;
-                            if (iy === config.layout.rows) { iy = 0; }
-                            return "translate("+x+","+y+")";
+                            return "translate("+ d3.select(this).attr("data-transformX") +","+ d3.select(this).attr("data-transformY") +")";
                         });
 
-                if (layoutdebug === true) {
+                if (app.config.layoutdebug === true) {
                     current_el.selectAll(".layoutdebug")
-                        // .attr("fill", "rgba(255, 0, 255, 0.3)")
-                        .attr("width", config.layout.widthperelement)
-                        .attr("height", config.layout.heightperelement);
-                } /*else {
-                    current_el.selectAll(".layoutdebug")
-                        .attr("fill", "none")
-                        .attr("width", config.layout.widthperelement)
-                        .attr("height", config.layout.heightperelement);
-                }*/
+                        .attr("width", app.layout.widthperelement)
+                        .attr("height", app.layout.heightperelement);
+                }
 
                 current_el.selectAll("text")
                     .attr("x", 0)
-                    .attr("y", config.layout.heightperelement)
+                    .attr("y", app.layout.heightperelement)
                     .transition().duration(transition_time)
                         .style("opacity", 1);
 
@@ -274,35 +365,20 @@ function routesLayer(svg) {
                     .duration(transition_time)
                         .style("opacity", 1)
                         .attr("transform", function() {
-                            var bbox = d3.select(this).node().getBBox();
-                            var x = -bbox.x;
-                            var y = -bbox.y-bbox.height+(config.layout.heightperelement-20)/scaleFactor;
-                            return "scale("+scaleFactor+") translate("+x+","+y+")";
+                            return "translate("+ d3.select(this).attr("data-transformX") +","+ d3.select(this).attr("data-transformY") +") scale("+parent.scaleFactor+")";
                         });
 
                 current_el.selectAll("g").selectAll("path")
                     .transition()
                     .duration(transition_time)
-                        .style("stroke-width", function() { return 2/scaleFactor; });
+                        .style("stroke-width", function() { return 2/parent.scaleFactor; });
 
-                current_el.selectAll("g").selectAll("circle")
-                    .attr({ "r": config.circleRadius/scaleFactor });
-
-                current_el.selectAll("g").selectAll("circle")
-                    .each(function() {
-                        parent.bcr[d3.select(this).attr("data-id")] = d3.select(this).node().getBoundingClientRect();
-                    });
 
             });
-
-            // hideMap();
-            // disableMapInteraction();
 
 
         } else {
 
-            // showMap();
-            // enableMapInteraction();
 
             this.svglayer.selectAll(".smallmultiple").each(function() {
 
@@ -332,23 +408,13 @@ function routesLayer(svg) {
                     .transition()
                     .duration(transition_time)
                         .attr("style", ""); // Remove inline 'stroke-width' to get back to CSS default
-                        // .style("stroke-width", function() { return 2; });
-
-                current_el.selectAll("g").selectAll("circle")
-                    .attr({
-                        cx: function(d) { return project(d.geometry.coordinates).x; },
-                        cy: function(d) { return project(d.geometry.coordinates).y; },
-                    })
-                    .transition()
-                    .duration(transition_time)
-                        .attr({ "r": config.circleRadius });
 
             });
 
         }
 
 
-    }
+    };
 
 
 }

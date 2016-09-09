@@ -1,8 +1,22 @@
+/*global d3:true */
+/*global turf:true */
+/*global console:true */
+/*global app:true */
+/*global isDefined:true */
+/*global alert:true */
+/*global project:true */
+/*global projectPoint:true */
+/*global places_aoi:true */
+/*global updateSettlementPointLayer:true */
+/* exported isolinesLayer */
+
+
+
 ////////////////////
 // Isolines Layer
 ////////////////////
 
-function isolinesLayer(svg) {
+function isolinesLayer() {
 
     ///////////
     // Base
@@ -16,12 +30,11 @@ function isolinesLayer(svg) {
     ////////////////////////////
 
     //this.svglayer = "";
-    this.circleRadius = 5;
     this.isolineColor = '#3dc8e7';
     this.isolineOpacity = 0.35;
     this.isolinesQueried = 0;
-    this.bcr = [];
     this.active = true;
+    this.scaleFactor = 0;
 
     this.isolinesGeoJSON = {
         "type":"FeatureCollection",
@@ -45,28 +58,13 @@ function isolinesLayer(svg) {
      */
     this.setActive = function (state) {
 
-        if (state == null) {
-            this.active = !this.active;
-        } else {
-            this.active = state;
-        }
+        if (state === null) { this.active = !this.active; }
+        else                { this.active = state; }
 
         this.svglayer.classed('disabled', !this.active);
-        //  this.svglayer
-        //      .transition()
-        //      .duration(500)
-        //          .style("opacity", function() {
-        //              if (parent.active) { return 1; }
-        //              else { return 0; }
-        //          });
-    }
 
-    // This callback is called when clicking on a location
-    function click(d, objectID) {
-        // var coordinates = d.geometry.coordinates;
-        getIsoline(d, objectID);
+    };
 
-    }
 
     function getIsoline(d, objectID) {
 
@@ -76,7 +74,7 @@ function isolinesLayer(svg) {
         //var range = parseInt($("#range__slider").val());
         var range = 30;
 
-        var uri = 'http://localhost:61002/api/isoline/' + coordsStr + '/' + range;
+        var uri = app.config.apiBase + '/isoline/' + coordsStr + '/' + range;
 
         // Define a callback function to process the isoline response.
         var onIsolineResult = function(result) {
@@ -115,16 +113,16 @@ function isolinesLayer(svg) {
                 var g = parent.svglayer.select('g[data-id="'+objectID+'"]').select(".isoline-group-vis");
 
                 // d3 isoline
-                var isoline = g.append("path")
-                        		.data([polygon])
-                                .attr("class", "isoline")
-                                .attr("data-id", objectID);
+                g.append("path")
+                    .data([polygon])
+                    .attr("class", "isoline")
+                    .attr("data-id", objectID);
 
             }
 
             // Update isolines when all loaded
             if (this.isolinesQueried === places_aoi.features.length) {
-                this.update(500);
+                this.update(app.config.transitionTime);
                 console.log("FERTIG");
                 //activateButtons();
             }
@@ -154,61 +152,51 @@ function isolinesLayer(svg) {
      */
     this.init = function (svg, geojson) {
 
+        // add new group for this layer to svg
         this.svglayer = svg.append("g").attr("id", "isolines");
+        // Deactivate this layer by default
         this.setActive(false);
 
+        // append groups and bind data
         this.svglayer
-                .selectAll("circle")
+                .selectAll("g")
                 .data(geojson.features)
                 .enter()
                 .append("g")
                     .attr("data-id", function(d) { return d.properties.osm_id; })
                     .attr("class", "isoline-group")
-                    .each(function(d) {
-
+                    .each(function() {
                         // Only add helper when 'layoutdebug' is set
-                        if (layoutdebug === true) {
-                            var current_el = d3.select(this);
-                            current_el.append("rect")
+                        if (app.config.layoutdebug === true) {
+                            d3.select(this).append("rect")
                                 .attr("class", "layoutdebug");
-                                // .attr("class", "layoutdebug" + ((layoutdebug === true) ? 'active' : ''));
                         }
                     })
                     .append("g")
                         .attr("class", "isoline-group-vis")
                         .each(function(d) {
-                            var current_el = d3.select(this);
-
-                            current_el.append("circle")
-                                // .attr({
-                                //     "r": config.circleRadius
-                                // })
-                                .attr("class", "village")
-                                .attr("data-id", function(d) { return d.properties.osm_id; })
-                                .each(function(d) {
-                                    getIsoline(d, d.properties.osm_id);
-                                });
+                            getIsoline(d, d.properties.osm_id);
                         });
 
 
 
-    }
+    };
+
+
+
+
+
 
 
 
     /**
-     * updates the view of the layer
-     * @param {Number} transition_time
+     * calculates the view of the layer
      */
-    this.update = function (transition_time) {
-
-        // Path transform
-        var transform = d3.geo.transform({point: projectPoint});
-    	var path = d3.geo.path().projection(transform);
+    this.calc = function() {
 
         if (isDefined(this.svglayer)) {
 
-            if (config.view === "smallmultiples") {
+            if (app.view === "smallmultiples") {
 
                 // Transform isolines
                 var ix = 0;
@@ -217,7 +205,7 @@ function isolinesLayer(svg) {
                 var max_path_w = 0;
                 var max_path_h = 0;
 
-                this.svglayer.selectAll(".isoline-group-vis").each(function(d, i) {
+                this.svglayer.selectAll(".isoline-group-vis").each(function() {
 
                     var current_el = d3.select(this);
 
@@ -231,133 +219,162 @@ function isolinesLayer(svg) {
                 });
 
 
-                var faktor_height = config.layout.heightperelement/max_path_h;
-                var faktor_width = config.layout.widthperelement/max_path_w;
+                var faktor_height = app.layout.heightperelement/max_path_h;
+                var faktor_width = app.layout.widthperelement/max_path_w;
 
-                var scaleFactor = faktor_height;
-                if (faktor_width<scaleFactor) { scaleFactor=faktor_width; }
-
-                this.svglayer.selectAll(".isoline-group").each(function(d, index) {
-
-                    var current_el = d3.select(this);
-
-                    if (layoutdebug === true) {
-                        current_el.selectAll(".layoutdebug")
-                            // .attr("fill", "rgba(255, 0, 255, 0.3)")
-                            .attr("width", config.layout.widthperelement)
-                            .attr("height", config.layout.heightperelement);
-                    } /*else {
-                        current_el.selectAll(".layoutdebug")
-                            // .attr("fill", "none")
-                            .attr("width", config.layout.widthperelement)
-                            .attr("height", config.layout.heightperelement);
-                    }*/
-
-                    current_el
-                        .transition()
-                        .duration(transition_time)
-                            .style("opacity", 1)
-                            .attr("transform", function() {
-                                var x = config.layout.offsetLeft + ix*(config.layout.gapX+config.layout.widthperelement);
-                                var y = config.layout.offsetTop + iy*(config.layout.gapY+config.layout.heightperelement);
-                                ix++;
-                                if (ix === config.layout.cols) { ix = 0; }
-                                iy++;
-                                if (iy === config.layout.rows) { iy = 0; }
-                                return "translate("+x+","+y+")";
-                            });
-
-                });
+                parent.scaleFactor = faktor_height;
+                if (faktor_width<parent.scaleFactor) { parent.scaleFactor=faktor_width; }
 
 
-                // Update isolines
-                this.svglayer.selectAll(".isoline-group-vis").each(function(d, index) {
+                // CALC
 
-                    var current_el = d3.select(this);
+                this.svglayer.selectAll(".isoline-group").each(function(d) {
 
-                    current_el
-                        .transition()
-                        .duration(transition_time)
-                            .style("opacity", 1)
-                            .attr("transform", function() {
-                                var bbox = d3.select(this).node().getBBox();
-                                var x = -bbox.x + ((config.layout.widthperelement/scaleFactor)/2) - (bbox.width/2);
-                                var y = -bbox.y + ((config.layout.heightperelement/scaleFactor)/2) - (bbox.height/2);
-                                return "scale("+scaleFactor+") translate("+x+","+y+")";
-                            });
+                    var isoline_group = d3.select(this);
+                    var thedata = d.geometry.coordinates;
 
-                    current_el.selectAll("circle")
-                        .transition()
-                        .delay(transition_time/6)
-                        .duration(transition_time)
-                        .attr({
-                            "r": config.circleRadius/scaleFactor
-                        })
-                        .each(function() {
-                            parent.bcr[d3.select(this).attr("data-id")] = d3.select(this).node().getBoundingClientRect();
-                        });
-                });
+                    if (app.config.layoutdebug === true) {
+                        isoline_group.selectAll(".layoutdebug")
+                            .attr("width", app.layout.widthperelement)
+                            .attr("height", app.layout.heightperelement);
+                    }
 
-                // Update isolines
-                this.svglayer.selectAll(".isoline").each(function(d, index) {
-                    var isoline = d3.select(this);
-                    isoline.attr("d", path);
+                    var isoline_group_x = app.layout.offsetLeft + ix*(app.layout.gapX+app.layout.widthperelement);
+                    ix++;
+                    if (ix === app.layout.cols) { ix = 0; }
+
+                    var isoline_group_y = app.layout.offsetTop + iy*(app.layout.gapY+app.layout.heightperelement);
+                    iy++;
+                    if (iy === app.layout.rows) { iy = 0; }
+
+                    isoline_group
+                        .attr("data-transformX", isoline_group_x)
+                        .attr("data-transformY", isoline_group_y);
+
+                    isoline_group.selectAll(".isoline-group-vis").each(function() {
+
+                        var isoline_group_vis = d3.select(this);
+                        var bbox = d3.select(this).node().getBBox();
+
+                        var isoline_group_vis_x = (-bbox.x + ((app.layout.widthperelement/parent.scaleFactor)/2) - (bbox.width/2)) * parent.scaleFactor;
+                        var isoline_group_vis_y = (-bbox.y + ((app.layout.heightperelement/parent.scaleFactor)/2) - (bbox.height/2))*parent.scaleFactor;
+
+                        isoline_group_vis
+                            .attr("data-transformX", isoline_group_vis_x)
+                            .attr("data-transformY", isoline_group_vis_y);
+
+                        var realX = parseFloat(project(thedata).x * parent.scaleFactor) + isoline_group_vis_x + isoline_group_x;
+                        var realY = parseFloat(project(thedata).y * parent.scaleFactor) + isoline_group_vis_y + isoline_group_y;
+
+                        if (parent.active) {
+                            app.villagePositions[isoline_group.attr("data-id")] = {};
+                            app.villagePositions[isoline_group.attr("data-id")].x = realX;
+                            app.villagePositions[isoline_group.attr("data-id")].y = realY;
+                        }
+
+
+                    });
+
+
                 });
 
 
 
             } else {
+                if (parent.active) {
+                    app.villagePositions = app.villagePositionsMap.slice();
+                }
+            }
 
-                this.svglayer.selectAll(".isoline-group").each(function(d, i) {
+        }
 
-                    var current_el = d3.select(this);
-
-                    current_el
-                        .transition()
-                        .duration(transition_time)
-                            .style("opacity", 1)
-                            // .attr("stroke-width", 2)
-                            .attr("transform", function() { return ""; });
-
-                });
+    };
 
 
-                this.svglayer.selectAll(".isoline-group-vis").each(function(d, i) {
 
-                    var current_el = d3.select(this);
 
-                    current_el
-                        .transition()
-                        .duration(transition_time)
-                            .attr("transform", function() { return ""; });
-                });
 
-                // Update villages
-                this.svglayer.selectAll("circle").each(function() {
+    /**
+     * updates the view of the layer
+     * @param {Number} transition_time
+     */
+    this.update = function (transition_time) {
+        this.calc();
+        updateSettlementPointLayer(transition_time);
+        this.render(transition_time);
+    };
 
-                    var current_el = d3.select(this);
 
-                    //console.log(current_el.node().getBoundingClientRect());
 
-                    current_el
-                        .transition()
-                        .duration(transition_time)
-                            .attr({ "r": config.circleRadius })
-                            .attr({
-                                cx: function(d) { return project(d.geometry.coordinates).x; },
-                                cy: function(d) { return project(d.geometry.coordinates).y; },
-                            });
 
-                });
+
+
+
+
+
+
+
+
+    /**
+     * renders the view of the layer
+     * @param {Number} transition_time
+     */
+    this.render = function (transition_time) {
+
+        // Path transform
+        var transform = d3.geo.transform({point: projectPoint});
+    	var path = d3.geo.path().projection(transform);
+
+        if (isDefined(this.svglayer)) {
+
+            if (app.view === "smallmultiples") {
+
+                // RENDER
+
+                this.svglayer.selectAll(".isoline-group")
+                    .transition()
+                    .duration(transition_time)
+                        .style("opacity", 1)
+                        .attr("transform", function() {
+                            return "translate("+ d3.select(this).attr("data-transformX") +","+ d3.select(this).attr("data-transformY") +")";
+                        });
 
                 // Update isolines
-                this.svglayer.selectAll(".isoline").each(function(d, index) {
-                    var isoline = d3.select(this);
-                    isoline.attr("d", path);
-                });
+                this.svglayer.selectAll(".isoline-group-vis")
+                    .transition()
+                    .duration(transition_time)
+                        .style("opacity", 1)
+                        .attr("transform", function() {
+                            return "translate("+d3.select(this).attr("data-transformX")+","+d3.select(this).attr("data-transformY")+") scale("+parent.scaleFactor+")";
+                        });
 
-                // showMap();
+
+                // Update isolines
+                this.svglayer.selectAll(".isoline")
+                    .attr("d", path);
+
+
+            } else {
+
+                this.svglayer.selectAll(".isoline-group")
+                    .transition()
+                    .duration(transition_time)
+                        .style("opacity", 1)
+                        .attr("transform", function() { return ""; });
+
+                this.svglayer.selectAll(".isoline-group-vis")
+                    .transition()
+                    .duration(transition_time)
+                        .attr("transform", function() { return ""; });
+
+
+
+                // Update isolines
+                this.svglayer.selectAll(".isoline")
+                    .attr("d", path);
+
             }
         }
-    }
+    };
+
 }

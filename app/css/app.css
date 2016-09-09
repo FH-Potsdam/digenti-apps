@@ -486,3 +486,17 @@ text {
 
 .mapboxgl-ctrl {
   display: none; }
+
+#isolines, #isolines * {
+  -moz-transform-origin: 50% 50%;
+  -ms-transform-origin: 50% 50%;
+  -o-transform-origin: 50% 50%;
+  -webkit-transform-origin: 50% 50%;
+  transform-origin: 50% 50%; }
+
+.pseudoCircle {
+  opacity: 0;
+  pointer-events: none; }
+
+#settlementPointLayer .village {
+  fill: lime; }

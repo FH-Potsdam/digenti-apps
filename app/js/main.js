@@ -95,6 +95,8 @@ $(document).ready(function() {
  */
 function init() {
 
+    rangeSliderInput();
+
     // Include scripts of layer modules
     $.when(
         $.getScript( "js/routesLayer.js" ),
@@ -196,7 +198,11 @@ function mapDraw(geojson) {
         .append("circle")
             .attr("class", "village")
             .attr("r", app.config.circleRadius)
-            .on("click", function(d) { clickCallback(d); })
+            .on("click", function(d) {
+                var currentSettlement = d3.select(this);
+                currentSettlement.classed("selected", !currentSettlement.classed("selected"));
+                clickCallback(d);
+            })
             .attr("data-id", function(d) { return d.properties.osm_id; })
             .each(function(d) {
                 app.villagePositionsMap[d.properties.osm_id] = {};
@@ -497,6 +503,14 @@ d3.selection.prototype.moveToFront = function() {
     this.parentNode.appendChild(this);
   });
 };
+
+
+
+
+function rangeSliderInput() {
+    var range = parseInt($("#range__slider").val());
+    $("#range__text").html(range + " min");
+}
 
 
 

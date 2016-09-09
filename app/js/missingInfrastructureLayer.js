@@ -198,7 +198,7 @@ function missingInfrastructureLayer() {
 
                 var current_el = d3.select(this);
 
-                if (app.layoutdebug === true) {
+                if (app.config.layoutdebug === true) {
                     current_el.selectAll(".layoutdebug")
                         .attr("width", app.layout.widthperelement)
                         .attr("height", app.layout.heightperelement);
@@ -362,7 +362,7 @@ function missingInfrastructureLayer() {
 
                     var current_el = d3.select(this);
 
-                    if (app.layoutdebug === true) {
+                    if (app.config.layoutdebug === true) {
                         current_el.append("rect")
                             .attr("class", "layoutdebug");
                     }

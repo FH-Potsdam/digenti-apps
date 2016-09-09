@@ -98,9 +98,7 @@ function isolinesLayer() {
 
             var polygonBuffered = turf.buffer(polygon, 2000, "meters");
 
-            var isInside = turf.inside(settlementPoint, polygonBuffered.features[0]);
-
-            if (isInside) {
+            if (turf.inside(settlementPoint, polygonBuffered.features[0])) {
 
                 // Add OSM ID to polygon
                 polygon.properties.osm_id = d.properties.osm_id;
@@ -124,18 +122,12 @@ function isolinesLayer() {
             if (this.isolinesQueried === places_aoi.features.length) {
                 this.update(app.config.transitionTime);
                 console.log("FERTIG");
-                //activateButtons();
             }
         };
 
         $.ajax({
             dataType: "json",
             url: uri,
-            //   url: 'http://localhost:61002/api/isoline/',
-            //   data: {
-            //       coords: coords,
-            //       range: range
-            //   },
             success: onIsolineResult,
             error: function(error) {
                 alert(error);
@@ -256,6 +248,8 @@ function isolinesLayer() {
                         var isoline_group_vis = d3.select(this);
                         var bbox = d3.select(this).node().getBBox();
 
+                        console.log(bbox);
+
                         var isoline_group_vis_x = (-bbox.x + ((app.layout.widthperelement/parent.scaleFactor)/2) - (bbox.width/2)) * parent.scaleFactor;
                         var isoline_group_vis_y = (-bbox.y + ((app.layout.heightperelement/parent.scaleFactor)/2) - (bbox.height/2))*parent.scaleFactor;
 
@@ -263,8 +257,15 @@ function isolinesLayer() {
                             .attr("data-transformX", isoline_group_vis_x)
                             .attr("data-transformY", isoline_group_vis_y);
 
-                        var realX = parseFloat(project(thedata).x * parent.scaleFactor) + isoline_group_vis_x + isoline_group_x;
-                        var realY = parseFloat(project(thedata).y * parent.scaleFactor) + isoline_group_vis_y + isoline_group_y;
+                        var realX, realY;
+
+                        if (bbox.width === 0 && bbox.height === 0) {
+                            realX = isoline_group_vis_x + isoline_group_x;
+                            realY = isoline_group_vis_y + isoline_group_y;                            
+                        } else {
+                            realX = parseFloat(project(thedata).x * parent.scaleFactor) + isoline_group_vis_x + isoline_group_x;
+                            realY = parseFloat(project(thedata).y * parent.scaleFactor) + isoline_group_vis_y + isoline_group_y;
+                        }
 
                         if (parent.active) {
                             app.villagePositions[isoline_group.attr("data-id")] = {};

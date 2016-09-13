@@ -73,8 +73,11 @@ $(document).ready(function() {
         // Hello DIGENTI APP!
         console.log("DIGENTI APP started. Loading requirements…");
 
-        // Set theme by body class
-        app.config.theme = ($('body').hasClass('dark')) ? 'dark' : 'light';
+        // Set theme configured in config.js using body class
+        if (typeof app.config.theme === 'undefined') app.config.theme = 'light';
+        $('body').attr("class", app.config.theme);
+
+        // app.config.theme = ($('body').hasClass('dark')) ? 'dark' : 'light';
 
         // Log the configuration for informational purposes
         console.log("Current config follows in next line:");

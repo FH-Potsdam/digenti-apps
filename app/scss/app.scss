@@ -182,6 +182,21 @@
     .content {
         padding: 1.5*$modal-padding 2*$modal-padding;
     }
+
+    dl {
+        @include clearfix();
+
+        dt, dd {
+            float: left;
+        }
+
+        dt {
+            font-weight: 700;
+            clear: left;
+            // width: 30%;
+            margin-right: 5px;
+        }
+    }
 }
 
 // Filters

@@ -515,16 +515,22 @@ function rangeSliderInput() {
     $("#range__text").html(range + " min");
 }
 
-
-
-
 // This callback is called when clicking on a location
 function clickCallback(d) {
 
-    $("#info").addClass("show");
-    $("#info .objectID").html(d.properties.osm_id);
+    var $infoBox = $("#info");
 
-    $("#info .close").one("click", function(e) {
+    // Get data
+    $infoBox.find(".title").text(d.properties.name);
+    // $infoBox.find(".description").html();
+    $infoBox.find(".type").next('dd').text(String(d.properties.type).capitalize());
+    $infoBox.find(".population").next('dd').text(getPlacePopulation(d.properties));
+    $infoBox.find(".objectID").next('dd').text(d.properties.osm_id);
+
+    // Show
+    $infoBox.addClass("show");
+
+    $infoBox.find(".close").one("click", function(e) {
         $("#info").removeClass("show");
     });
 

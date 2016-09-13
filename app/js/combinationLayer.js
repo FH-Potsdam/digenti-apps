@@ -7,7 +7,7 @@
 /*global routesArray:true */
 /*global routesJSON:true */
 /*global lineFunction:true */
-/* exported routesLayer */
+/* exported combinationLayer */
 
 
 
@@ -22,7 +22,7 @@
 // Routes Layer
 //////////////////
 
-function routesLayer() {
+function combinationLayer() {
 
     ///////////
     // Base
@@ -70,7 +70,7 @@ function routesLayer() {
     this.init = function (svg, geojson) {
 
         // add new group for this layer to svg
-        this.svglayer = svg.append("g").attr("id", "routesfromvalledupar");
+        this.svglayer = svg.append("g").attr("id", "combinationlayer");
         // Deactivate this layer by default
         this.setActive(false);
 
@@ -366,7 +366,6 @@ function routesLayer() {
                         .attr("transform", function() {
                             return "translate("+ d3.select(this).attr("data-transformX") +","+ d3.select(this).attr("data-transformY") +") scale("+parent.scaleFactor+")";
                         });
-
 
             });
 

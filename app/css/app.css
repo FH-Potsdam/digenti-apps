@@ -199,6 +199,7 @@ svg {
     pointer-events: none; }
 
 path {
+  vector-effect: non-scaling-stroke;
   stroke: black;
   fill: none;
   stroke-linejoin: round;
@@ -258,6 +259,13 @@ text {
   transition: fill-opacity 0.3s ease; }
   .isoline:hover {
     fill-opacity: 0.25; }
+
+#isolines, #isolines * {
+  -moz-transform-origin: 50% 50%;
+  -ms-transform-origin: 50% 50%;
+  -o-transform-origin: 50% 50%;
+  -webkit-transform-origin: 50% 50%;
+  transform-origin: 50% 50%; }
 
 .route {
   stroke-width: 3; }
@@ -488,10 +496,3 @@ text {
 
 .mapboxgl-ctrl {
   display: none; }
-
-#isolines, #isolines * {
-  -moz-transform-origin: 50% 50%;
-  -ms-transform-origin: 50% 50%;
-  -o-transform-origin: 50% 50%;
-  -webkit-transform-origin: 50% 50%;
-  transform-origin: 50% 50%; }

@@ -41,6 +41,7 @@ function missingInfrastructureLayer() {
     this.factor = 0;
     // position of vis in smallmultiple-container
     this.positionSmallVisY = app.layout.heightperelement - 40;
+    this.distance_threshold = 100;
 
 
     //////////////////////
@@ -210,24 +211,26 @@ function missingInfrastructureLayer() {
                         .style("opacity", 1)
                         .attr("transform", "translate(" + current_el.attr("data-transformX") + "," + current_el.attr("data-transformY") + ")");
 
-                current_el.select(".nearest-road")
-                    .transition()
-                    .duration(transition_time)
-                        .style("opacity", 1)
-                        .attr("cy", parent.positionSmallVisY)
-                        .attr("cx", function() {
-                            var gap = 8;
-                            if (d.properties.connections.distance_to_street > 0) { gap = 0; }
-                            return gap;
-                        });
 
-                current_el.select("line")
-                    .transition()
-                    .duration(transition_time)
-                        .attr("x1", 0)
-                        .attr("y1", parent.positionSmallVisY)
-                        .attr("x2", 2*parent.faktor*d.properties.connections.distance_to_street)
-                        .attr("y2", parent.positionSmallVisY);
+                        if (d.properties.connections.distance_to_street > parent.distance_threshold) {
+
+                            current_el.select(".nearest-road")
+                                .transition()
+                                .duration(transition_time)
+                                    .style("opacity", 1)
+                                    .attr("cy", parent.positionSmallVisY)
+                                    .attr("cx", 0);
+
+                            current_el.select("line")
+                                .transition()
+                                .duration(transition_time)
+                                    .attr("x1", 0)
+                                    .attr("y1", parent.positionSmallVisY)
+                                    .attr("x2", 2*parent.faktor*d.properties.connections.distance_to_street)
+                                    .attr("y2", parent.positionSmallVisY);
+
+
+                        }
 
                 current_el.selectAll("text")
                     .attr("x", 0)
@@ -256,21 +259,25 @@ function missingInfrastructureLayer() {
                             .style("opacity", 1)
                             .attr("transform", "translate("+x1+","+y1+")");
 
-                    current_el.select(".nearest-road")
-                        .transition()
-                        .duration(transition_time)
-                            .style("opacity", 1)
-                            .attr("cx", x2)
-                            .attr("cy", y2);
+                    if (d.properties.connections.distance_to_street > parent.distance_threshold) {
 
-                    current_el.select("line")
-                        .style("opacity", 0.5)
-                        .transition()
-                        .duration(transition_time)
-                            .attr("x1", x2)
-                            .attr("y1", y2)
-                            .attr("x2", 0)
-                            .attr("y2", 0);
+                        current_el.select("line")
+                            .style("opacity", 0.5)
+                            .transition()
+                            .duration(transition_time)
+                                .attr("x1", x2)
+                                .attr("y1", y2)
+                                .attr("x2", 0)
+                                .attr("y2", 0);
+
+                        current_el.select(".nearest-road")
+                            .transition()
+                            .duration(transition_time)
+                                .style("opacity", 1)
+                                .attr("cx", x2)
+                                .attr("cy", y2);
+
+                    }
 
                     current_el.selectAll("text")
                         .transition()
@@ -317,7 +324,7 @@ function missingInfrastructureLayer() {
             var nearest_point = r.properties.waypoints[1].mappedPosition;
             var distance = r.properties.waypoints[1].distance;
 
-            if (distance < 200) {
+            if (distance < parent.distance_threshold) {
                 json_result = {
                     "touches_street": true,
                     "distance_to_street": distance,
@@ -367,12 +374,17 @@ function missingInfrastructureLayer() {
                             .attr("class", "layoutdebug");
                     }
 
-                    current_el.append("line")
-                        .attr("class", "missing");
+                    // Only append line for missing route part and circe for nearest-road-point if missing distance is higher than distance_threshold
+                    if (d.properties.connections.distance_to_street > parent.distance_threshold) {
 
-                    current_el.append("circle")
-                        .attr({ "r": 3 })
-                        .attr("class", "nearest-road");
+                        current_el.append("line")
+                            .attr("class", "missing");
+
+                        current_el.append("circle")
+                            .attr({ "r": 3 })
+                            .attr("class", "nearest-road");
+
+                    }
 
                     var current_el_text = current_el.append("text").attr("y", "0");
 

@@ -162,6 +162,10 @@
         text-align: center;
         margin-top: 15px;
     }
+
+    &.disabled {
+        bottom: -70px;
+    }
 }
 
 #info {
@@ -171,8 +175,6 @@
 
     width: $info-width;
     height: 100%;
-
-    @include transition(all 0.6s ease);
 
     &.show {
         right: 0;

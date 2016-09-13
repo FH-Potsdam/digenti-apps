@@ -322,9 +322,14 @@ function setMode(mode) {
         }
     }
 
+    // Mode specific GUI elements
+    if (app.mode == 'isolines') {
+        $('#isolines-ui').removeClass('disabled');
+    } else {
+        $('#isolines-ui').addClass('disabled');
+    }
+
     update(app.config.transitionTime);
-
-
 }
 
 function toggleViews() {

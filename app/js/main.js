@@ -56,8 +56,6 @@ function addLayer(name, state, Blueprint) {
 }
 
 
-
-
 $(document).ready(function() {
 
     // load config
@@ -525,6 +523,10 @@ function clickCallback(d) {
 
     $("#info").addClass("show");
     $("#info .objectID").html(d.properties.osm_id);
+
+    $("#info .close").one("click", function(e) {
+        $("#info").removeClass("show");
+    });
 
     app.layout = calculateLayoutVars();
 

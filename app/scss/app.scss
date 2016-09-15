@@ -149,6 +149,13 @@
     .range-wrapper {
         margin: 0;
         // padding: 15px 10px 10px;
+        label {
+            width: 100%;
+            text-align: center;
+            display: block;
+            margin-top: 5px;
+        }
+
     }
 
     #range__slider {

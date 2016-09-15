@@ -96,8 +96,6 @@ $(document).ready(function() {
  */
 function init() {
 
-    rangeSliderInput();
-
     // Include scripts of layer modules
     $.when(
         $.getScript( "js/routesLayer.js" ),
@@ -107,10 +105,15 @@ function init() {
     // all scripts loaded
     ).done(function() {
 
+        console.log("add layers");
+
         // add layers
         addLayer("routesfromvalledupar", false, routesLayer);
         addLayer("missinginfrastructure", false, missingInfrastructureLayer);
         addLayer("isolines", false, isolinesLayer);
+
+        // Check slider
+        rangeSliderInput();
 
         // Load json data
         d3.queue()
@@ -285,11 +288,6 @@ function update(transition_time) {
     }
 
 }
-
-
-
-
-
 
 
 
@@ -513,11 +511,17 @@ d3.selection.prototype.moveToFront = function() {
 };
 
 
-
-
 function rangeSliderInput() {
     var range = parseInt($("#range__slider").val());
     $("#range__text").html(range + " min");
+
+    // Set range in isolines layer
+    app.layers['isolines'].layer.setRange(range);
+
+    // Toggle isolines if isolines view is active
+    if (app.layers['isolines'].active) {
+        app.layers['isolines'].layer.toggleIsolines();
+    }
 }
 
 // This callback is called when clicking on a location

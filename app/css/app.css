@@ -310,9 +310,12 @@ text {
   fill-opacity: 0.35;
   stroke-width: 0;
   /*stroke: $color-isoline;*/
-  transition: fill-opacity 0.3s ease; }
+  transition: fill-opacity 0.3s ease, opacity 0.3s ease; }
   .isoline:hover {
     fill-opacity: 0.25; }
+  .isoline.disabled {
+    opacity: 0;
+    pointer-events: none; }
 
 #isolines, #isolines * {
   -moz-transform-origin: 50% 50%;
@@ -502,6 +505,11 @@ text {
   left: 50%; }
   #isolines-ui .range-wrapper {
     margin: 0; }
+    #isolines-ui .range-wrapper label {
+      width: 100%;
+      text-align: center;
+      display: block;
+      margin-top: 5px; }
   #isolines-ui #range__slider {
     display: block;
     padding: 5px 0;

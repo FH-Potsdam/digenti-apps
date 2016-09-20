@@ -74,22 +74,33 @@ function routesLayer() {
         // Deactivate this layer by default
         this.setActive(false);
 
-        function routingCar(start, end, placeID) {
+        function routing(start, end, placeID) {
 
 
             function processRoute(route) {
 
+                // generate a random unique id to identify the path later
+                var uid = generateUniqueID();
 
-                // Add route path to svg
-                parent.svglayer.selectAll("g[data-id='"+route.id+"']").selectAll("g")
-                        .append("path")
-                            .attr("data-id", route.id)
-                            .attr("data-traveltime", route.travelTime)
-                            .attr("class", "route")
-                            .attr("d", route.path);
+                // for each village that is supplied by this route part
+                for (var i=0; i<route.properties.id.length; i++) {
 
-                // push route geometry to routes_geo-Array
-                parent.routes_geo[route.id] = route.geometry.coordinates;
+                    // Add route path to svg
+                    parent.svglayer.selectAll("g[data-id='"+route.properties.id[i]+"']").selectAll("g")
+                            .append("path")
+                                .attr("data-id", uid)
+                                //.attr("data-traveltime", route.travelTime)
+                                .attr("class", "route")
+                                //.attr("opacity", route.properties.importancescore*0.0238)
+                                //.attr("stroke-width", route.properties.importancescore*0.13 + 2)
+                                //.attr("stroke-width", 3)
+                                .attr("stroke-width", route.properties.importancescore*0.15 + 1)
+                                .attr("d", lineFunction(route.geometry.coordinates));
+
+                    // push route geometry to routes_geo-Array
+                    parent.routes_geo[uid] = route.geometry.coordinates;
+
+                }
 
             }
 
@@ -112,57 +123,37 @@ function routesLayer() {
                 routeasjson.route = route;
                 routesJSON.routes.push(routeasjson);
 
+                // All routes retrieved
                 if (routesJSON.routes.length === geojson.features.length) {
-                    console.log("42");
 
-                    function onSuccess2(r) {
-                        console.log(r);
-                    }
-
-                    console.log(routesJSON.routes[0]);
-                    console.log({ name: "John", time: "2pm" });
-
-                    var test = { "0": routesJSON.routes[0], "1": routesJSON.routes[1] };
-                    console.log(test);
-
-                    function toObject(arr) {
-                        var rv = {};
-                        //for (var i = 0; i < arr.length; ++i) {
-                        for (var i = 0; i < arr.length; ++i) {
-                            rv[i] = arr[i];
-                        }
-                        return rv;
-                    }
-
-                    var obj = toObject(routesJSON.routes);
-
-                    console.log(obj);
-
+                    // Make ajax Call to API to get route parts
                     $.ajax({
                         method: "POST",
-                        url: "http://localhost:61002/api/geoprocessing/routeparts",
-                        //data: JSON.stringify({ name: "John", time: "2pm" }),
-                        data: JSON.stringify(obj),
+                        url: app.config.apiBase + "/geoprocessing/routeparts",
+                        data: JSON.stringify(jsonToObject(routesJSON.routes)),
                         contentType: "application/json; charset=utf-8",
                         dataType: "json",
-                        success: onSuccess2,
+                        success: function (r) {
+                            for (var i=0; i<r.data.features.length; i++) {
+                                // process route parts
+                                processRoute(r.data.features[i]);
+                            }
+                        },
                         error: function(error) {
                             alert(error);
                         }
                     });
 
-
-
                 }
 
-                processRoute(route);
+                //processRoute(route);
 
             }
 
             if (routesJSON.routes.length > 0) {
                 // take route from cache
                 console.log("ROUTING CACHED");
-                processRoute(routesArray[placeID]);
+                //processRoute(routesArray[placeID]);
             } else {
                 // call API
                 //console.log("ROUTING VIA API");
@@ -204,7 +195,7 @@ function routesLayer() {
                     .attr("class", "sm_vis")
                     .each(function(d) {
                         var coord_end = (d.geometry.coordinates[1]+","+d.geometry.coordinates[0]);
-                        routingCar(app.config.coordHomeBase, coord_end, d.properties.osm_id);
+                        routing(app.config.coordHomeBase, coord_end, d.properties.osm_id);
                     });
 
     };

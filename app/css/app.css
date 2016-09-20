@@ -324,9 +324,6 @@ text {
   -webkit-transform-origin: 50% 50%;
   transform-origin: 50% 50%; }
 
-.route {
-  stroke-width: 3; }
-
 .route-dots {
   fill: #099;
   fill-opacity: 0.5; }

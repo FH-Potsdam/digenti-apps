@@ -113,7 +113,7 @@ function routesLayer() {
                 routesJSON.routes.push(routeasjson);
 
                 if (routesJSON.routes.length === geojson.features.length) {
-                    /*console.log("42");
+                    console.log("42");
 
                     function onSuccess2(r) {
                         console.log(r);
@@ -149,7 +149,7 @@ function routesLayer() {
                         error: function(error) {
                             alert(error);
                         }
-                    });*/
+                    });
 
 
 

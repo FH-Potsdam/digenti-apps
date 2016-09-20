@@ -24,8 +24,7 @@
         <link href="css/app.css" rel="stylesheet" />
     </head>
 
-    <body class="dark">
-
+    <body>
         <div id="nav" class="modal">
             <div id="page-title">
                 <h4>DIGENTI</h4>
@@ -52,20 +51,24 @@
         <div id="info" class="modal">
             <!-- <h3>Info</h3> -->
             <div class="content">
-                <h2>Manaure Balcón del Cesar</h2>
-                <div class="description">
-                    <p>
-                        Manaure also known as Balcón del Cesar (Cesar's Balcony) is a Colombian town and municipality located in the northeastern region of the Cesar Department on the Serranía del Perijá.
-                    </p>
+                <h2 class="title"></h2>
+                <div class="description"></div>
+                <div class="properties">
+                    <dl>
+                        <dt class="type">Place type:</dt><dd></dd>
+                        <dt class="population">Population:</dt><dd></dd>
+                        <dt class="objectID">OSM ID:</dt><dd></dd>
+                    </dl>
                 </div>
-                <div class="objectID"></div>
             </div>
+
+            <span class="close"></span>
         </div>
 
-        <div id="isolines-ui" class="modal">
+        <div id="isolines-ui" class="modal disabled">
             <div class="range-wrapper">
-                <input id="range__slider" type="range" min="0" max="60" value="30" step="5" oninput="rangeSliderInput()" />
-                <label id="range__text">20 min</label>
+                <input id="range__slider" type="range" min="15" max="45" value="30" step="15" oninput="rangeSliderInput()" />
+                <label id="range__text">30 min</label>
             </div>
         </div>
 

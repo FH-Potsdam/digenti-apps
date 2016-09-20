@@ -47,6 +47,8 @@ function isolinesLayer() {
         "features":[]
     };
 
+    this.range = 0;
+    this.isolinesQueried = 0;
 
     //////////////////////
     // Functions
@@ -65,64 +67,100 @@ function isolinesLayer() {
 
     };
 
+    this.setRange = function(range) {
+
+        this.range = range;
+        // console.log("Set isoline range: " + this.range);
+    };
+
+    this.toggleIsolines = function() {
+
+        console.log("toggle isolines - range: " + this.range);
+
+        // this.svglayer.selectAll('.isoline-group-vis path.isoline').classed("disabled", true);
+
+        // this.svglayer.selectAll('.isoline-group-vis path.isoline[data-range="'+this.range+'"]').classed("disabled", function() {
+
+        this.svglayer.selectAll('.isoline-group-vis path.isoline').classed("disabled", function() {
+            var isoline = d3.select(this);
+            return isoline.attr("data-range") != parent.range;
+        });
+
+        // // Isoline group
+        // this.svglayer.selectAll(".isoline-group-vis path.isoline").each(function() {
+        //
+        //     var isoline = d3.select(this);
+        //     console.log("isoline range: " + isoline.attr("data-range"));
+        //
+        //     // isoline.classed("disabled", true)
+        //     isoline.classed("disabled", function() { return isoline.attr("data-range") != parent.range; })
+        // });
+    }
+
 
     function getIsoline(d, objectID) {
 
         var coordinates = d.geometry.coordinates;
 
         var coordsStr = coordinates[1]+','+coordinates[0];
-        //var range = parseInt($("#range__slider").val());
-        var range = 30;
+        // var currentRange = parseInt($("#range__slider").val());
+        var range = '15,30,45';
 
         var uri = app.config.apiBase + '/isoline/' + coordsStr + '/' + range;
 
         // Define a callback function to process the isoline response.
-        var onIsolineResult = function(result) {
+        var onIsolineResult = function(featuredCollection) {
 
-            this.isolinesQueried++;
+            parent.isolinesQueried++;
 
-            var polygon = result;
+            for (var i=0; i<featuredCollection.features.length; i++) {
 
-            // polygon.properties.objectsID = objectID;
+                var polygon = featuredCollection.features[i],
+                    isolineRange = polygon.properties.range;
 
-            var settlementPoint = {
-                "type": "Feature",
-                "properties": {
-                    "marker-color": "#f00"
-                },
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": coordinates
+                // polygon.properties.objectsID = objectID;
+
+                var settlementPoint = {
+                    "type": "Feature",
+                    "properties": {
+                        "marker-color": "#f00"
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": coordinates
+                    }
+                };
+
+                var polygonBuffered = turf.buffer(polygon, 2000, "meters");
+
+                if (turf.inside(settlementPoint, polygonBuffered.features[0])) {
+
+                    // Add OSM ID to polygon
+                    polygon.properties.osm_id = d.properties.osm_id;
+                    polygon.properties.name = d.properties.name;
+
+                    // Save polygon in GeoJSON FeaturesCollection
+                    parent.isolinesGeoJSON.features.push(polygon);
+
+                    // Isoline group
+                    var g = parent.svglayer.select('g[data-id="'+objectID+'"]').select(".isoline-group-vis");
+
+                    // d3 isoline
+                    g.append("path")
+                        .data([polygon])
+                        .classed("isoline", true)
+                        .classed("disabled", function() { return isolineRange != parent.range; })
+                        .attr("data-range", isolineRange)
+                        .attr("data-id", objectID);
+
                 }
-            };
-
-            var polygonBuffered = turf.buffer(polygon, 2000, "meters");
-
-            if (turf.inside(settlementPoint, polygonBuffered.features[0])) {
-
-                // Add OSM ID to polygon
-                polygon.properties.osm_id = d.properties.osm_id;
-                polygon.properties.name = d.properties.name;
-
-                // Save polygon in GeoJSON FeaturesCollection
-                parent.isolinesGeoJSON.features.push(polygon);
-
-                // Isoline group
-                var g = parent.svglayer.select('g[data-id="'+objectID+'"]').select(".isoline-group-vis");
-
-                // d3 isoline
-                g.append("path")
-                    .data([polygon])
-                    .attr("class", "isoline")
-                    .attr("data-id", objectID);
-
             }
 
-            // Update isolines when all loaded
-            if (this.isolinesQueried === places_aoi.features.length) {
-                this.update(app.config.transitionTime);
-                console.log("FERTIG");
-            }
+            // // Update isolines when all loaded
+            // if (parent.isolinesQueried === places_aoi.features.length) {
+            //     parent.update(app.config.transitionTime);
+            //     console.log("FERTIG");
+            // }
         };
 
         $.ajax({
@@ -173,13 +211,6 @@ function isolinesLayer() {
 
 
     };
-
-
-
-
-
-
-
 
     /**
      * calculates the view of the layer
@@ -291,8 +322,6 @@ function isolinesLayer() {
 
 
 
-
-
     /**
      * updates the view of the layer
      * @param {Number} transition_time
@@ -302,15 +331,6 @@ function isolinesLayer() {
         updateSettlementPointLayer(transition_time);
         this.render(transition_time);
     };
-
-
-
-
-
-
-
-
-
 
 
 
@@ -375,5 +395,4 @@ function isolinesLayer() {
             }
         }
     };
-
 }

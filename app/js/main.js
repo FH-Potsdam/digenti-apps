@@ -56,8 +56,6 @@ function addLayer(name, state, Blueprint) {
 }
 
 
-
-
 $(document).ready(function() {
 
     // load config
@@ -73,8 +71,11 @@ $(document).ready(function() {
         // Hello DIGENTI APP!
         console.log("DIGENTI APP started. Loading requirements…");
 
-        // Set theme by body class
-        app.config.theme = ($('body').hasClass('dark')) ? 'dark' : 'light';
+        // Set theme configured in config.js using body class
+        if (typeof app.config.theme === 'undefined') app.config.theme = 'light';
+        $('body').attr("class", app.config.theme);
+
+        // app.config.theme = ($('body').hasClass('dark')) ? 'dark' : 'light';
 
         // Log the configuration for informational purposes
         console.log("Current config follows in next line:");
@@ -95,8 +96,6 @@ $(document).ready(function() {
  */
 function init() {
 
-    rangeSliderInput();
-
     // Include scripts of layer modules
     $.when(
         $.getScript( "js/routesLayer.js" ),
@@ -106,10 +105,15 @@ function init() {
     // all scripts loaded
     ).done(function() {
 
+        console.log("add layers");
+
         // add layers
         addLayer("routesfromvalledupar", false, routesLayer);
         addLayer("missinginfrastructure", false, missingInfrastructureLayer);
         addLayer("isolines", false, isolinesLayer);
+
+        // Check slider
+        rangeSliderInput();
 
         // Load json data
         d3.queue()
@@ -287,11 +291,6 @@ function update(transition_time) {
 
 
 
-
-
-
-
-
 ///////////////////
 // TRIGGER VIEWS
 ///////////////////
@@ -321,9 +320,14 @@ function setMode(mode) {
         }
     }
 
+    // Mode specific GUI elements
+    if (app.mode == 'isolines') {
+        $('#isolines-ui').removeClass('disabled');
+    } else {
+        $('#isolines-ui').addClass('disabled');
+    }
+
     update(app.config.transitionTime);
-
-
 }
 
 function toggleViews() {
@@ -507,21 +511,37 @@ d3.selection.prototype.moveToFront = function() {
 };
 
 
-
-
 function rangeSliderInput() {
     var range = parseInt($("#range__slider").val());
     $("#range__text").html(range + " min");
+
+    // Set range in isolines layer
+    app.layers['isolines'].layer.setRange(range);
+
+    // Toggle isolines if isolines view is active
+    if (app.layers['isolines'].active) {
+        app.layers['isolines'].layer.toggleIsolines();
+    }
 }
-
-
-
 
 // This callback is called when clicking on a location
 function clickCallback(d) {
 
-    $("#info").addClass("show");
-    $("#info .objectID").html(d.properties.osm_id);
+    var $infoBox = $("#info");
+
+    // Get data
+    $infoBox.find(".title").text(d.properties.name);
+    // $infoBox.find(".description").html();
+    $infoBox.find(".type").next('dd').text(String(d.properties.type).capitalize());
+    $infoBox.find(".population").next('dd').text(getPlacePopulation(d.properties));
+    $infoBox.find(".objectID").next('dd').text(d.properties.osm_id);
+
+    // Show
+    $infoBox.addClass("show");
+
+    $infoBox.find(".close").one("click", function(e) {
+        $("#info").removeClass("show");
+    });
 
     app.layout = calculateLayoutVars();
 

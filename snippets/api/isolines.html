@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+
+        .filter-group {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          z-index: 1;
+          /*width: 120px;*/
+          padding: 12px 14px;
+          background-color: white;
+        }
+
+        .filter-group > * {
+            display: block;
+            float: left;
+        }
+
+        .filter-group input {
+            clear: left;
+            margin-right: 2px;
+        }
+
+        .filter-group label {
+          cursor: pointer;
+          line-height: 16px;
+          padding: 2px 0;
+          font: 12px Arial;
+
+        }
+
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+<nav id='filter-group' class='filter-group'></nav>
+
+<script>
+
+var filterGroup = document.getElementById('filter-group');
+
+mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
+    center: [-73.0270699,10.3910411],
+    zoom: 12
+});
+
+// var url = 'http://localhost:61002/api/fos/place/1/400';
+var url = 'http://localhost:61002/api/isoline/start/10.4036554,-72.92467379999998/15,30,45';
+var isolines = new mapboxgl.GeoJSONSource({
+    data: url
+});
+// window.setInterval(function() {
+//     source.setData(url);
+// }, 2000);
+
+map.on('load', function () {
+
+    map.addSource('isolines', isolines);
+
+    // 15
+    addIsolineLayer(15);
+
+    // 30
+    addIsolineLayer(30);
+
+    // 45
+    addIsolineLayer(45);
+
+    function addIsolineLayer(time) {
+
+        var layerID = "isoline-"+time;
+
+        map.addLayer({
+            "id": layerID,
+            "type": "fill",
+            "source": "isolines",
+            "layout": {},
+            "paint": {
+                'fill-color': '#088',
+                'fill-opacity': 0.3
+            },
+            "filter": ["==", "range", time]
+        });
+
+        // Add checkbox and label elements for the layer.
+        var input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = layerID;
+        input.checked = true;
+        filterGroup.appendChild(input);
+
+        var label = document.createElement('label');
+        label.setAttribute('for', layerID);
+        label.textContent = time + ' min';
+        filterGroup.appendChild(label);
+
+        // When the checkbox changes, update the visibility of the layer.
+        input.addEventListener('change', function(e) {
+            map.setLayoutProperty(layerID, 'visibility',
+                e.target.checked ? 'visible' : 'none');
+        });
+    }
+});
+</script>
+
+</body>
+</html>

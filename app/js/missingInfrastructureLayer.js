@@ -374,6 +374,8 @@ function missingInfrastructureLayer() {
                             .attr("class", "layoutdebug");
                     }
 
+                    var distance_to_street = 0;
+
                     // Only append line for missing route part and circe for nearest-road-point if missing distance is higher than distance_threshold
                     if (d.properties.connections.distance_to_street > parent.distance_threshold) {
 
@@ -384,6 +386,7 @@ function missingInfrastructureLayer() {
                             .attr({ "r": 3 })
                             .attr("class", "nearest-road");
 
+                        distance_to_street = d.properties.connections.distance_to_street;
                     }
 
                     var current_el_text = current_el.append("text").attr("y", "0");
@@ -394,10 +397,11 @@ function missingInfrastructureLayer() {
                         .attr("x", 0)
                         .attr("dy", "0");
 
+
                     current_el_text.append("tspan")
-                        .text(Math.round(d.properties.connections.distance_to_street)+" m to street")
+                        .text(Math.round(distance_to_street)+" m to street")
                         .attr("x", 0)
-                        .attr("dy", "-1em");
+                        .attr("dy", "1em");
 
                 });
 

@@ -93,72 +93,78 @@ function mapDraw(geojson) {
 
         var coords = coordinates[1]+','+coordinates[0],
             range = parseInt($("#range__slider").val());
+            // range = '15,30,45';
 
         var uri = 'http://localhost:61002/api/isoline/' + coords + '/' + range;
 
         // Define a callback function to process the isoline response.
-        var onIsolineResult = function(result) {
+        var onIsolineResult = function(featureCollection) {
 
-            var polygon = result;
-
+            // var polygon = result;
             // console.log(JSON.stringify(result));
 
-            polygon.properties.objectID = objectID;
+            for (var i=0; i<featureCollection.features.length; i++) {
 
-            var settlementPoint = {
-                "type": "Feature",
-                "properties": {
-                    "marker-color": "#f00"
-                },
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": coordinates
-                }
-            };
+                var polygon = featureCollection.features[i];
 
-            var polygonBuffered = turf.buffer(polygon, 500, "meters");
+                polygon.properties.objectID = objectID;
 
-            var isInside = turf.inside(settlementPoint, polygonBuffered.features[0]);
-
-            if (isInside) {
-
-                // mapboxgl isoline
-                map.addSource(objectID, {
-                    'type': 'geojson',
-                    'data': polygon
-                });
-
-                map.addLayer({
-                    'id': 'isoline_'+objectID,
-                    'type': 'fill',
-                    'source': objectID,
-                    'layout': {},
-                    'paint': {
-                        'fill-color': isolineColor,
-                        'fill-opacity': isolineOpacity
+                var settlementPoint = {
+                    "type": "Feature",
+                    "properties": {
+                        "marker-color": "#f00"
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": coordinates
                     }
-                });
+                };
 
-                // d3 isoline
-                var isoline = svg.select('g[data-id="'+objectID+'"]')
-                    .append("path")
-            		.data([polygon])
-                    .attr("class", "isoline")
-                    .attr("data-id", objectID);
+                var polygonBuffered = turf.buffer(polygon, 500, "meters");
 
-                // var isoline = gIsolines
-                //     .append("path")
-            	// 	.data([polygon])
-                //     .attr("class", "isoline")
-                //     .attr("data-refobjectid", objectID);
+                var isInside = turf.inside(settlementPoint, polygonBuffered.features[0]);
 
-                // var isoline = gIsolines
-                //     .append("polygon")
-                //     .data([polygon])
-                //     .attr("class", "isoline")
-                //     .attr("data-refobjectid", objectID);
+                if (isInside) {
 
-                update();
+                    // mapboxgl isoline
+                    // map.addSource(objectID, {
+                    //     'type': 'geojson',
+                    //     'data': polygon
+                    // });
+                    //
+                    // map.addLayer({
+                    //     'id': 'isoline_'+objectID,
+                    //     'type': 'fill',
+                    //     'source': objectID,
+                    //     'layout': {},
+                    //     'paint': {
+                    //         'fill-color': isolineColor,
+                    //         'fill-opacity': isolineOpacity
+                    //     }
+                    // });
+
+                    // d3 isoline
+                    var isoline = svg.select('g[data-id="'+objectID+'"]')
+                        .append("path")
+                		.data([polygon])
+                        .attr("class", "isoline")
+                        .attr("data-id", objectID)
+                        .attr("data-range", polygon.properties.range);
+
+                    // var isoline = gIsolines
+                    //     .append("path")
+                	// 	.data([polygon])
+                    //     .attr("class", "isoline")
+                    //     .attr("data-refobjectid", objectID);
+
+                    // var isoline = gIsolines
+                    //     .append("polygon")
+                    //     .data([polygon])
+                    //     .attr("class", "isoline")
+                    //     .attr("data-refobjectid", objectID);
+
+                    update();
+                }
             }
         };
 

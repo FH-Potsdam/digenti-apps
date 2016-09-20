@@ -116,73 +116,81 @@ function mapDraw(geojson) {
         var coordsStr = coordinates[1]+','+coordinates[0],
             range = parseInt($("#range__slider").val());
 
+            console.log(range);
+
         var uri = 'http://localhost:61002/api/isoline/' + coordsStr + '/' + range;
 
         // Define a callback function to process the isoline response.
-        var onIsolineResult = function(result) {
+        var onIsolineResult = function(featureCollection) {
 
             isolinesQueried++;
 
-            var polygon = result;
+            // var polygon = result;
+            // var polygon =  featureCollection.features[0];
 
-            // polygon.properties.objectsID = objectID;
+            for (var i=0; i<featureCollection.features.length; i++) {
 
-            var settlementPoint = {
-                "type": "Feature",
-                "properties": {
-                    "marker-color": "#f00"
-                },
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": coordinates
+                var polygon = featureCollection.features[i];
+
+                // polygon.properties.objectsID = objectID;
+
+                var settlementPoint = {
+                    "type": "Feature",
+                    "properties": {
+                        "marker-color": "#f00"
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": coordinates
+                    }
+                };
+
+                var polygonBuffered = turf.buffer(polygon, 500, "meters");
+
+                var isInside = turf.inside(settlementPoint, polygonBuffered.features[0]);
+
+                if (isInside) {
+
+                    // // mapboxgl isoline
+                    // map.addSource(objectID, {
+                    //     'type': 'geojson',
+                    //     'data': polygon
+                    // });
+                    //
+                    // map.addLayer({
+                    //     'id': 'isoline_'+objectID,
+                    //     'type': 'fill',
+                    //     'source': objectID,
+                    //     'layout': {},
+                    //     'paint': {
+                    //         'fill-color': isolineColor,
+                    //         'fill-opacity': isolineOpacity
+                    //     }
+                    // });
+
+                    // Add OSM ID to polygon
+                    polygon.properties.osm_id = d.properties.osm_id;
+                    polygon.properties.name = d.properties.name;
+
+                    // Save polygon in GeoJSON FeaturesCollection
+                    isolinesGeoJSON.features.push(polygon);
+
+                    // Isoline group
+                    var g = svg.select('g[data-id="'+objectID+'"]');
+
+                    // d3 isoline
+                    var isoline = g.append("path")
+                            		.data([polygon])
+                                    .attr("class", "isoline")
+                                    .attr("data-id", objectID)
+                                    // .classed("hidden", true);
+
+                    // g.append("text")
+                    //     .text(polygon.properties.name)
+                    //     .attr("class", "title")
+                    //     .attr("y", "30");
+
                 }
-            };
-
-            var polygonBuffered = turf.buffer(polygon, 2000, "meters");
-
-            var isInside = turf.inside(settlementPoint, polygonBuffered.features[0]);
-
-            if (isInside) {
-
-                // // mapboxgl isoline
-                // map.addSource(objectID, {
-                //     'type': 'geojson',
-                //     'data': polygon
-                // });
-                //
-                // map.addLayer({
-                //     'id': 'isoline_'+objectID,
-                //     'type': 'fill',
-                //     'source': objectID,
-                //     'layout': {},
-                //     'paint': {
-                //         'fill-color': isolineColor,
-                //         'fill-opacity': isolineOpacity
-                //     }
-                // });
-
-                // Add OSM ID to polygon
-                polygon.properties.osm_id = d.properties.osm_id;
-                polygon.properties.name = d.properties.name;
-
-                // Save polygon in GeoJSON FeaturesCollection
-                isolinesGeoJSON.features.push(polygon);
-
-                // Isoline group
-                var g = svg.select('g[data-id="'+objectID+'"]');
-
-                // d3 isoline
-                var isoline = g.append("path")
-                        		.data([polygon])
-                                .attr("class", "isoline")
-                                .attr("data-id", objectID)
-                                // .classed("hidden", true);
-
-                // g.append("text")
-                //     .text(polygon.properties.name)
-                //     .attr("class", "title")
-                //     .attr("y", "30");
-
             }
 
             // Update isolines when all loaded

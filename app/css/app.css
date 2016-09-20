@@ -17,7 +17,8 @@ body {
   color: #000; }
   body.dark {
     background: #191F23;
-    color: #fff; }
+    color: #fff;
+    -webkit-font-smoothing: antialiased; }
 
 html, body, #wrapper {
   width: 100%;
@@ -156,11 +157,64 @@ button {
   -ms-box-sizing: border-box;
   box-sizing: border-box;
   /*display: flex;*/
-  /*flex-direction: column;*/ }
+  /*flex-direction: column;*/
+  -moz-transition: all 0.6s ease;
+  -o-transition: all 0.6s ease;
+  -webkit-transition: all 0.6s ease;
+  transition: all 0.6s ease;
+  opacity: 1; }
   .modal h2, .modal h3, .modal h4, .modal h5 {
     margin-bottom: 10px; }
   .dark .modal {
     background: #191F23; }
+  .modal.disabled {
+    opacity: 0;
+    pointer-events: none; }
+
+.close {
+  overflow: hidden;
+  display: -moz-inline-stack;
+  display: inline-block;
+  vertical-align: top;
+  zoom: 1;
+  *display: inline;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  position: absolute;
+  top: 5px;
+  right: 5px; }
+  .close::before, .close::after {
+    content: '';
+    position: absolute;
+    height: 1px;
+    width: 100%;
+    top: 50%;
+    left: 0;
+    margin-top: -1px;
+    background: #191F23;
+    -moz-transition: all 0.2s ease;
+    -o-transition: all 0.2s ease;
+    -webkit-transition: all 0.2s ease;
+    transition: all 0.2s ease; }
+  .close::before {
+    -webkit-transform: rotate(45deg);
+    -moz-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    -o-transform: rotate(45deg);
+    transform: rotate(45deg); }
+  .close::after {
+    -webkit-transform: rotate(-45deg);
+    -moz-transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    -o-transform: rotate(-45deg);
+    transform: rotate(-45deg); }
+  .close:hover::before, .close:hover::after {
+    background: #3dc8e7; }
+  .dark .close::before, .dark .close::after {
+    background: #fff; }
+  .dark .close:hover::before, .dark .close:hover::after {
+    background: #3dc8e7; }
 
 #map {
   position: relative;
@@ -216,8 +270,8 @@ text {
   fill: #000; }
   .dark text {
     fill: #fff; }
-  text.title {
-    font-weight: 600; }
+  text.title, text .title {
+    font-weight: 700; }
 
 .villages {
   cursor: pointer;
@@ -256,9 +310,12 @@ text {
   fill-opacity: 0.35;
   stroke-width: 0;
   /*stroke: $color-isoline;*/
-  transition: fill-opacity 0.3s ease; }
+  transition: fill-opacity 0.3s ease, opacity 0.3s ease; }
   .isoline:hover {
     fill-opacity: 0.25; }
+  .isoline.disabled {
+    opacity: 0;
+    pointer-events: none; }
 
 #isolines, #isolines * {
   -moz-transform-origin: 50% 50%;
@@ -347,17 +404,14 @@ text {
 .modal {
   padding: 0;
   width: 155px;
-  max-width: none;
-  opacity: 1; }
-  .modal > * {
+  max-width: none; }
+  .modal > *:not(.close) {
     padding: 20px;
     width: 100%;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     -ms-box-sizing: border-box;
     box-sizing: border-box; }
-  .modal.disabled {
-    opacity: 0.0; }
 
 #nav {
   top: 0;
@@ -451,6 +505,11 @@ text {
   left: 50%; }
   #isolines-ui .range-wrapper {
     margin: 0; }
+    #isolines-ui .range-wrapper label {
+      width: 100%;
+      text-align: center;
+      display: block;
+      margin-top: 5px; }
   #isolines-ui #range__slider {
     display: block;
     padding: 5px 0;
@@ -459,22 +518,33 @@ text {
     display: block;
     text-align: center;
     margin-top: 15px; }
+  #isolines-ui.disabled {
+    bottom: -70px; }
 
 #info {
-  right: -30vw;
+  right: -25vw;
   top: 0;
   opacity: 0;
-  width: 30vw;
-  height: 100%;
-  -moz-transition: all 0.6s ease;
-  -o-transition: all 0.6s ease;
-  -webkit-transition: all 0.6s ease;
-  transition: all 0.6s ease; }
+  width: 25vw;
+  height: 100%; }
   #info.show {
     right: 0;
     opacity: 1; }
   #info .content {
     padding: 30px 40px; }
+  #info dl {
+    zoom: 1; }
+    #info dl:before, #info dl:after {
+      content: "";
+      display: table; }
+    #info dl:after {
+      clear: both; }
+    #info dl dt, #info dl dd {
+      float: left; }
+    #info dl dt {
+      font-weight: 700;
+      clear: left;
+      margin-right: 5px; }
 
 #filters {
   top: 1vw;

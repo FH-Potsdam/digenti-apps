@@ -30,16 +30,10 @@
     width: $modal-width;
     max-width: none;
 
-    & > * {
+    & > *:not(.close) {
         padding: 20px;
         width: 100%;
         @include border-box();
-    }
-
-    opacity: 1;
-
-    &.disabled {
-        opacity: 0.0;
     }
 }
 
@@ -155,6 +149,13 @@
     .range-wrapper {
         margin: 0;
         // padding: 15px 10px 10px;
+        label {
+            width: 100%;
+            text-align: center;
+            display: block;
+            margin-top: 5px;
+        }
+
     }
 
     #range__slider {
@@ -168,6 +169,10 @@
         text-align: center;
         margin-top: 15px;
     }
+
+    &.disabled {
+        bottom: -70px;
+    }
 }
 
 #info {
@@ -178,8 +183,6 @@
     width: $info-width;
     height: 100%;
 
-    @include transition(all 0.6s ease);
-
     &.show {
         right: 0;
         opacity: 1;
@@ -187,6 +190,21 @@
 
     .content {
         padding: 1.5*$modal-padding 2*$modal-padding;
+    }
+
+    dl {
+        @include clearfix();
+
+        dt, dd {
+            float: left;
+        }
+
+        dt {
+            font-weight: 700;
+            clear: left;
+            // width: 30%;
+            margin-right: 5px;
+        }
     }
 }
 

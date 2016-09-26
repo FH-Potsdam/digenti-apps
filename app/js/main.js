@@ -113,7 +113,8 @@ function init() {
         addLayer("isolines", false, isolinesLayer);
 
         // Check slider
-        rangeSliderInput();
+        initRangeSlider();
+        // rangeSliderInput();
 
         // Load json data
         d3.queue()
@@ -510,6 +511,38 @@ d3.selection.prototype.moveToFront = function() {
   });
 };
 
+function initRangeSlider() {
+
+    var $rangeSlider = $("#range__slider"),
+        $rangeText = $("#range__text");
+
+    // Default value
+    var range = parseInt($rangeSlider.val());
+    $rangeText.html(range + " min");
+
+    // Set range in isolines layer
+    app.layers['isolines'].layer.setRange(range);
+
+    // Get all possible values
+    var min = parseInt($rangeSlider.attr("min")),
+        max = parseInt($rangeSlider.attr("max")),
+        step = parseInt($rangeSlider.attr("step"));
+
+    // console.log("range min: " + min);
+    // console.log("range max: " + max);
+    // console.log("range step: " + step);
+
+    var numRanges = 1+((max-min)/step);
+    // console.log("total ranges: " + numRanges);
+    var rangesArray = [];
+    for (var i=0; i<numRanges; i++) {
+        rangesArray.push(min+(i*step));
+    }
+
+    console.log("required isolines: " + rangesArray);
+
+    app.layers['isolines'].layer.setQueryRanges(rangesArray.toString());
+}
 
 function rangeSliderInput() {
     var range = parseInt($("#range__slider").val());

@@ -98,7 +98,7 @@ function isolinesLayer() {
 
         var uri = app.config.apiBase + '/isoline/' + coordsStr + '/' + parent.queryRanges;
 
-        console.log("isolines query uri: " + uri);
+        // console.log("isolines query uri: " + uri);
 
         // Define a callback function to process the isoline response.
         var onIsolineResult = function(featuredCollection) {

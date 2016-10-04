@@ -99,9 +99,7 @@ function routesLayer() {
 
                     // push route geometry to routes_geo-Array
                     parent.routes_geo[uid] = route.geometry.coordinates;
-
                 }
-
             }
 
             // succeeded!

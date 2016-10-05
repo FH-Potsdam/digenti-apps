@@ -31,16 +31,17 @@ var app  = {};
 app.view = "";
 app.mode = "";
 app.orderby = "size";
-app.layout = calculateLayoutVars();
+// app.layout = calculateLayoutVars(); // After jQuery on ready
 app.layers = [];
 app.villagePositions = [];
 app.villagePositionsMap = [];
 
 
-/////////////
-// onReady
-/////////////
-
+// DOM Elements
+var $nav,
+    $infoBox,
+    $rangeSlider,
+    $rangeText;
 
 
 /**
@@ -56,7 +57,18 @@ function addLayer(name, state, Blueprint) {
 }
 
 
+/////////////
+// onReady
+/////////////
+
 $(document).ready(function() {
+
+    // Init DOM Elements
+    $nav = $("#nav")
+    $infoBox = $("#info");
+
+    // Calculate layout vars
+    app.layout = calculateLayoutVars();
 
     // load config
     $.when(
@@ -113,7 +125,8 @@ function init() {
         addLayer("isolines", false, isolinesLayer);
 
         // Check slider
-        rangeSliderInput();
+        initRangeSlider();
+        // rangeSliderInput();
 
         // Load json data
         d3.queue()
@@ -467,8 +480,17 @@ function calculateLayoutVars() {
     layoutVars.cols = 6;
 
     // width of navigation bar at left side of the viewport
-    layoutVars.navWidth = Math.round($("#nav").width());
-    layoutVars.infoWidth = Math.round(parseInt($("#info").width()) + parseInt($("#info").css('right')));
+    if ($nav) {
+        layoutVars.navWidth = Math.round($nav.width());
+    } else {
+        layoutVars.navWidth = Math.round($("#nav").width());
+    }
+
+    if ($infoBox) {
+        layoutVars.infoWidth = Math.round(parseInt($infoBox.width()) + parseInt($infoBox.css('right')));
+    } else {
+        layoutVars.infoWidth = Math.round(parseInt($("#info").width()) + parseInt($("#info").css('right')));
+    }
 
     // calculate offset of small multiples from viewport
     layoutVars.offsetLeft = layoutVars.navWidth + 50;
@@ -511,9 +533,44 @@ d3.selection.prototype.moveToFront = function() {
 };
 
 
+/////////////////////////////
+// Isolines' Range slider
+/////////////////////////////
+
+function initRangeSlider() {
+
+    $rangeSlider = $("#range__slider");
+    $rangeText = $("#range__text");
+
+    // Default value
+    var range = parseInt($rangeSlider.val());
+    $rangeText.html(range + " min");
+
+    // Set range in isolines layer
+    app.layers['isolines'].layer.setRange(range);
+
+    // Get all possible values
+    var min = parseInt($rangeSlider.attr("min")),
+        max = parseInt($rangeSlider.attr("max")),
+        step = parseInt($rangeSlider.attr("step"));
+
+    // console.log("range min: " + min);
+    // console.log("range max: " + max);
+    // console.log("range step: " + step);
+
+    var numRanges = 1+((max-min)/step);
+    // console.log("total ranges: " + numRanges);
+    var rangesArray = [];
+    for (var i=0; i<numRanges; i++) {
+        rangesArray.push(min+(i*step));
+    }
+
+    app.layers['isolines'].layer.setQueryRanges(rangesArray.toString());
+}
+
 function rangeSliderInput() {
-    var range = parseInt($("#range__slider").val());
-    $("#range__text").html(range + " min");
+    var range = parseInt($rangeSlider.val());
+    $rangeText.html(range + " min");
 
     // Set range in isolines layer
     app.layers['isolines'].layer.setRange(range);
@@ -524,10 +581,23 @@ function rangeSliderInput() {
     }
 }
 
-// This callback is called when clicking on a location
-function clickCallback(d) {
 
-    var $infoBox = $("#info");
+//////////////
+// Info Box
+//////////////
+
+function getElementByPlaceID(placeID, array) {
+
+    var result = $.grep(array, function(n, i) {
+        return (n.id === placeID);
+    })
+
+    return (result.length > 0) ? result[0] : null;
+}
+
+function showInfoBox(d) {
+
+    if (!$infoBox) $infoBox = $("#info");
 
     // Get data
     $infoBox.find(".title").text(d.properties.name);
@@ -536,13 +606,109 @@ function clickCallback(d) {
     $infoBox.find(".population").next('dd').text(getPlacePopulation(d.properties));
     $infoBox.find(".objectID").next('dd').text(d.properties.osm_id);
 
+
+    drawMicroVis(d);
+
+
     // Show
     $infoBox.addClass("show");
 
     $infoBox.find(".close").one("click", function(e) {
-        $("#info").removeClass("show");
+        $infoBox.removeClass("show");
     });
+}
 
+function drawMicroVis(d) {
+
+    console.log("get place route - id: " + d.properties.osm_id);
+
+    var routeJSON = getElementByPlaceID(d.properties.osm_id, routesJSON.routes),
+        routeData = routeJSON.route.geometry.coordinates;
+
+    // Set the dimensions of the canvas / graph
+    var microWidth = parseInt($infoBox.find('.content').width());
+        microHeight = 100;
+
+    // Parse the date / time
+    // var parseDate = d3.time.format("%d-%b-%y").parse;
+
+    // Set the ranges
+    var xElev = d3.scale.linear().range([0, microWidth]);
+    var yElev = d3.scale.linear().range([microHeight, 0]);
+
+
+    // Check interpolations here:
+    // http://jorditost.local:5757/snippets/microvis/graph.html
+
+    // Define the line
+    var line = d3.svg.line()
+        .interpolate("basis")
+        .x(function(d, i) { return xElev(i); })
+        .y(function(d, i) { return yElev(d[2]); })
+
+    var area = d3.svg.area()
+        .interpolate("basis")
+        .x(function(d, i) { return xElev(i); })
+        .y0(microHeight)
+        .y1(function(d, i) { return yElev(d[2]); })
+
+    // Adds the svg canvas
+    var svgElev = d3.select("#microvis")
+        .append("svg")
+            .attr("width", microWidth)
+            .attr("height", microHeight)
+        .append("g")
+            .attr("class", "elevation");
+
+
+    // Scale the range of the data
+    xElev.domain([0, routeData.length]);
+    yElev.domain([0, d3.max(routeData, function(d) { return d[2]; })]);
+
+    // Add the valueline path.
+    svgElev.append("path")
+            .attr("class", "line")
+            .attr("d", line(routeData));
+
+    svgElev.append("path")
+            .attr("class", "area")
+            .attr("d", area(routeData));
+
+
+    // Define responsive behavior
+    function resize() {
+
+        // Set the dimensions of the canvas / graph
+        microWidth = parseInt($infoBox.find('.content').width());
+
+        d3.select("#microvis svg").attr("width", microWidth);
+
+        // Update the range of the scale with new width/height
+        xElev.range([0, microWidth]);
+        // yElev.range([microHeight, 0]);
+
+        // Force D3 to recalculate and update the line
+        svgElev.selectAll('.line')
+                .attr("d", line(routeData));
+
+        svgElev.selectAll('.area')
+                .attr("d", area(routeData));
+    };
+
+    // Call the resize function whenever a resize event occurs
+    d3.select(window).on('resize', resize);
+
+    // Call the resize function
+    // resize();
+}
+
+
+///////////////////////////////
+// Settlement Click Callback
+///////////////////////////////
+
+// This callback is called when clicking on a location
+function clickCallback(d) {
+    showInfoBox(d);
     app.layout = calculateLayoutVars();
-
 }

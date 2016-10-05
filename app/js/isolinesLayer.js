@@ -47,6 +47,7 @@ function isolinesLayer() {
         "features":[]
     };
 
+    this.queryRanges = '30';
     this.range = 0;
     this.isolinesQueried = 0;
 
@@ -67,34 +68,23 @@ function isolinesLayer() {
 
     };
 
-    this.setRange = function(range) {
-
-        this.range = range;
-        // console.log("Set isoline range: " + this.range);
+    // Set ranges to query. E.g. '15,30,45'
+    this.setQueryRanges = function(ranges) {
+        this.queryRanges = ranges;
+        // console.log("set query ranges: " + ranges);
     };
 
+    // Set range value
+    this.setRange = function(range) {
+        this.range = range;
+    };
+
+    // Show/hide isolines by range value
     this.toggleIsolines = function() {
-
-        console.log("toggle isolines - range: " + this.range);
-
-        // this.svglayer.selectAll('.isoline-group-vis path.isoline').classed("disabled", true);
-
-        // this.svglayer.selectAll('.isoline-group-vis path.isoline[data-range="'+this.range+'"]').classed("disabled", function() {
-
         this.svglayer.selectAll('.isoline-group-vis path.isoline').classed("disabled", function() {
             var isoline = d3.select(this);
             return isoline.attr("data-range") != parent.range;
         });
-
-        // // Isoline group
-        // this.svglayer.selectAll(".isoline-group-vis path.isoline").each(function() {
-        //
-        //     var isoline = d3.select(this);
-        //     console.log("isoline range: " + isoline.attr("data-range"));
-        //
-        //     // isoline.classed("disabled", true)
-        //     isoline.classed("disabled", function() { return isoline.attr("data-range") != parent.range; })
-        // });
     }
 
 
@@ -104,9 +94,11 @@ function isolinesLayer() {
 
         var coordsStr = coordinates[1]+','+coordinates[0];
         // var currentRange = parseInt($("#range__slider").val());
-        var range = '15,30,45';
+        // var range = '15,30,45';
 
-        var uri = app.config.apiBase + '/isoline/' + coordsStr + '/' + range;
+        var uri = app.config.apiBase + '/isoline/' + coordsStr + '/' + parent.queryRanges;
+
+        // console.log("isolines query uri: " + uri);
 
         // Define a callback function to process the isoline response.
         var onIsolineResult = function(featuredCollection) {

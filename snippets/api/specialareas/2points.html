@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
+    center: [-73.0390699,10.3710411],
+    zoom: 13
+});
+
+var url = 'http://localhost:61002/api/specialareas/2/1/points/10.387194631491118,-73.03470611572266/10.356125028535352,-73.04946899414062/1200';
+var source = new mapboxgl.GeoJSONSource({
+    data: url
+});
+
+// var urlRoad = 'http://localhost:61002/api/roads/336609942';
+var sourceRoad = new mapboxgl.GeoJSONSource({
+    data: {"type":"Feature","geometry":{"type":"LineString","coordinates":[[-73.03470611572266,10.387194631491118],[-73.04946899414062,10.356125028535352]]}}
+    // data: urlRoad
+});
+
+var sourceBuffer = new mapboxgl.GeoJSONSource({
+    data: {"type":"Polygon","coordinates":[[[-73.0404367618862,10.3518333178622],[-73.0461169391841,10.3467035781391],[-73.0537607048138,10.3470927962809],[-73.0588904445369,10.3527729735788],[-73.0585012263951,10.3604167392085],[-73.0437383479771,10.3914863421642],[-73.0380581706792,10.3966160818873],[-73.0304144050495,10.3962268637456],[-73.0252846653264,10.3905466864476],[-73.0256738834682,10.382902920818],[-73.0404367618862,10.3518333178622]]]}
+});
+
+map.on('load', function () {
+
+    // Line
+    map.addSource('line', sourceRoad);
+    map.addLayer({
+        "id": "line",
+        "type": "line",
+        "source": "line",
+        "layout": {
+            "line-join": "round",
+            "line-cap": "round"
+        },
+        "paint": {
+            'line-color': '#099',
+            'line-opacity': 1,
+            'line-width': 3
+        }
+    });
+
+    // Buffer
+    map.addSource('buffer', sourceBuffer);
+    map.addLayer({
+        "id": "buffer",
+        "type": "fill",
+        "source": "buffer",
+        "paint": {
+            "fill-color": "#880",
+            "fill-opacity": 0.2,
+            "fill-antialias": false
+        }
+    });
+
+    // Special Areas
+    map.addSource('special-areas', source);
+
+    map.addLayer({
+        "id": "special-areas",
+        "type": "fill",
+        "source": "special-areas",
+        // "filter": ["==", "fos", 3],
+        "paint": {
+            "fill-color": "#0f5",
+            "fill-opacity": 0.5,
+            "fill-antialias": false
+        }
+    });
+});
+</script>
+
+</body>
+</html>

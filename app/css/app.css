@@ -14,11 +14,21 @@
 body {
   font-family: "Source Sans Pro", sans-serif;
   font-size: 0.875em;
-  color: #000; }
+  color: #000;
+  -webkit-font-feature-settings: "onum" 1;
+  -moz-font-feature-settings: "onum" 1;
+  -moz-font-feature-settings: "onum=1";
+  -ms-font-feature-settings: "onum" 1;
+  -o-font-feature-settings: "onum" 1;
+  font-feature-settings: "onum" 1;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern";
+  -webkit-font-feature-settings: "kern";
+  -moz-font-feature-settings: "kern";
+  -moz-font-feature-settings: "kern=1"; }
   body.dark {
     background: #191F23;
-    color: #fff;
-    -webkit-font-smoothing: antialiased; }
+    color: #fff; }
 
 html, body, #wrapper {
   width: 100%;

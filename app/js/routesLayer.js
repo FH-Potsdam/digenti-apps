@@ -74,6 +74,39 @@ function routesLayer() {
         // Deactivate this layer by default
         this.setActive(false);
 
+
+
+
+        /*$.ajax({
+            dataType: "json",
+            url: app.config.apiBase + "/routes/onetomany/" + app.config.coordHomeBase + "/" + coord_settlement,
+            success: onSuccess,
+            error: function(error) {
+                console.log(error);
+            }
+        });
+
+
+
+        $.ajax({
+            method: "POST",
+            url: app.config.apiBase + "/routes/onetomany/" + app.config.coordHomeBase,
+            data: JSON.stringify(jsonToObject(routesJSON.routes)),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (r) {
+                for (var i=0; i<r.data.features.length; i++) {
+                    // process route parts
+                    processRoute(r.data.features[i]);
+                }
+            },
+            error: function(error) {
+                alert(error);
+            }
+        });
+*/
+
+
         function routing(start, end, placeID) {
 
 

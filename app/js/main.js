@@ -182,7 +182,10 @@ function mapDraw(geojson) {
         container: 'map',
         style: baseMap,
         zoom: 11,
-        center: [-73.12, 10.410]
+        center: [-73.12, 10.410],
+        // pitch: 45 // pitch in degrees
+        // bearing: -60 // bearing in degrees
+
     });
 
     // add navigation control to our map
@@ -606,9 +609,7 @@ function showInfoBox(d) {
     $infoBox.find(".population").next('dd').text(getPlacePopulation(d.properties));
     $infoBox.find(".objectID").next('dd').text(d.properties.osm_id);
 
-
     drawMicroVis(d);
-
 
     // Show
     $infoBox.addClass("show");
@@ -652,24 +653,27 @@ function drawMicroVis(d) {
         .y0(microHeight)
         .y1(function(d, i) { return yElev(d[2]); })
 
+    d3.select("#microvis svg").remove();
+
     // Adds the svg canvas
     var svgElev = d3.select("#microvis")
         .append("svg")
+            .attr("class", "elevation")
             .attr("width", microWidth)
             .attr("height", microHeight)
         .append("g")
             .attr("class", "elevation");
 
-
     // Scale the range of the data
     xElev.domain([0, routeData.length]);
     yElev.domain([0, d3.max(routeData, function(d) { return d[2]; })]);
 
-    // Add the valueline path.
+    // Add the line path.
     svgElev.append("path")
             .attr("class", "line")
             .attr("d", line(routeData));
 
+    // Add the area/bg path
     svgElev.append("path")
             .attr("class", "area")
             .attr("d", area(routeData));

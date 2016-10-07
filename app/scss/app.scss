@@ -192,6 +192,14 @@
         padding: 1.5*$modal-padding 2*$modal-padding;
     }
 
+    .title {
+        margin-bottom: 10px;
+    }
+
+    .properties {
+        margin-bottom: 30px;
+    }
+
     dl {
         @include clearfix();
 
@@ -204,6 +212,20 @@
             clear: left;
             // width: 30%;
             margin-right: 5px;
+        }
+    }
+
+    #microvis {
+        .microvis-wrap {
+            margin-top: 20px;
+
+            & > h3, & > h4 {
+                margin-bottom: 0;
+            }
+
+            #microvis-route-stats {
+                margin-top: -10px;
+            }
         }
     }
 }

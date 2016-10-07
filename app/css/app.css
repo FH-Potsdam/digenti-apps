@@ -14,21 +14,11 @@
 body {
   font-family: "Source Sans Pro", sans-serif;
   font-size: 0.875em;
-  color: #000;
-  -webkit-font-feature-settings: "onum" 1;
-  -moz-font-feature-settings: "onum" 1;
-  -moz-font-feature-settings: "onum=1";
-  -ms-font-feature-settings: "onum" 1;
-  -o-font-feature-settings: "onum" 1;
-  font-feature-settings: "onum" 1;
-  text-rendering: optimizeLegibility;
-  font-feature-settings: "kern";
-  -webkit-font-feature-settings: "kern";
-  -moz-font-feature-settings: "kern";
-  -moz-font-feature-settings: "kern=1"; }
+  color: #000; }
   body.dark {
     background: #191F23;
-    color: #fff; }
+    color: #fff;
+    -webkit-font-smoothing: antialiased; }
 
 html, body, #wrapper {
   width: 100%;
@@ -356,21 +346,20 @@ text {
 
 #microvis svg {
   width: 100%; }
-
-.line {
+#microvis .line {
   stroke: white;
   stroke-width: 2;
   fill: none; }
-
-.area {
+#microvis .area {
   stroke: none;
   fill: white;
   fill-opacity: 0.2; }
-
-g.elevation .line {
-  stroke: #3dc8e7; }
-g.elevation .area {
-  fill: #3dc8e7; }
+#microvis .route {
+  stroke: #099; }
+#microvis .elevation .line {
+  stroke: #099; }
+#microvis .elevation .area {
+  fill: #099; }
 
 .layoutdebug {
   fill: rgba(255, 0, 255, 0.3); }
@@ -557,6 +546,10 @@ g.elevation .area {
     opacity: 1; }
   #info .content {
     padding: 30px 40px; }
+  #info .title {
+    margin-bottom: 10px; }
+  #info .properties {
+    margin-bottom: 30px; }
   #info dl {
     zoom: 1; }
     #info dl:before, #info dl:after {
@@ -570,6 +563,12 @@ g.elevation .area {
       font-weight: 700;
       clear: left;
       margin-right: 5px; }
+  #info #microvis .microvis-wrap {
+    margin-top: 20px; }
+    #info #microvis .microvis-wrap > h3, #info #microvis .microvis-wrap > h4 {
+      margin-bottom: 0; }
+    #info #microvis .microvis-wrap #microvis-route-stats {
+      margin-top: -10px; }
 
 #filters {
   top: 1vw;

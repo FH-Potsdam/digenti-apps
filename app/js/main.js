@@ -178,7 +178,7 @@ function mapDraw(geojson) {
     map = new mapboxgl.Map({
         container: 'map',
         style: baseMap,
-        zoom: 11,
+        zoom: 11.4,
         center: [-73.12, 10.410],
         // pitch: 45 // pitch in degrees
         // bearing: -60 // bearing in degrees

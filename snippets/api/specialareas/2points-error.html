@@ -9,6 +9,7 @@
     <style>
         body { margin:0; padding:0; }
         #map { position:absolute; top:0; bottom:0; width:100%; }
+        .mapboxgl-ctrl { display: none; }
     </style>
 </head>
 <body>
@@ -19,12 +20,13 @@
 mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
+    // style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
+    style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi', // light
     center: [-72.9470699,10.3910411],
     zoom: 13
 });
 
-var url = 'http://localhost:61002/api/specialareas/2/3/points/10.4037,-72.9247/10.3888,-72.9762/1200';
+var url = 'http://jorditost.local:61002/api/specialareas/2/3/points/10.4037,-72.9247/10.3888,-72.9762/1200';
 var source = new mapboxgl.GeoJSONSource({
     data: url
 });

@@ -1,7 +1,7 @@
 var config = {};
 
 // Tabletop
-config.tabletop = true;
+config.tabletop = false;
 
 // DIGENTI API
 //config.apiBase = "http://localhost:61002/api";

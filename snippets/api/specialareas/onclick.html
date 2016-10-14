@@ -9,6 +9,7 @@
     <style>
         body { margin:0; padding:0; }
         #map { position:absolute; top:0; bottom:0; width:100%; }
+        .mapboxgl-ctrl { display: none; }
     </style>
 </head>
 <body>
@@ -19,7 +20,8 @@
 mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
+    // style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
+    style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi', // light
     center: [-73.0270699,10.3910411],
     zoom: 11
 });
@@ -72,7 +74,7 @@ map.on('mousemove', function (e) {
 
 function loadFOS(osmID) {
 
-    var url = 'http://localhost:61002/api/specialareas/2/1/place/'+osmID+'/1200';
+    var url = 'http://jorditost.local:61002/api/specialareas/2/1/place/'+osmID+'/1200';
     console.log(url);
     var source = new mapboxgl.GeoJSONSource({
         data: url

@@ -9,6 +9,7 @@
     <style>
         body { margin:0; padding:0; }
         #map { position:absolute; top:0; bottom:0; width:100%; }
+        .mapboxgl-ctrl { display: none; }
     </style>
 </head>
 <body>
@@ -19,12 +20,13 @@
 mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
+    style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
+    // style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi', // light
     center: [-73.0390699,10.3710411],
     zoom: 13
 });
 
-var url = 'http://localhost:61002/api/fos/points/10.387194631491118,-73.03470611572266/10.356125028535352,-73.04946899414062/1200';
+var url = 'http://jorditost.local:61002/api/fos/points/10.387194631491118,-73.03470611572266/10.356125028535352,-73.04946899414062/1200';
 var source = new mapboxgl.GeoJSONSource({
     data: url
 });
@@ -80,8 +82,8 @@ map.on('load', function () {
         "source": "colombia-fos",
         "filter": ["==", "fos", 3],
         "paint": {
-            "fill-color": "#e6dc51",
-            "fill-opacity": 0.5,
+            "fill-color": "#F7D57F",
+            "fill-opacity": 0.8,
             "fill-antialias": false
         }
     });
@@ -91,8 +93,8 @@ map.on('load', function () {
         "source": "colombia-fos",
         "filter": ["==", "fos", 2],
         "paint": {
-            "fill-color": "#d9943f",
-            "fill-opacity": 0.5,
+            "fill-color": "#F5A623",
+            "fill-opacity": 0.8,
             "fill-antialias": false
         }
     });
@@ -102,8 +104,8 @@ map.on('load', function () {
         "source": "colombia-fos",
         "filter": ["==", "fos", 1],
         "paint": {
-            "fill-color": "#c74d4d",
-            "fill-opacity": 0.5,
+            "fill-color": "#ED5D5A",
+            "fill-opacity": 0.8,
             "fill-antialias": false
         }
     });

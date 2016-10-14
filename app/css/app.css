@@ -428,6 +428,7 @@ text {
 body.tabletop {
   -webkit-font-smoothing: subpixel-antialiased !important; }
   body.tabletop * {
+    cursor: none;
     -webkit-user-select: none;
     /* Chrome all / Safari all */
     -moz-user-select: none;
@@ -593,6 +594,12 @@ body.tabletop {
       background-color: #3dc8e7; }
       .dark #nav #view button.active, .dark #nav #view button:hover {
         background-color: #4B565F; }
+    .tabletop #nav #view button:hover {
+      background-color: transparent !important; }
+    .tabletop #nav #view button.active {
+      background-color: #3dc8e7 !important; }
+    .tabletop.dark #nav #view button.active {
+      background-color: #4B565F !important; }
   #nav #view label {
     position: absolute;
     bottom: 35px;

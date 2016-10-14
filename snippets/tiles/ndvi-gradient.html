@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.css' rel='stylesheet' />
+
+    <link href="../../app/css/app.css" rel="stylesheet" />
+    <!-- <link href="../../digenti-framework/css/main.css" rel="stylesheet" /> -->
+
+    <style>
+
+        #nav {
+            display: block;
+            width: 200px;
+        }
+
+        .range-wrapper {
+            margin-top: 30px !important;
+            margin-bottom: 50px !important;
+            text-align: left;
+        }
+
+        .range-wrapper label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+            text-align: left !important
+        }
+
+        section.range-slider {
+            position: relative;
+            width: 100%;
+            /*width: 200px;*/
+            /*height: 35px;*/
+            text-align: left;
+        }
+
+        section.range-slider input {
+            pointer-events: none;
+            position: absolute;
+            overflow: hidden;
+            left: 0;
+            top: 0px;
+            width: 100%;
+            outline: none;
+            height: 18px;
+            margin: 0;
+            padding: 0;
+        }
+
+        section.range-slider .range-values {
+            padding-top: 25px;
+            display: block;
+            /*font-size: 0.875em;*/
+        }
+
+        section.range-slider input::-webkit-slider-thumb {
+            pointer-events: all;
+            position: relative;
+            z-index: 1;
+            outline: 0;
+        }
+
+        section.range-slider input::-moz-range-thumb {
+            pointer-events: all;
+            position: relative;
+            z-index: 10;
+            -moz-appearance: none;
+            width: 9px;
+        }
+
+        section.range-slider input::-moz-range-track {
+            position: relative;
+            z-index: -1;
+            background-color: rgba(0, 0, 0, 1);
+            border: 0;
+        }
+        section.range-slider input:last-of-type::-moz-range-track {
+            -moz-appearance: none;
+            background: none transparent;
+            border: 0;
+        }
+        section.range-slider input[type=range]::-moz-focus-outer {
+            border: 0;
+        }
+
+    </style>
+</head>
+<body class="dark">
+
+<div id="nav" class="modal">
+    <div id="page-title">
+        <h4>DIGENTI</h4>
+        <h3>Special Areas</h3>
+    </div>
+
+    <div id="area-filters">
+        <div class="range-wrapper">
+            <h4 for="ndvi-slider">Vegetation Density</h4>
+            <section id="ndvi-slider" class="range-slider">
+                <input value="1" min="1" max="4" step="1" type="range">
+                <input value="4" min="1" max="4" step="1" type="range">
+                <span class="range-values"></span>
+            </section>
+            <!-- <input id="ndvi-slider" name="ndvi-slider" type="range" min="1" max="4" value="1" step="1" /> -->
+            <!-- <span id="ndvi-text"></span> -->
+        </div>
+
+        <div class="range-wrapper">
+            <h4 for="gradient-slider">Hillslope Gradient</h4>
+            <section id="gradient-slider" class="range-slider">
+                <input value="1" min="1" max="6" step="1" type="range">
+                <input value="6" min="1" max="6" step="1" type="range">
+                <span class="range-values"></span>
+            </section>
+            <!-- <input id="gradient-slider" name="gradient-slider" type="range" min="1" max="6" value="1" step="1" />
+            <span id="gradient-text"></span> -->
+        </div>
+    </div>
+
+</div>
+
+<div id='map'></div>
+
+<script>
+
+var ndviValues = ['Low', 'Medium-Low', 'Medium-High', 'High'];
+var gradientValues = ['5', '10', '15', '20', '25', '30'];
+
+
+mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
+    // style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi', // light
+    zoom: 11.2,
+    center: [-72.956, 10.410],
+    // center: [-73.12, 10.410],
+    // pitch: 45 // pitch in degrees
+    // bearing: -60 // bearing in degrees
+
+});
+
+map.on('load', function () {
+
+    /////////////////////
+    // NDVI - Gradient
+    /////////////////////
+
+    map.addSource('ndvi_gradient', {
+        "type": "vector",
+        "tiles": [
+          "http://tostnik.deneb.uberspace.de/digenti-tiles/v2/tiles/{z}/{x}/{y}.pbf"
+        ],
+        "minzoom": 9,
+        "maxzoom": 16
+    });
+
+    // map.addSource('ndvi_gradient', {
+    //     "type": "vector",
+    //     "tiles": [
+    //       "http://localhost:61001/v2/tiles/{z}/{x}/{y}.pbf"
+    //     ],
+    //     "minzoom": 9,
+    //     "maxzoom": 16
+    // });
+
+    map.addLayer({
+        "id": "ndvi_gradient",
+        "type": "fill",
+        "source": "ndvi_gradient",
+        "source-layer": "ndvi_gradient",
+        "paint": {
+            "fill-color": "#099",
+            "fill-opacity": 0.3
+        }
+    });
+
+    // Filter
+    filterSpecialAreas();
+});
+
+/////////////
+// jQuery
+/////////////
+
+var $ndviSlider,
+    $ndviText,
+    ndviValue1,
+    ndviValue2,
+    $gradientSlider,
+    $gradientText,
+    gradientValue1,
+    gradientValue2;
+
+
+/////////////
+// onReady
+/////////////
+
+function filterSpecialAreas() {
+
+    console.log("update special areas");
+    console.log("   > ndvi: " + ndviValue1 + " - " + ndviValue2);
+    console.log("   > gradient: " + gradientValue1 + " - " + gradientValue2);
+
+    map.setFilter('ndvi_gradient',
+        [
+          "all",
+          [">=", "NDVI", ndviValue1], // 1-4
+          ["<=", "NDVI", ndviValue2], // 1-4
+          [">=", "GRADIENT", gradientValue1], // 1-6
+          ["<=", "GRADIENT", gradientValue2] // 1-6
+        ]
+    );
+
+    $ndviText.text(ndviValues[ndviValue1-1] + " - " + ndviValues[ndviValue2-1] + " Vegetation");
+
+    var minGrads = (gradientValue1 == 1) ? 0 : gradientValues[gradientValue1-2];
+
+    $gradientText.text(minGrads + " - " + gradientValues[gradientValue2-1] + " degrees");
+
+    // if (gradientValue1 == gradientValue2) {
+    //     if (gradientValue1 != 1) {
+    //         minGrads = gradientValues[gradientValue2-2]
+    //     }
+    //     $gradientText.text(minGrads + " - " + gradientValues[gradientValue2-1] + " degrees");
+    // } else {
+    //     $gradientText.text(minGrads + " - " + gradientValues[gradientValue2-1] + " degrees");
+    // }
+}
+
+
+$( document ).ready(function() {
+
+    console.log("ready");
+
+    $ndviSlider = $('#ndvi-slider');
+    $ndviText = $ndviSlider.find('.range-values');
+    ndviValue1 = parseInt($ndviSlider.find('input[type="range"]').eq(0).val(), 10);
+    ndviValue2 = parseInt($ndviSlider.find('input[type="range"]').eq(1).val(), 10);
+
+    $gradientSlider = $('#gradient-slider');
+    $gradientText = $gradientSlider.find('.range-values');
+    gradientValue1 = parseInt($gradientSlider.find('input[type="range"]').eq(0).val(), 10);
+    gradientValue2 = parseInt($gradientSlider.find('input[type="range"]').eq(1).val(), 10);
+
+    // Initialize Sliders
+    var $sliderSections = $(".range-slider");
+
+    $sliderSections.each(function() {
+
+        var $sliders = $(this).find('input[type="range"]');
+
+        $sliders.on('input', function(e) {
+
+            var $parent = $(this).parent(),
+                $slides = $parent.find('input[type="range"]'),
+                $text = $parent.find(".range-values");
+
+            var slideValue1 = parseFloat($slides.eq(0).val(), 10),
+                slideValue2 = parseFloat($slides.eq(1).val(), 10);
+
+            // Check min / max
+            if (slideValue1 > slideValue2) { var tmp = slideValue2; slideValue2 = slideValue1; slideValue1 = tmp; }
+
+            // Change NDVI
+            if ($ndviSlider[0] == $parent[0]) {
+
+                ndviValue1 = slideValue1;
+                ndviValue2 = slideValue2;
+                // $text.text(ndviValue1 + " - " + ndviValue2);
+
+            // Change Gradient
+            } else if ($gradientSlider[0] == $parent[0]) {
+
+                gradientValue1 = slideValue1;
+                gradientValue2 = slideValue2;
+                // $text.text(ndviValue1 + " - " + ndviValue2);
+            }
+
+            filterSpecialAreas();
+        });
+    });
+});
+
+// function getVals(){
+//     // Get slider values
+//     var parent = this.parentNode;
+//     var slides = parent.getElementsByTagName("input");
+//     var slide1 = parseFloat( slides[0].value );
+//     var slide2 = parseFloat( slides[1].value );
+//     // Neither slider will clip the other, so make sure we determine which is larger
+//     if( slide1 > slide2 ){ var tmp = slide2; slide2 = slide1; slide1 = tmp; }
+//
+//     var displayElement = parent.getElementsByClassName("rangeValues")[0];
+//     displayElement.innerHTML = slide1 + " - " + slide2;
+// }
+//
+// function initRangeSliders() {
+//     // NDVI
+//     $ndviSlider = $('#ndvi-slider');
+//     ndviValue = parseInt($ndviSlider.val(), 10);
+//     $ndviText = $('#ndvi-text');
+//     $ndviText.text(ndviValue + " // " + ndviValues[ndviValue-1]);
+//
+//     // Gradient
+//     $gradientSlider = $('#gradient-slider');
+//     gradientValue = parseInt($gradientSlider.val(), 10);
+//     $gradientText = $('#gradient-text');
+//     $gradientText.text(gradientValue + " // " + gradientValues[gradientValue-1]);
+//
+//     // Check range change
+//     $('input[type="range"]').on('input', function(e) {
+//
+//         // Change NDVI
+//         if ($ndviSlider[0] == this) {
+//
+//             ndviValue = parseInt($ndviSlider.val(), 10);
+//             $ndviText.text(ndviValue + " // " + ndviValues[ndviValue-1]);
+//
+//         // Change Gradient
+//         } else if ($gradientSlider[0] == this) {
+//
+//             gradientValue = parseInt($gradientSlider.val(), 10);
+//             $gradientText.text(gradientValue + " // " + gradientValues[gradientValue-1]);
+//         }
+//
+//         filterSpecialAreas();
+//     });
+// }
+
+</script>
+
+</body>
+</html>

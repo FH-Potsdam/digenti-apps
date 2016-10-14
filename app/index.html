@@ -5,21 +5,30 @@
         <meta charset=utf-8 />
         <title>DIGENTI – Accessibility</title>
         <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+        <!-- Mapbox libs -->
         <script src='../lib/mapbox-gl.js'></script>
         <link href='../lib/mapbox-gl.css' rel='stylesheet' />
 
-        <!-- This example requires d3 for AJAX and the brush, though you can bring your own library. -->
+        <!-- d3 -->
         <script src='../lib/d3.min.js' charset="utf-8"></script>
         <script src='../lib/d3-queue.v3.min.js' charset="utf-8"></script>
-        <script src='../lib/turf.min.js' charset='utf-8'></script>
-        <script src='../lib/polymorph.js' charset='utf-8'></script>
-        <script src='../lib/morphpath.js' charset='utf-8'></script>
 
-        <script src="//js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
-        <script src="//js.api.here.com/v3/3.0/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
+        <!-- turf.js is required for some post-processing in the client side -->
+        <script src='../lib/turf.min.js' charset='utf-8'></script>
+
+        <!-- This libs are needed when morphing routes to lines -->
+        <!-- <script src='../lib/polymorph.js' charset='utf-8'></script>
+        <script src='../lib/morphpath.js' charset='utf-8'></script> -->
+
+        <!-- HERE map services - DEPRECATED  -->
+        <!-- <script src="//js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
+        <script src="//js.api.here.com/v3/3.0/mapsjs-service.js" type="text/javascript" charset="utf-8"></script> -->
+
+        <!-- jQuery for simple DOM manipulation -->
         <script src="//code.jquery.com/jquery-1.10.2.js"></script>
 
-        <!-- DIGENTI Framework -->
+        <!-- App styles. DIGENTI Framework is loaded inside with SASS -->
         <!-- <link href="../digenti-framework/css/main.css" rel="stylesheet" /> -->
         <link href="css/app.css" rel="stylesheet" />
     </head>
@@ -32,17 +41,17 @@
             </div>
 
             <div id="modes">
-                <button title="Routes from Valledupar" class="mode routesfromvalledupar" onclick="setMode('routesfromvalledupar')">Routes from Valledupar</button>
-                <!-- <label for="toggle-view">Small Multiples</label> -->
-                <button title="Missing infrastructure" class="mode missinginfrastructure" onclick="setMode('missinginfrastructure')">Missing Infrastructure</button>
-                <!-- <label for="toggle-view">Small Multiples</label> -->
-                <button title="Isolines" class="mode isolines" onclick="setMode('isolines')">Isolines</button>
-                <!-- <label for="toggle-view">Small Multiples</label> -->
+                <button class="mode" id="routesfromvalledupar" name="routesfromvalledupar" title="Routes from Valledupar" onclick="setMode('routesfromvalledupar')">Routes from Valledupar</button>
+                <!-- <label for="routesfromvalledupar">Routes from Valledupar</label> -->
+                <button class="mode" id="missinginfrastructure" name="missinginfrastructure" title="Missing infrastructure" onclick="setMode('missinginfrastructure')">Missing Infrastructure</button>
+                <!-- <label for="missinginfrastructure">Missing infrastructure</label> -->
+                <button class="mode" id="isolines" name="isolines" title="Isolines" onclick="setMode('isolines')">Isolines</button>
+                <!-- <label for="isolines">Isolines</label> -->
             </div>
 
             <div id="view">
                 <div class="button-wrapper">
-                    <button name="toggle-view" id="toggle-view" class="view smallmultiplesview" onclick="toggleViews()">Small Multiples</button>
+                    <button id="toggle-view" name="toggle-view" class="view smallmultiplesview" onclick="toggleViews()">Small Multiples</button>
                     <label for="toggle-view">Small Multiples</label>
                 </div>
             </div>
@@ -102,9 +111,9 @@
             </div>
         </div>
 
+        <!-- DIGENTI Framework and main app scripts -->
         <script src="../digenti-framework/js/min/digenti-framework-min.js" type="text/javascript" charset="utf-8"></script>
         <script src="js/min/main-min.js" type="text/javascript" charset="utf-8"></script>
-
     </body>
 
 </html>

@@ -2,113 +2,46 @@
 // DIGENTI Accessibility App
 ///////////////////////////////
 
-// This is the main style file for the applications
+// This is the main style for the Accessibility App
 
 /////////////
 // Imports
 /////////////
 
+// Base file for all apps and prototypes
 @import '../../digenti-framework/scss/base';
-@import 'vars';
 
-///////////
-// Debug
-///////////
+// vars must be imported before the base-app.
+// base-app contains basic layouting for all DIGENTI apps (Accessibility, Risk, RePlan)
+@import 'vars'; // Keep this vars
+@import '../../digenti-framework/scss/base-app';
 
-#loader {
-    @if $offline {
-        display: none !important;
-    }
-}
 
-/////////
-// App
-/////////
-
-.modal {
-    padding: 0;
-    width: $modal-width;
-    max-width: none;
-
-    & > *:not(.close) {
-        padding: 20px;
-        width: 100%;
-        @include border-box();
-    }
-}
-
+//////////////////
 // Main sidebar
+//////////////////
+
 #nav {
-    top: 0;
-    left: 0;
 
-    // width: 8vw;
-    // min-width: $modal-width;
-    height: 100vh;
-
-    @include flexbox();
-    @include flex-direction(column);
-    @include justify-content(space-between);
-    // display: flex;
-    // flex-direction: column;
-    // justify-content: space-between;
-
-    #page-title {
-        margin-top: 5px;
-
-        & > * {
-            font-size: 0.933rem;
-            // font-size: 1em;
-            margin-bottom: 0;
-
-            // Border
-            border-left: 3px solid $color-blue;
-            padding-left: 6px;
-
-            letter-spacing: 0.5px;
-            line-height: 1em;
-            padding-bottom: 3px;
-
-            &:last-child {
-                padding-bottom: 0;
-            }
-        }
-    }
-
-    button {
-        @include block($button-size, $button-size);
-        @include no-text();
-        padding: 0;
-    }
-
+    // Buttons
     #modes {
-
         button {
-            @include border-radius(100%);
-            margin-bottom: 10px;
-
-            &.routesfromvalledupar {
+            &#routesfromvalledupar {
                 @include background-image('../img/icon-routes.svg', center center);
             }
 
-            &.missinginfrastructure {
+            &#missinginfrastructure {
                 @include background-image('../img/icon-missing.svg', center center);
             }
 
-            &.isolines {
+            &#isolines {
                 @include background-image('../img/icon-isolines.svg', center center);
             }
         }
-
-        label {
-            text-align: center;
-            display: block;
-            margin-bottom: 25px;
-        }
     }
 
+    // Map view <> Small multiples view
     #view {
-
         padding: 0;
 
         .button-wrapper {
@@ -141,7 +74,10 @@
     }
 }
 
-// UI for isolines
+/////////////////
+// Isolines UI
+/////////////////
+
 #isolines-ui {
     bottom: 0;
     left: 50%;
@@ -173,92 +109,4 @@
     &.disabled {
         bottom: -70px;
     }
-}
-
-#info {
-    right: -$info-width;
-    top: 0;
-    opacity: 0;
-
-    width: $info-width;
-    height: 100%;
-
-    &.show {
-        right: 0;
-        opacity: 1;
-    }
-
-    .content {
-        padding: 1.5*$modal-padding 2*$modal-padding;
-    }
-
-    .title {
-        margin-bottom: 10px;
-    }
-
-    .properties {
-        margin-bottom: 30px;
-    }
-
-    dl {
-        @include clearfix();
-
-        dt, dd {
-            float: left;
-        }
-
-        dt {
-            font-weight: 700;
-            clear: left;
-            // width: 30%;
-            margin-right: 5px;
-        }
-    }
-
-    #microvis {
-        .microvis-wrap {
-            margin-top: 20px;
-
-            & > h3, & > h4 {
-                margin-bottom: 0;
-            }
-
-            #microvis-route-stats {
-                margin-top: -10px;
-            }
-        }
-    }
-}
-
-// Filters
-#filters {
-    top: 1vw;
-    right: 1vw;
-    /*right: 1vw;*/
-
-    background: transparent;
-
-    width: auto;
-    max-width: none;
-
-    @include transition(opacity 0.6s ease);
-
-    h3, h4 {
-        display: inline-block;
-        margin-right: 10px;
-    }
-
-    button {
-        // width: 90px;
-        display: inline-block;
-        margin-bottom: 0;
-    }
-}
-
-////////////
-// Mapbox
-////////////
-
-.mapboxgl-ctrl {
-    display: none;
 }

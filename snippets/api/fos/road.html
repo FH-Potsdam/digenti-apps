@@ -16,21 +16,23 @@
 <div id='map'></div>
 
 <script>
+
 mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi',
+    // style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
+    style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi', // light
     center: [-73.0770699,10.3910411],
     zoom: 13
 });
 
-var url = 'http://localhost:61002/api/fos/road/336609942/1000';
+var url = 'http://jorditost.local:61002/api/fos/road/336609942/1000';
 // var url = 'http://localhost:61002/api/fos/line/10.3506951,-73.044403399999979/1000';
 var source = new mapboxgl.GeoJSONSource({
     data: url
 });
 
-var urlRoad = 'http://localhost:61002/api/roads/336609942';
+var urlRoad = 'http://jorditost.local:61002/api/roads/336609942';
 var sourceRoad = new mapboxgl.GeoJSONSource({
     data: urlRoad
 });

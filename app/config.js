@@ -1,10 +1,10 @@
 var config = {};
 
 // Tabletop
-config.tabletop = false;
+config.tabletop = true;
 
 // DIGENTI API
-config.apiBase = "http://localhost:61002/api";
+config.apiBase = "http://jorditost.local:61002/api";
 
 // Map config
 config.coordHomeBase = "10.471667,-73.25";

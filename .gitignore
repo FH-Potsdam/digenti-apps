@@ -6,3 +6,6 @@ config.codekit
 /lib/node_modules/
 
 .DS_Store
+
+/app/config.js
+app/config.js

@@ -185,6 +185,12 @@ function mapDraw(geojson) {
 
     });
 
+    // Disable undesired interactions (for touch)
+    map.dragRotate.disable();
+    map.touchZoomRotate.disable();
+    map.keyboard.disable();
+    map.boxZoom.disable();
+
     // add navigation control to our map
     map.addControl(new mapboxgl.Navigation());
 

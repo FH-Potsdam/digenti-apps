@@ -253,10 +253,10 @@ function missingInfrastructureLayer() {
                     var y2 = project(d.properties.connections.nearest_point).y - y1;
 
                     current_el
+                        .attr("transform", "translate("+x1+","+y1+")")
                         .transition()
                         .duration(transition_time)
-                            .style("opacity", 1)
-                            .attr("transform", "translate("+x1+","+y1+")");
+                            .style("opacity", 1);
 
                     if (d.properties.connections.distance_to_street > parent.distance_threshold) {
 

@@ -340,7 +340,7 @@ function setMode(mode) {
             if (mode === key) { app.layers[key].active = true; }
             else { app.layers[key].active = false; }
             app.layers[key].layer.setActive(app.layers[key].active);
-            d3.selectAll(".mode."+key).classed("active", app.layers[key].active);
+            d3.selectAll(".mode#"+key).classed("active", app.layers[key].active);
         }
     }
 

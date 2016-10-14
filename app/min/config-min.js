@@ -1,1 +1,1 @@
-var config={};config.apiBase="http://localhost:61002/api",config.coordHomeBase="10.471667,-73.25",config.circleRadius=5,config.transitionTime=500,config.theme="dark",config.layoutdebug=!1;
+var config={};config.tabletop=!0,config.apiBase="http://localhost:61002/api",config.coordHomeBase="10.471667,-73.25",config.circleRadius=5,config.transitionTime=500,config.theme="dark",config.layoutdebug=!1;

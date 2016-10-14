@@ -38,7 +38,8 @@ app.villagePositionsMap = [];
 
 
 // DOM Elements
-var $nav,
+var $body,
+    $nav,
     $infoBox,
     $rangeSlider,
     $rangeText;
@@ -64,7 +65,8 @@ function addLayer(name, state, Blueprint) {
 $(document).ready(function() {
 
     // Init DOM Elements
-    $nav = $("#nav")
+    $body = $('body');
+    $nav = $("#nav");
     $infoBox = $("#info");
 
     // Calculate layout vars
@@ -85,9 +87,12 @@ $(document).ready(function() {
 
         // Set theme configured in config.js using body class
         if (typeof app.config.theme === 'undefined') app.config.theme = 'light';
-        $('body').attr("class", app.config.theme);
+        $body.addClass(app.config.theme);
 
-        // app.config.theme = ($('body').hasClass('dark')) ? 'dark' : 'light';
+        // Is tabletop
+        if (app.config.tabletop) {
+            $body.addClass('tabletop');
+        }
 
         // Log the configuration for informational purposes
         console.log("Current config follows in next line:");
@@ -145,11 +150,8 @@ function init() {
 
                 // draw the map, finally
                 mapDraw(places_aoi);
-
             });
-
     });
-
 }
 
 
@@ -181,9 +183,18 @@ function mapDraw(geojson) {
     map = new mapboxgl.Map({
         container: 'map',
         style: baseMap,
-        zoom: 11,
-        center: [-73.12, 10.410]
+        zoom: 11.4,
+        center: [-73.12, 10.410],
+        // pitch: 45 // pitch in degrees
+        // bearing: -60 // bearing in degrees
+
     });
+
+    // Disable undesired interactions (for touch)
+    map.dragRotate.disable();
+    map.touchZoomRotate.disable();
+    map.keyboard.disable();
+    map.boxZoom.disable();
 
     // add navigation control to our map
     map.addControl(new mapboxgl.Navigation());
@@ -285,7 +296,6 @@ function update(transition_time) {
         });
 
 
-
     // calculating new views of the individual layers by calling their calc function
     for (var key in app.layers) {
         if (app.layers.hasOwnProperty(key)) {
@@ -341,7 +351,7 @@ function setMode(mode) {
             if (mode === key) { app.layers[key].active = true; }
             else { app.layers[key].active = false; }
             app.layers[key].layer.setActive(app.layers[key].active);
-            d3.selectAll(".mode."+key).classed("active", app.layers[key].active);
+            d3.selectAll(".mode#"+key).classed("active", app.layers[key].active);
         }
     }
 
@@ -499,8 +509,10 @@ function calculateLayoutVars() {
 
     if ($infoBox) {
         layoutVars.infoWidth = Math.round(parseInt($infoBox.width()) + parseInt($infoBox.css('right')));
+        layoutVars.microvisWidth = parseInt($infoBox.find('.content').width());
     } else {
         layoutVars.infoWidth = Math.round(parseInt($("#info").width()) + parseInt($("#info").css('right')));
+        layoutVars.microvisWidth = parseInt($('#info .content').width());
     }
 
     // calculate offset of small multiples from viewport
@@ -518,7 +530,6 @@ function calculateLayoutVars() {
     layoutVars.heightperelement = Math.round((layoutVars.h - layoutVars.offsetTop - layoutVars.offsetBottom - (layoutVars.rows-1)*layoutVars.gapY) / layoutVars.rows);
 
     return layoutVars;
-
 }
 
 
@@ -615,11 +626,10 @@ function showInfoBox(d) {
     // $infoBox.find(".description").html();
     $infoBox.find(".type").next('dd').text(String(d.properties.type).capitalize());
     $infoBox.find(".population").next('dd').text(getPlacePopulation(d.properties));
-    $infoBox.find(".objectID").next('dd').text(d.properties.osm_id);
-
+    $infoBox.find(".elevation").next('dd').text(parseInt(d.geometry.coordinates[2]) + "m");
+    // $infoBox.find(".objectID").next('dd').text(d.properties.osm_id);
 
     drawMicroVis(d);
-
 
     // Show
     $infoBox.addClass("show");
@@ -629,88 +639,151 @@ function showInfoBox(d) {
     });
 }
 
+
+/////////////////////////////
+// Draw Microvis Functions
+/////////////////////////////
+
+var routeJSON, routeData;
 function drawMicroVis(d) {
 
-    console.log("get place route - id: " + d.properties.osm_id);
-
-    var routeJSON = getElementByPlaceID(d.properties.osm_id, routesJSON.routes),
-        routeData = routeJSON.route.geometry.coordinates;
-
     // Set the dimensions of the canvas / graph
-    var microWidth = parseInt($infoBox.find('.content').width());
-        microHeight = 100;
+    // microvis.width = parseInt($infoBox.find('.content').width());
+    app.layout.microvisHeight = 100;
 
-    // Parse the date / time
-    // var parseDate = d3.time.format("%d-%b-%y").parse;
+    d3.selectAll("#microvis svg").remove();
+
+    routeJSON = getElementByPlaceID(d.properties.osm_id, routesJSON.routes);
+    routeData = routeJSON.route.geometry.coordinates;
+
+    $infoBox.find("#microvis-route-stats").empty().append(routeJSON.route.distance/1000 + " km | " + parseInt(routeJSON.route.travelTime/60) + " min");
+
+    drawRoute(d, routeData);
+    drawElevationProfile(d, routeData);
+
+    // Define responsive behavior
+    function resizeMicrovis() {
+        resizeRoute(d, routeData);
+        resizeElevationProfile(d, routeData);
+    };
+
+    // Call the resize function whenever a resize event occurs
+    d3.select(window).on('resize', resizeMicrovis);
+}
+
+var svgRoute;
+
+function drawRoute(d, routeData) {
+
+    svgRoute = d3.select("#microvis-route")
+    // svgRoute = d3.select("#microvis")
+        .append("svg")
+        .attr("class", "route")
+
+    console.log("append svg route");
+
+    // svgRoute.append("text").text("Route from Valledupar");
+
+    svgRoute.append("g")
+            .append("path")
+                .attr("data-id", d.properties.osm_id)
+                .attr("class", "line route")
+                .attr("d", lineFunction(routeData));
+
+    // Call the resize function whenever a resize event occurs
+    // d3.select(window).on('resize', resizeRoute);
+
+    resizeRoute();
+}
+
+// Resize Elevation Profile
+function resizeRoute() {
+
+    var gRoute = svgRoute.select("g");
+    var bbox = gRoute.node().getBBox();
+    var factor = app.layout.microvisWidth/bbox.width;
+    var offsetX = -bbox.x * factor;
+    var offsetY = -bbox.y * factor;
+
+    // console.log(bbox);
+    // console.log("microvis width: " + app.layout.microvisWidth + ", bbox width: " + bbox.width + ", factor: " + factor);
+
+    svgRoute.attr("width", app.layout.microvisWidth)
+            .attr("height", factor*bbox.height);
+
+    gRoute.attr("transform", " translate("+offsetX+","+offsetY+") scale("+factor+")");
+}
+
+var svgElev, gElev, lineElev, areaElev, xElev, yElev;
+
+function drawElevationProfile() {
 
     // Set the ranges
-    var xElev = d3.scale.linear().range([0, microWidth]);
-    var yElev = d3.scale.linear().range([microHeight, 0]);
+    xElev = d3.scale.linear().range([0, app.layout.microvisWidth]);
+    yElev = d3.scale.linear().range([app.layout.microvisHeight, 0]);
+
+    // Scale the range of the data
+    xElev.domain([0, routeData.length]);
+    yElev.domain([0, d3.max(routeData, function(d) { return d[2]; })]);
 
 
     // Check interpolations here:
     // http://jorditost.local:5757/snippets/microvis/graph.html
 
     // Define the line
-    var line = d3.svg.line()
+    lineElev = d3.svg.line()
         .interpolate("basis")
         .x(function(d, i) { return xElev(i); })
         .y(function(d, i) { return yElev(d[2]); })
 
-    var area = d3.svg.area()
+    areaElev = d3.svg.area()
         .interpolate("basis")
         .x(function(d, i) { return xElev(i); })
-        .y0(microHeight)
+        .y0(app.layout.microvisHeight)
         .y1(function(d, i) { return yElev(d[2]); })
 
     // Adds the svg canvas
-    var svgElev = d3.select("#microvis")
+    svgElev = d3.select("#microvis-elev")
+    // svgElev = d3.select("#microvis")
         .append("svg")
-            .attr("width", microWidth)
-            .attr("height", microHeight)
-        .append("g")
-            .attr("class", "elevation");
+            .attr("class", "elevation")
+            .attr("width", app.layout.microvisWidth)
+            .attr("height", app.layout.microvisHeight)
 
+    // svgElev.append("text").text("Elevation profile");
 
-    // Scale the range of the data
-    xElev.domain([0, routeData.length]);
-    yElev.domain([0, d3.max(routeData, function(d) { return d[2]; })]);
+    gElev = svgElev.append("g");
 
-    // Add the valueline path.
-    svgElev.append("path")
+    // Add the line path.
+    gElev.append("path")
             .attr("class", "line")
-            .attr("d", line(routeData));
+            .attr("d", lineElev(routeData));
 
-    svgElev.append("path")
+    // Add the area/bg path
+    gElev.append("path")
             .attr("class", "area")
-            .attr("d", area(routeData));
-
-
-    // Define responsive behavior
-    function resize() {
-
-        // Set the dimensions of the canvas / graph
-        microWidth = parseInt($infoBox.find('.content').width());
-
-        d3.select("#microvis svg").attr("width", microWidth);
-
-        // Update the range of the scale with new width/height
-        xElev.range([0, microWidth]);
-        // yElev.range([microHeight, 0]);
-
-        // Force D3 to recalculate and update the line
-        svgElev.selectAll('.line')
-                .attr("d", line(routeData));
-
-        svgElev.selectAll('.area')
-                .attr("d", area(routeData));
-    };
+            .attr("d", areaElev(routeData));
 
     // Call the resize function whenever a resize event occurs
-    d3.select(window).on('resize', resize);
+    // d3.select(window).on('resize', resizeElevationProfile);
+    resizeElevationProfile();
+}
 
-    // Call the resize function
-    // resize();
+// Resize Elevation Profile
+function resizeElevationProfile() {
+
+    svgElev.attr("width", app.layout.microvisWidth);
+
+    // Update the range of the scale with new width/height
+    xElev.range([0, app.layout.microvisWidth]);
+    // yElev.range([layoutVars.microvisHeight, 0]);
+
+    // Force D3 to recalculate and update the line
+    svgElev.selectAll('.line')
+            .attr("d", lineElev(routeData));
+
+    svgElev.selectAll('.area')
+            .attr("d", areaElev(routeData));
 }
 
 
@@ -720,6 +793,10 @@ function drawMicroVis(d) {
 
 // This callback is called when clicking on a location
 function clickCallback(d) {
-    showInfoBox(d);
     app.layout = calculateLayoutVars();
+    showInfoBox(d);
+
+    // Get coordinates from the symbol and center the map on those coordinates
+    // map.flyTo({center: d.geometry.coordinates, zoom: 13});
+    // loadFOS(d.properties.osm_id)
 }

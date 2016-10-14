@@ -60,9 +60,6 @@ function routesLayer() {
 
 
 
-
-
-
     /**
      * initializes the layer
      * @param {Number} svg
@@ -75,41 +72,7 @@ function routesLayer() {
         // Deactivate this layer by default
         this.setActive(false);
 
-
-
-
-        /*$.ajax({
-            dataType: "json",
-            url: app.config.apiBase + "/routes/onetomany/" + app.config.coordHomeBase + "/" + coord_settlement,
-            success: onSuccess,
-            error: function(error) {
-                console.log(error);
-            }
-        });
-
-
-
-        $.ajax({
-            method: "POST",
-            url: app.config.apiBase + "/routes/onetomany/" + app.config.coordHomeBase,
-            data: JSON.stringify(jsonToObject(routesJSON.routes)),
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (r) {
-                for (var i=0; i<r.data.features.length; i++) {
-                    // process route parts
-                    processRoute(r.data.features[i]);
-                }
-            },
-            error: function(error) {
-                alert(error);
-            }
-        });
-*/
-
-
         function routing(start, end, placeID) {
-
 
             function processRoute(route) {
 
@@ -145,6 +108,7 @@ function routesLayer() {
                             this.id = placeID;
                             this.geometry = r.geometry;
                             this.travelTime = r.properties.travelTime;
+                            this.distance = r.properties.distance;
                             this.path = lineFunction(this.geometry.coordinates);
                             return this;
                         }
@@ -175,11 +139,9 @@ function routesLayer() {
                             alert(error);
                         }
                     });
-
                 }
 
                 //processRoute(route);
-
             }
 
             if (routesJSON.routes.length > 0) {
@@ -199,9 +161,7 @@ function routesLayer() {
                         alert(error);
                     }
                 });
-
             }
-
         }
 
 
@@ -232,10 +192,6 @@ function routesLayer() {
 
     };
 
-
-
-
-
     /**
      * updates the view of the layer
      * @param {Number} transition_time
@@ -244,12 +200,6 @@ function routesLayer() {
         this.calc();
         this.render(transition_time);
     };
-
-
-
-
-
-
 
 
     /**
@@ -318,19 +268,14 @@ function routesLayer() {
                         app.villagePositions[smallmultiple.attr("data-id")].x = realX;
                         app.villagePositions[smallmultiple.attr("data-id")].y = realY;
                     }
-
                 });
-
             });
-
 
         } else {
             if (parent.active) {
                 app.villagePositions = app.villagePositionsMap.slice();
             }
         }
-
-
     };
 
 

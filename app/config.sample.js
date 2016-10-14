@@ -4,7 +4,6 @@ var config = {};
 config.tabletop = false;
 
 // DIGENTI API
-// config.apiBase = "http://jorditost.local:61002/api";
 config.apiBase = "http://localhost:61002/api";
 
 // Map config

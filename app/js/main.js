@@ -198,7 +198,25 @@ function mapDraw(geojson) {
     map.boxZoom.disable();
 
     // disable right click
-    $(document).bind('contextmenu', function (e) { e.preventDefault(); });
+    if (config.tabletop) {
+        $(document).bind('contextmenu', function (e) { e.preventDefault(); });
+    }
+
+    // Disable Browser zoom
+    $(document).keydown(function(event) {
+        if (event.ctrlKey === true && (
+                event.which === '61' ||
+                event.which === '107' ||
+                event.which === '173' ||
+                event.which === '109'  ||
+                event.which === '187'  ||
+                event.which === '189'
+            )) { event.preventDefault(); }
+    });
+    $(window).bind('mousewheel DOMMouseScroll', function (event) {
+        if (event.ctrlKey === true) { event.preventDefault(); }
+    });
+
 
     // add navigation control to our map
     map.addControl(new mapboxgl.Navigation());

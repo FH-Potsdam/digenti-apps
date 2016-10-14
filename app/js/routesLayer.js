@@ -175,6 +175,7 @@ function routesLayer() {
                     var current_el = d3.select(this);
                     current_el.append("text")
                         .text(function(d) { return d.properties.name; })
+                        .style("opactity", 0)
                         .attr("class", "title")
                         .attr("y", "30");
 
@@ -323,7 +324,7 @@ function routesLayer() {
                 current_el.selectAll("text")
                     .attr("x", 0)
                     .attr("y", app.layout.heightperelement)
-                    .transition().duration(transition_time)
+                    .transition().delay(transition_time).duration(transition_time)
                         .style("opacity", 1);
 
                 current_el.selectAll("g")
@@ -345,7 +346,7 @@ function routesLayer() {
 
                 var current_el = d3.select(this);
 
-                if (parent.lastView !== app.view) {
+                if (parent.lastView !== app.view || parent.lastView === "") {
 
                     current_el
                         .transition()
@@ -353,15 +354,13 @@ function routesLayer() {
                             .style("opacity", 1)
                             .attr("transform", "");
 
-                    current_el.selectAll("text")
-                        .transition()
-                        .duration(transition_time)
-                            .style("opacity", 0);
-
                     current_el.selectAll("g")
                         .transition()
                         .duration(transition_time)
                             .attr("transform", "");
+
+                    current_el.selectAll("text")
+                            .style("opacity", 0);
 
                 }
 
@@ -370,7 +369,6 @@ function routesLayer() {
                         var current_path = d3.select(this);
                         current_path.attr("d", lineFunction(parent.routes_geo[current_path.attr("data-id")]));
                     });
-
             });
 
         }

@@ -24,13 +24,13 @@ var map = new mapboxgl.Map({
     zoom: 13
 });
 
-var url = 'http://localhost:61002/api/fos/road/336609942/1000';
+var url = 'http://jorditost.local:61002/api/fos/road/336609942/1000';
 // var url = 'http://localhost:61002/api/fos/line/10.3506951,-73.044403399999979/1000';
 var source = new mapboxgl.GeoJSONSource({
     data: url
 });
 
-var urlRoad = 'http://localhost:61002/api/roads/336609942';
+var urlRoad = 'http://jorditost.local:61002/api/roads/336609942';
 var sourceRoad = new mapboxgl.GeoJSONSource({
     data: urlRoad
 });

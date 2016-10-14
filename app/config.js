@@ -4,6 +4,7 @@ var config = {};
 config.tabletop = true;
 
 // DIGENTI API
+//config.apiBase = "http://localhost:61002/api";
 config.apiBase = "http://localhost:61002/api";
 
 // Map config

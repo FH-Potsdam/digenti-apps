@@ -30,8 +30,6 @@ function isolinesLayer() {
     ////////////////////////////
 
     //this.svglayer = "";
-    this.isolineColor = '#3dc8e7';
-    this.isolineOpacity = 0.35;
     this.isolinesQueried = 0;
     this.active = true;
     this.scaleFactor = 0;
@@ -279,20 +277,22 @@ function isolinesLayer() {
                             .attr("data-transformX", isoline_group_vis_x)
                             .attr("data-transformY", isoline_group_vis_y);
 
-                        var realX, realY;
-
-                        if (bbox.width === 0 && bbox.height === 0) {
-                            realX = isoline_group_vis_x + isoline_group_x;
-                            realY = isoline_group_vis_y + isoline_group_y;
-                        } else {
-                            realX = parseFloat(project(thedata).x * parent.scaleFactor) + isoline_group_vis_x + isoline_group_x;
-                            realY = parseFloat(project(thedata).y * parent.scaleFactor) + isoline_group_vis_y + isoline_group_y;
-                        }
-
                         if (parent.active) {
+
+                            var realX, realY;
+
+                            if (bbox.width === 0 && bbox.height === 0) {
+                                realX = isoline_group_vis_x + isoline_group_x;
+                                realY = isoline_group_vis_y + isoline_group_y;
+                            } else {
+                                realX = parseFloat(project(thedata).x * parent.scaleFactor) + isoline_group_vis_x + isoline_group_x;
+                                realY = parseFloat(project(thedata).y * parent.scaleFactor) + isoline_group_vis_y + isoline_group_y;
+                            }
+
                             app.villagePositions[isoline_group.attr("data-id")] = {};
                             app.villagePositions[isoline_group.attr("data-id")].x = realX;
                             app.villagePositions[isoline_group.attr("data-id")].y = realY;
+
                         }
 
 
@@ -340,22 +340,26 @@ function isolinesLayer() {
 
             if (app.view === "smallmultiples") {
 
-                this.svglayer.selectAll(".isoline-group")
-                    .transition()
-                    .duration(transition_time)
-                        .style("opacity", 1)
-                        .attr("transform", function() {
-                            return "translate("+ d3.select(this).attr("data-transformX") +","+ d3.select(this).attr("data-transformY") +")";
-                        });
+                if (parent.lastView !== app.view) {
 
-                // Update isolines
-                this.svglayer.selectAll(".isoline-group-vis")
-                    .transition()
-                    .duration(transition_time)
-                        .style("opacity", 1)
-                        .attr("transform", function() {
-                            return "translate("+d3.select(this).attr("data-transformX")+","+d3.select(this).attr("data-transformY")+") scale("+parent.scaleFactor+")";
-                        });
+                    this.svglayer.selectAll(".isoline-group")
+                        .transition()
+                        .duration(transition_time)
+                            .style("opacity", 1)
+                            .attr("transform", function() {
+                                return "translate("+ d3.select(this).attr("data-transformX") +","+ d3.select(this).attr("data-transformY") +")";
+                            });
+
+                    // Update isolines
+                    this.svglayer.selectAll(".isoline-group-vis")
+                        .transition()
+                        .duration(transition_time)
+                            .style("opacity", 1)
+                            .attr("transform", function() {
+                                return "translate("+d3.select(this).attr("data-transformX")+","+d3.select(this).attr("data-transformY")+") scale("+parent.scaleFactor+")";
+                            });
+
+                }
 
             } else {
 

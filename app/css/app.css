@@ -609,7 +609,8 @@ body.tabletop {
 
 #isolines-ui {
   bottom: 0;
-  left: 50%; }
+  left: 50%;
+  opacity: 1 !important; }
   #isolines-ui #range__slider {
     display: block;
     padding: 5px 0;

@@ -321,9 +321,9 @@ function update(transition_time) {
     // calculating new views of the individual layers by calling their calc function
     for (var key in app.layers) {
         if (app.layers.hasOwnProperty(key)) {
-            if (app.layers[key].active) {
+            //if (app.layers[key].active) {
                 app.layers[key].layer.calc();
-            }
+            //}
         }
     }
 
@@ -338,9 +338,9 @@ function update(transition_time) {
     // rendering the layer views by calling each layers render function
     for (key in app.layers) {
         if (app.layers.hasOwnProperty(key)) {
-            if (app.layers[key].active) {
+            //if (app.layers[key].active) {
                 app.layers[key].layer.render(transition_time);
-            }
+            //}
         }
     }
 
@@ -378,7 +378,7 @@ function setMode(mode) {
     }
 
     // Mode specific GUI elements
-    if (app.mode == 'isolines') {
+    if (app.mode === 'isolines') {
         $('#isolines-ui').removeClass('disabled');
     } else {
         $('#isolines-ui').addClass('disabled');
@@ -613,6 +613,7 @@ function initRangeSlider() {
 }
 
 function rangeSliderInput() {
+
     var range = parseInt($rangeSlider.val());
     $rangeText.html(range + " min");
 

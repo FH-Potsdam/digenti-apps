@@ -56,10 +56,21 @@
             &.active,
             &:hover {
                 background-color: $color-active;
-
                 .dark & {
                     background-color: $color-active-dark;
                 }
+            }
+
+            .tabletop &:hover {
+                background-color: transparent !important;
+            }
+
+            .tabletop &.active {
+                background-color: $color-active !important;
+            }
+
+            .tabletop.dark &.active {
+                background-color: $color-active-dark !important;
             }
         }
 

@@ -38,7 +38,8 @@ app.villagePositionsMap = [];
 
 
 // DOM Elements
-var $nav,
+var $body,
+    $nav,
     $infoBox,
     $rangeSlider,
     $rangeText;
@@ -64,7 +65,8 @@ function addLayer(name, state, Blueprint) {
 $(document).ready(function() {
 
     // Init DOM Elements
-    $nav = $("#nav")
+    $body = $('body');
+    $nav = $("#nav");
     $infoBox = $("#info");
 
     // Calculate layout vars
@@ -85,9 +87,12 @@ $(document).ready(function() {
 
         // Set theme configured in config.js using body class
         if (typeof app.config.theme === 'undefined') app.config.theme = 'light';
-        $('body').attr("class", app.config.theme);
+        $body.addClass(app.config.theme);
 
-        // app.config.theme = ($('body').hasClass('dark')) ? 'dark' : 'light';
+        // Is tabletop
+        if (app.config.tabletop) {
+            $body.addClass('tabletop');
+        }
 
         // Log the configuration for informational purposes
         console.log("Current config follows in next line:");

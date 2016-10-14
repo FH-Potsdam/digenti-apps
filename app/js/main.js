@@ -192,9 +192,13 @@ function mapDraw(geojson) {
 
     // Disable undesired interactions (for touch)
     map.dragRotate.disable();
-    map.touchZoomRotate.disable();
+    //map.touchZoomRotate.disable();
+    map.touchZoomRotate.disableRotation();
     map.keyboard.disable();
     map.boxZoom.disable();
+
+    // disable right click
+    $(document).bind('contextmenu', function (e) { e.preventDefault(); });
 
     // add navigation control to our map
     map.addControl(new mapboxgl.Navigation());

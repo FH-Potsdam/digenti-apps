@@ -248,6 +248,7 @@ function mapDraw(geojson) {
         else                                { map.setStyle('mapbox://styles/mapbox/' + layer); }
     }
 
+    update(0);
 
 }
 
@@ -283,11 +284,20 @@ function update(transition_time) {
             app.villagePositionsMap[d.properties.osm_id].y = project(d.geometry.coordinates).y;
         });
 
+
+
     // calculating new views of the individual layers by calling their calc function
     for (var key in app.layers) {
         if (app.layers.hasOwnProperty(key)) {
-            app.layers[key].layer.calc();
+            if (app.layers[key].active) {
+                app.layers[key].layer.calc();
+            }
         }
+    }
+
+    // Necessary to show villages when no mode is selected
+    if (app.mode === '') {
+        app.villagePositions = app.villagePositionsMap.slice();
     }
 
     // update settlementPointLayer to reanrange the settlement circles
@@ -296,7 +306,9 @@ function update(transition_time) {
     // rendering the layer views by calling each layers render function
     for (key in app.layers) {
         if (app.layers.hasOwnProperty(key)) {
-            app.layers[key].layer.render(transition_time);
+            if (app.layers[key].active) {
+                app.layers[key].layer.render(transition_time);
+            }
         }
     }
 
@@ -441,7 +453,7 @@ function activateButtons() {
 
 function updateSettlementPointLayer(transition_time) {
 
-    settlementPointLayer.moveToFront();
+    //settlementPointLayer.moveToFront();
 
     settlementPointLayer.selectAll("circle").each(function() {
 
@@ -451,7 +463,6 @@ function updateSettlementPointLayer(transition_time) {
         if (isDefined(app.villagePositions[current_id])) {
 
             current_el
-                .attr("opacity", "1")
                 .transition()
                 .duration(transition_time)
                     .attr("cx", app.villagePositions[current_id].x)
@@ -527,8 +538,8 @@ function isDefined(v) {
 }
 
 d3.selection.prototype.moveToFront = function() {
-  return this.each(function(){
-    this.parentNode.appendChild(this);
+  return this.each(function() {
+      this.parentNode.appendChild(this);
   });
 };
 

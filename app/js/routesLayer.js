@@ -39,6 +39,7 @@ function routesLayer() {
     this.routes_geo = [];
     this.active = true;
     this.scaleFactor = 0;
+    this.lastView = "";
 
     //////////////////////
     // Functions
@@ -241,7 +242,6 @@ function routesLayer() {
      */
     this.update = function (transition_time) {
         this.calc();
-        updateSettlementPointLayer(transition_time);
         this.render(transition_time);
     };
 
@@ -400,20 +400,25 @@ function routesLayer() {
 
                 var current_el = d3.select(this);
 
-                current_el
-                    .transition()
-                    .duration(transition_time)
-                        .style("opacity", 1)
-                        .attr("transform", "");
+                if (parent.lastView !== app.view) {
 
-                current_el.selectAll("text")
-                    .transition().duration(transition_time)
-                        .style("opacity", 0);
+                    current_el
+                        .transition()
+                        .duration(transition_time)
+                            .style("opacity", 1)
+                            .attr("transform", "");
 
-                current_el.selectAll("g")
-                    .transition()
-                    .duration(transition_time)
-                        .attr("transform", "");
+                    current_el.selectAll("text")
+                        .transition()
+                        .duration(transition_time)
+                            .style("opacity", 0);
+
+                    current_el.selectAll("g")
+                        .transition()
+                        .duration(transition_time)
+                            .attr("transform", "");
+
+                }
 
                 current_el.selectAll("g").selectAll("path")
                     .each(function() {
@@ -425,6 +430,7 @@ function routesLayer() {
 
         }
 
+        parent.lastView = app.view;
 
     };
 

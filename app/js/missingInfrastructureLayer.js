@@ -172,7 +172,6 @@ function missingInfrastructureLayer() {
      */
     this.update = function (transition_time) {
         this.calc();
-        updateSettlementPointLayer(transition_time);
         this.render(transition_time);
     };
 

@@ -35,6 +35,7 @@ function isolinesLayer() {
     this.isolinesQueried = 0;
     this.active = true;
     this.scaleFactor = 0;
+    this.lastView = "";
 
     this.isolinesGeoJSON = {
         "type":"FeatureCollection",
@@ -320,7 +321,6 @@ function isolinesLayer() {
      */
     this.update = function (transition_time) {
         this.calc();
-        updateSettlementPointLayer(transition_time);
         this.render(transition_time);
     };
 
@@ -340,8 +340,6 @@ function isolinesLayer() {
 
             if (app.view === "smallmultiples") {
 
-                // RENDER
-
                 this.svglayer.selectAll(".isoline-group")
                     .transition()
                     .duration(transition_time)
@@ -359,32 +357,33 @@ function isolinesLayer() {
                             return "translate("+d3.select(this).attr("data-transformX")+","+d3.select(this).attr("data-transformY")+") scale("+parent.scaleFactor+")";
                         });
 
-
-                // Update isolines
-                this.svglayer.selectAll(".isoline")
-                    .attr("d", path);
-
-
             } else {
 
-                this.svglayer.selectAll(".isoline-group")
-                    .transition()
-                    .duration(transition_time)
-                        .style("opacity", 1)
-                        .attr("transform", function() { return ""; });
+                if (parent.lastView !== app.view) {
 
-                this.svglayer.selectAll(".isoline-group-vis")
-                    .transition()
-                    .duration(transition_time)
-                        .attr("transform", function() { return ""; });
+                    this.svglayer.selectAll(".isoline-group")
+                        .transition()
+                        .duration(transition_time)
+                            .style("opacity", 1)
+                            .attr("transform", "");
 
+                    this.svglayer.selectAll(".isoline-group-vis")
+                        .transition()
+                        .duration(transition_time)
+                            .attr("transform", "");
 
+                }
 
-                // Update isolines
-                this.svglayer.selectAll(".isoline")
-                    .attr("d", path);
 
             }
+
+            // Update isolines
+            this.svglayer.selectAll(".isoline")
+                .attr("d", path);
+
         }
+
+        parent.lastView = app.view;
+
     };
 }

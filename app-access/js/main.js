@@ -113,44 +113,59 @@ $(document).ready(function() {
  */
 function init() {
 
-    // Include scripts of layer modules
-    $.when(
-        $.getScript( "js/routesLayer.js" ),
-        $.getScript( "js/missingInfrastructureLayer.js" ),
-        $.getScript( "js/isolinesLayer.js" ),
-        $.Deferred(function(deferred) { $(deferred.resolve); })
-    // all scripts loaded
-    ).done(function() {
+    $.ajax({
+        url: app.config.apiBase,
+        type:'HEAD',
+        error: function() {
 
-        console.log("add layers");
+            $(".spinner").remove();
+            $(".alert").html("Can't reach API under <i>" + app.config.apiBase + "</i>. It seems to be offline.<br>Please start the API and reload the app.");
 
-        // add layers
-        addLayer("routesfromvalledupar", false, routesLayer);
-        addLayer("missinginfrastructure", false, missingInfrastructureLayer);
-        addLayer("isolines", false, isolinesLayer);
+        },
+        success: function() {
 
-        // Check slider
-        initRangeSlider();
-        // rangeSliderInput();
+            // Include scripts of layer modules
+            $.when(
+                $.getScript( "js/routesLayer.js" ),
+                $.getScript( "js/missingInfrastructureLayer.js" ),
+                $.getScript( "js/isolinesLayer.js" ),
+                $.Deferred(function(deferred) { $(deferred.resolve); })
+            // all scripts loaded
+            ).done(function() {
 
-        // Load json data
-        d3.queue()
-        	.defer(d3.json, '../../data/places_aoi.json')
-            .defer(d3.json, '../../data/street_points_aoi.json')
-            // all jsons are loaded
-            .await(function(error, data1, data2) {
+                console.log("add layers");
 
-                // that shouldn't happen
-                if (error) throw error;
+                // add layers
+                addLayer("routesfromvalledupar", false, routesLayer);
+                addLayer("missinginfrastructure", false, missingInfrastructureLayer);
+                addLayer("isolines", false, isolinesLayer);
 
-                // push data from json in global vars
-                places_aoi = data1;
-                street_points_aoi = data2;
+                // Check slider
+                initRangeSlider();
+                // rangeSliderInput();
 
-                // draw the map, finally
-                mapDraw(places_aoi);
+                // Load json data
+                d3.queue()
+                	.defer(d3.json, '../../data/places_aoi.json')
+                    .defer(d3.json, '../../data/street_points_aoi.json')
+                    // all jsons are loaded
+                    .await(function(error, data1, data2) {
+
+                        // that shouldn't happen
+                        if (error) throw error;
+
+                        // push data from json in global vars
+                        places_aoi = data1;
+                        street_points_aoi = data2;
+
+                        // draw the map, finally
+                        mapDraw(places_aoi);
+                    });
             });
+
+        }
     });
+
 }
 
 

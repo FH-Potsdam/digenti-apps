@@ -397,6 +397,7 @@ text {
     align-items: center;
     flex-direction: row; }
   #loader > div {
+    text-align: center;
     width: 100%; }
   #loader .spinner {
     width: 40px;

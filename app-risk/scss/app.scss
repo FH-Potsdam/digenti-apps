@@ -1,0 +1,49 @@
+///////////////////////////////
+// DIGENTI Accessibility App
+///////////////////////////////
+
+// This is the main style for the Accessibility App
+
+/////////////
+// Imports
+/////////////
+
+// Base file for all apps and prototypes
+@import '../../digenti-framework/scss/base';
+
+// vars must be imported before the base-app.
+// base-app contains basic layouting for all DIGENTI apps (Accessibility, Risk, RePlan)
+@import 'vars'; // Keep this vars
+@import '../../digenti-framework/scss/base-app';
+
+
+//////////////////
+// Main sidebar
+//////////////////
+
+
+/////////////////
+// Isolines UI
+/////////////////
+
+// #isolines-ui {
+//     bottom: 0;
+//     left: 50%;
+//     opacity: 1 !important;
+//
+//     #range__slider {
+//         display: block;
+//         padding: 5px 0;
+//         margin: 0;
+//     }
+//
+//     #range {
+//         display: block;
+//         text-align: center;
+//         margin-top: 15px;
+//     }
+//
+//     &.disabled {
+//         bottom: -70px;
+//     }
+// }

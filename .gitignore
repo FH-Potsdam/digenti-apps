@@ -6,7 +6,7 @@ config.codekit
 
 .DS_Store
 
-app-access/config.js
-app-risk/config.js
+app-*/min/
+app-*/config.js
 
 **.sass-cache**

@@ -10,3 +10,5 @@ app-*/min/
 app-*/config.js
 
 **.sass-cache**
+
+.codekit-cache

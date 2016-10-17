@@ -137,7 +137,6 @@ function init() {
         d3.queue()
         	.defer(d3.json, '../../data/places_aoi.json')
             .defer(d3.json, '../../data/street_points_aoi.json')
-            //.defer(d3.json, 'data/routes_cached.json')
             // all jsons are loaded
             .await(function(error, data1, data2) {
 

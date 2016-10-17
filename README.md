@@ -1,11 +1,13 @@
-# digenti-access
+# DIGENTI Apps
 
 Routing experiments combining a routing API and remote sensing data.
 
 
 This interfaces gives an overview of the accessibility of the settlements in the [Area of Interest in Colombia](https://docs.google.com/document/d/15N1pgERY4TUcnvck36jJFi3MvAZuxh8J-mOUpWDt-_w/edit?usp=sharing) using a routing API and remote sensing data.
 
-## Accessibility
+## Accessibility Interface
+
+The Accessibility Interface is located in `app-access`.
 
 For each settlement, with standard routing:
 
@@ -24,6 +26,10 @@ If **not directly accessible** by road:
 More info here:
 
 - [Remote sensing-based accessibility](https://www.dropbox.com/s/rrpx3w3mq2a8qfh/160621_Remote_Sensing_based_Routing.pdf?dl=0)
+
+## Risk Interface
+
+The Accessibility Interface is located in `app-risk`.
 
 ## Data
 

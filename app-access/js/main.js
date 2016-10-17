@@ -12,7 +12,6 @@
 
 
 
-
 //////////
 // Vars
 //////////
@@ -74,7 +73,7 @@ $(document).ready(function() {
 
     // load config
     $.when(
-        $.getScript( "config.js" ),
+        $.getScript("config.js"),
         $.Deferred(function(deferred) { $(deferred.resolve); })
     // all scripts loaded
     ).done(function() {
@@ -631,7 +630,7 @@ function showInfoBox(d) {
     // Show
     $infoBox.addClass("show");
 
-    $infoBox.find(".close").one("click", function(e) {
+    $infoBox.find(".close").one("click", function() {
         $infoBox.removeClass("show");
     });
 }
@@ -662,7 +661,7 @@ function drawMicroVis(d) {
     function resizeMicrovis() {
         resizeRoute(d, routeData);
         resizeElevationProfile(d, routeData);
-    };
+    }
 
     // Call the resize function whenever a resize event occurs
     d3.select(window).on('resize', resizeMicrovis);
@@ -731,13 +730,13 @@ function drawElevationProfile() {
     lineElev = d3.svg.line()
         .interpolate("basis")
         .x(function(d, i) { return xElev(i); })
-        .y(function(d, i) { return yElev(d[2]); })
+        .y(function(d) { return yElev(d[2]); });
 
     areaElev = d3.svg.area()
         .interpolate("basis")
         .x(function(d, i) { return xElev(i); })
         .y0(app.layout.microvisHeight)
-        .y1(function(d, i) { return yElev(d[2]); })
+        .y1(function(d) { return yElev(d[2]); });
 
     // Adds the svg canvas
     svgElev = d3.select("#microvis-elev")
@@ -745,7 +744,7 @@ function drawElevationProfile() {
         .append("svg")
             .attr("class", "elevation")
             .attr("width", app.layout.microvisWidth)
-            .attr("height", app.layout.microvisHeight)
+            .attr("height", app.layout.microvisHeight);
 
     // svgElev.append("text").text("Elevation profile");
 

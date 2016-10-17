@@ -1,9 +1,6 @@
 /* global d3:true */
 /* global mapboxgl:true */
 /* global console:true */
-/* global missingInfrastructureLayer:true */
-/* global isolinesLayer:true */
-/* global routesLayer:true */
 /* exported projectPoint */
 /* exported setMode */
 /* exported routesArray */
@@ -100,9 +97,7 @@ $(document).ready(function() {
 
         // Init layer configuration and data load
         init();
-
     });
-
 });
 
 
@@ -113,25 +108,24 @@ $(document).ready(function() {
  */
 function init() {
 
-    // Include scripts of layer modules
-    $.when(
-        $.getScript( "js/routesLayer.js" ),
-        $.getScript( "js/missingInfrastructureLayer.js" ),
-        $.getScript( "js/isolinesLayer.js" ),
-        $.Deferred(function(deferred) { $(deferred.resolve); })
-    // all scripts loaded
-    ).done(function() {
-
-        console.log("add layers");
-
-        // add layers
-        addLayer("routesfromvalledupar", false, routesLayer);
-        addLayer("missinginfrastructure", false, missingInfrastructureLayer);
-        addLayer("isolines", false, isolinesLayer);
-
-        // Check slider
-        initRangeSlider();
-        // rangeSliderInput();
+    // // Include scripts of layer modules
+    // $.when(
+    //     $.getScript( "js/routesLayer.js" ),
+    //     $.getScript( "js/missingInfrastructureLayer.js" ),
+    //     $.getScript( "js/isolinesLayer.js" ),
+    //     $.Deferred(function(deferred) { $(deferred.resolve); })
+    // // all scripts loaded
+    // ).done(function() {
+    //
+    //     console.log("add layers");
+    //
+    //     // add layers
+    //     addLayer("routesfromvalledupar", false, routesLayer);
+    //     addLayer("missinginfrastructure", false, missingInfrastructureLayer);
+    //     addLayer("isolines", false, isolinesLayer);
+    //
+    //     // Check slider
+    //     initRangeSlider();
 
         // Load json data
         d3.queue()
@@ -151,7 +145,7 @@ function init() {
                 // draw the map, finally
                 mapDraw(places_aoi);
             });
-    });
+    // });
 }
 
 
@@ -239,7 +233,7 @@ function mapDraw(geojson) {
                         .interpolate("linear");
 
     // Initialize the settlementPointLayer. It holds the circles of the settlements
-    settlementPointLayer = svg.append("g").attr("id", "settlementPointLayer");
+    settlementPointLayer = svg.append("g").attr("id", "settlement-point-layer");
 
     // Binding the settlement data to our layer. Positions of the settlements are saved in app.villagePositionsMap-Array
     settlementPointLayer.selectAll("circle")
@@ -282,7 +276,6 @@ function mapDraw(geojson) {
     }
 
     update(0);
-
 }
 
 
@@ -343,23 +336,13 @@ function update(transition_time) {
             //}
         }
     }
-
 }
 
 
 
 ///////////////////
-// TRIGGER VIEWS
+// Views / Modes
 ///////////////////
-
-function reorderSmallMultiples(ob) {
-    app.orderby = ob;
-    d3.selectAll(".orderby").classed("active", false);
-    d3.selectAll("."+app.orderby).classed("active", true);
-    update(app.config.transitionTime);
-}
-
-
 
 function setMode(mode) {
 
@@ -420,6 +403,19 @@ function triggerSmallMultiplesView() {
     update(app.config.transitionTime);
 }
 
+function reorderSmallMultiples(ob) {
+    app.orderby = ob;
+    d3.selectAll(".orderby").classed("active", false);
+    d3.selectAll("."+app.orderby).classed("active", true);
+    update(app.config.transitionTime);
+}
+
+function activateButtons() {
+    d3.selectAll(".disabled")
+        .attr("disabled", null);
+}
+
+
 //////////////////////
 // Map Interactions
 //////////////////////
@@ -445,9 +441,6 @@ function showMap() {
 
     d3.selectAll(".mapboxgl-canvas")
         .classed('hidden', false);
-
-    // setMapOpacity(1);
-    // enableMapInteraction();
 }
 
 function hideMap() {
@@ -457,36 +450,16 @@ function hideMap() {
 
     d3.selectAll(".mapboxgl-canvas")
         .classed('hidden', true);
-
-    // setMapOpacity(0.08);
-    // disableMapInteraction();
-}
-
-// function setMapOpacity(value) {
-//
-//     d3.selectAll(".mapboxgl-canvas")
-//         .transition()
-//         .duration(500)
-//             .style("opacity", value);
-//
-//     d3.selectAll(".mapboxgl-control-container")
-//         .transition()
-//         .duration(500)
-//             .style("opacity", value);
-// }
-
-
-function activateButtons() {
-    d3.selectAll(".disabled")
-        .attr("disabled", null);
 }
 
 
+//////////////////////
+// UPDATE Functions
+//////////////////////
 
 function updateSettlementPointLayer(transition_time) {
 
     //settlementPointLayer.moveToFront();
-
     settlementPointLayer.selectAll("circle").each(function() {
 
         var current_el = d3.select(this);
@@ -500,14 +473,8 @@ function updateSettlementPointLayer(transition_time) {
                     .attr("cx", app.villagePositions[current_id].x)
                     .attr("cy", app.villagePositions[current_id].y);
         }
-
     });
-
 }
-
-
-
-
 
 
 function calculateLayoutVars() {
@@ -577,56 +544,6 @@ d3.selection.prototype.moveToFront = function() {
 };
 
 
-/////////////////////////////
-// Isolines' Range slider
-/////////////////////////////
-
-function initRangeSlider() {
-
-    $rangeSlider = $("#range__slider");
-    $rangeText = $("#range__text");
-
-    // Default value
-    var range = parseInt($rangeSlider.val());
-    $rangeText.html(range + " min");
-
-    // Set range in isolines layer
-    app.layers['isolines'].layer.setRange(range);
-
-    // Get all possible values
-    var min = parseInt($rangeSlider.attr("min")),
-        max = parseInt($rangeSlider.attr("max")),
-        step = parseInt($rangeSlider.attr("step"));
-
-    // console.log("range min: " + min);
-    // console.log("range max: " + max);
-    // console.log("range step: " + step);
-
-    var numRanges = 1+((max-min)/step);
-    // console.log("total ranges: " + numRanges);
-    var rangesArray = [];
-    for (var i=0; i<numRanges; i++) {
-        rangesArray.push(min+(i*step));
-    }
-
-    app.layers['isolines'].layer.setQueryRanges(rangesArray.toString());
-}
-
-function rangeSliderInput() {
-
-    var range = parseInt($rangeSlider.val());
-    $rangeText.html(range + " min");
-
-    // Set range in isolines layer
-    app.layers['isolines'].layer.setRange(range);
-
-    // Toggle isolines if isolines view is active
-    if (app.layers['isolines'].active) {
-        app.layers['isolines'].layer.toggleIsolines();
-    }
-}
-
-
 //////////////
 // Info Box
 //////////////
@@ -650,9 +567,9 @@ function showInfoBox(d) {
     $infoBox.find(".type").next('dd').text(String(d.properties.type).capitalize());
     $infoBox.find(".population").next('dd').text(getPlacePopulation(d.properties));
     $infoBox.find(".elevation").next('dd').text(parseInt(d.geometry.coordinates[2]) + "m");
-    // $infoBox.find(".objectID").next('dd').text(d.properties.osm_id);
+    $infoBox.find(".objectID").next('dd').text(d.properties.osm_id);
 
-    drawMicroVis(d);
+    // drawMicroVis(d);
 
     // Show
     $infoBox.addClass("show");
@@ -667,147 +584,147 @@ function showInfoBox(d) {
 // Draw Microvis Functions
 /////////////////////////////
 
-var routeJSON, routeData;
-function drawMicroVis(d) {
-
-    // Set the dimensions of the canvas / graph
-    // microvis.width = parseInt($infoBox.find('.content').width());
-    app.layout.microvisHeight = 100;
-
-    d3.selectAll("#microvis svg").remove();
-
-    routeJSON = getElementByPlaceID(d.properties.osm_id, routesJSON.routes);
-    routeData = routeJSON.route.geometry.coordinates;
-
-    $infoBox.find("#microvis-route-stats").empty().append(routeJSON.route.distance/1000 + " km | " + parseInt(routeJSON.route.travelTime/60) + " min");
-
-    drawRoute(d, routeData);
-    drawElevationProfile(d, routeData);
-
-    // Define responsive behavior
-    function resizeMicrovis() {
-        resizeRoute(d, routeData);
-        resizeElevationProfile(d, routeData);
-    };
-
-    // Call the resize function whenever a resize event occurs
-    d3.select(window).on('resize', resizeMicrovis);
-}
-
-var svgRoute;
-
-function drawRoute(d, routeData) {
-
-    svgRoute = d3.select("#microvis-route")
-    // svgRoute = d3.select("#microvis")
-        .append("svg")
-        .attr("class", "route")
-
-    console.log("append svg route");
-
-    // svgRoute.append("text").text("Route from Valledupar");
-
-    svgRoute.append("g")
-            .append("path")
-                .attr("data-id", d.properties.osm_id)
-                .attr("class", "line route")
-                .attr("d", lineFunction(routeData));
-
-    // Call the resize function whenever a resize event occurs
-    // d3.select(window).on('resize', resizeRoute);
-
-    resizeRoute();
-}
-
-// Resize Elevation Profile
-function resizeRoute() {
-
-    var gRoute = svgRoute.select("g");
-    var bbox = gRoute.node().getBBox();
-    var factor = app.layout.microvisWidth/bbox.width;
-    var offsetX = -bbox.x * factor;
-    var offsetY = -bbox.y * factor;
-
-    // console.log(bbox);
-    // console.log("microvis width: " + app.layout.microvisWidth + ", bbox width: " + bbox.width + ", factor: " + factor);
-
-    svgRoute.attr("width", app.layout.microvisWidth)
-            .attr("height", factor*bbox.height);
-
-    gRoute.attr("transform", " translate("+offsetX+","+offsetY+") scale("+factor+")");
-}
-
-var svgElev, gElev, lineElev, areaElev, xElev, yElev;
-
-function drawElevationProfile() {
-
-    // Set the ranges
-    xElev = d3.scale.linear().range([0, app.layout.microvisWidth]);
-    yElev = d3.scale.linear().range([app.layout.microvisHeight, 0]);
-
-    // Scale the range of the data
-    xElev.domain([0, routeData.length]);
-    yElev.domain([0, d3.max(routeData, function(d) { return d[2]; })]);
-
-
-    // Check interpolations here:
-    // http://jorditost.local:5757/snippets/microvis/graph.html
-
-    // Define the line
-    lineElev = d3.svg.line()
-        .interpolate("basis")
-        .x(function(d, i) { return xElev(i); })
-        .y(function(d, i) { return yElev(d[2]); })
-
-    areaElev = d3.svg.area()
-        .interpolate("basis")
-        .x(function(d, i) { return xElev(i); })
-        .y0(app.layout.microvisHeight)
-        .y1(function(d, i) { return yElev(d[2]); })
-
-    // Adds the svg canvas
-    svgElev = d3.select("#microvis-elev")
-    // svgElev = d3.select("#microvis")
-        .append("svg")
-            .attr("class", "elevation")
-            .attr("width", app.layout.microvisWidth)
-            .attr("height", app.layout.microvisHeight)
-
-    // svgElev.append("text").text("Elevation profile");
-
-    gElev = svgElev.append("g");
-
-    // Add the line path.
-    gElev.append("path")
-            .attr("class", "line")
-            .attr("d", lineElev(routeData));
-
-    // Add the area/bg path
-    gElev.append("path")
-            .attr("class", "area")
-            .attr("d", areaElev(routeData));
-
-    // Call the resize function whenever a resize event occurs
-    // d3.select(window).on('resize', resizeElevationProfile);
-    resizeElevationProfile();
-}
-
-// Resize Elevation Profile
-function resizeElevationProfile() {
-
-    svgElev.attr("width", app.layout.microvisWidth);
-
-    // Update the range of the scale with new width/height
-    xElev.range([0, app.layout.microvisWidth]);
-    // yElev.range([layoutVars.microvisHeight, 0]);
-
-    // Force D3 to recalculate and update the line
-    svgElev.selectAll('.line')
-            .attr("d", lineElev(routeData));
-
-    svgElev.selectAll('.area')
-            .attr("d", areaElev(routeData));
-}
+// var routeJSON, routeData;
+// function drawMicroVis(d) {
+//
+//     // Set the dimensions of the canvas / graph
+//     // microvis.width = parseInt($infoBox.find('.content').width());
+//     app.layout.microvisHeight = 100;
+//
+//     d3.selectAll("#microvis svg").remove();
+//
+//     routeJSON = getElementByPlaceID(d.properties.osm_id, routesJSON.routes);
+//     routeData = routeJSON.route.geometry.coordinates;
+//
+//     $infoBox.find("#microvis-route-stats").empty().append(routeJSON.route.distance/1000 + " km | " + parseInt(routeJSON.route.travelTime/60) + " min");
+//
+//     drawRoute(d, routeData);
+//     drawElevationProfile(d, routeData);
+//
+//     // Define responsive behavior
+//     function resizeMicrovis() {
+//         resizeRoute(d, routeData);
+//         resizeElevationProfile(d, routeData);
+//     };
+//
+//     // Call the resize function whenever a resize event occurs
+//     d3.select(window).on('resize', resizeMicrovis);
+// }
+//
+// var svgRoute;
+//
+// function drawRoute(d, routeData) {
+//
+//     svgRoute = d3.select("#microvis-route")
+//     // svgRoute = d3.select("#microvis")
+//         .append("svg")
+//         .attr("class", "route")
+//
+//     console.log("append svg route");
+//
+//     // svgRoute.append("text").text("Route from Valledupar");
+//
+//     svgRoute.append("g")
+//             .append("path")
+//                 .attr("data-id", d.properties.osm_id)
+//                 .attr("class", "line route")
+//                 .attr("d", lineFunction(routeData));
+//
+//     // Call the resize function whenever a resize event occurs
+//     // d3.select(window).on('resize', resizeRoute);
+//
+//     resizeRoute();
+// }
+//
+// // Resize Elevation Profile
+// function resizeRoute() {
+//
+//     var gRoute = svgRoute.select("g");
+//     var bbox = gRoute.node().getBBox();
+//     var factor = app.layout.microvisWidth/bbox.width;
+//     var offsetX = -bbox.x * factor;
+//     var offsetY = -bbox.y * factor;
+//
+//     // console.log(bbox);
+//     // console.log("microvis width: " + app.layout.microvisWidth + ", bbox width: " + bbox.width + ", factor: " + factor);
+//
+//     svgRoute.attr("width", app.layout.microvisWidth)
+//             .attr("height", factor*bbox.height);
+//
+//     gRoute.attr("transform", " translate("+offsetX+","+offsetY+") scale("+factor+")");
+// }
+//
+// var svgElev, gElev, lineElev, areaElev, xElev, yElev;
+//
+// function drawElevationProfile() {
+//
+//     // Set the ranges
+//     xElev = d3.scale.linear().range([0, app.layout.microvisWidth]);
+//     yElev = d3.scale.linear().range([app.layout.microvisHeight, 0]);
+//
+//     // Scale the range of the data
+//     xElev.domain([0, routeData.length]);
+//     yElev.domain([0, d3.max(routeData, function(d) { return d[2]; })]);
+//
+//
+//     // Check interpolations here:
+//     // http://jorditost.local:5757/snippets/microvis/graph.html
+//
+//     // Define the line
+//     lineElev = d3.svg.line()
+//         .interpolate("basis")
+//         .x(function(d, i) { return xElev(i); })
+//         .y(function(d, i) { return yElev(d[2]); })
+//
+//     areaElev = d3.svg.area()
+//         .interpolate("basis")
+//         .x(function(d, i) { return xElev(i); })
+//         .y0(app.layout.microvisHeight)
+//         .y1(function(d, i) { return yElev(d[2]); })
+//
+//     // Adds the svg canvas
+//     svgElev = d3.select("#microvis-elev")
+//     // svgElev = d3.select("#microvis")
+//         .append("svg")
+//             .attr("class", "elevation")
+//             .attr("width", app.layout.microvisWidth)
+//             .attr("height", app.layout.microvisHeight)
+//
+//     // svgElev.append("text").text("Elevation profile");
+//
+//     gElev = svgElev.append("g");
+//
+//     // Add the line path.
+//     gElev.append("path")
+//             .attr("class", "line")
+//             .attr("d", lineElev(routeData));
+//
+//     // Add the area/bg path
+//     gElev.append("path")
+//             .attr("class", "area")
+//             .attr("d", areaElev(routeData));
+//
+//     // Call the resize function whenever a resize event occurs
+//     // d3.select(window).on('resize', resizeElevationProfile);
+//     resizeElevationProfile();
+// }
+//
+// // Resize Elevation Profile
+// function resizeElevationProfile() {
+//
+//     svgElev.attr("width", app.layout.microvisWidth);
+//
+//     // Update the range of the scale with new width/height
+//     xElev.range([0, app.layout.microvisWidth]);
+//     // yElev.range([layoutVars.microvisHeight, 0]);
+//
+//     // Force D3 to recalculate and update the line
+//     svgElev.selectAll('.line')
+//             .attr("d", lineElev(routeData));
+//
+//     svgElev.selectAll('.area')
+//             .attr("d", areaElev(routeData));
+// }
 
 
 ///////////////////////////////
@@ -816,10 +733,81 @@ function resizeElevationProfile() {
 
 // This callback is called when clicking on a location
 function clickCallback(d) {
-    app.layout = calculateLayoutVars();
-    showInfoBox(d);
+    // app.layout = calculateLayoutVars();
 
     // Get coordinates from the symbol and center the map on those coordinates
-    // map.flyTo({center: d.geometry.coordinates, zoom: 13});
-    // loadFOS(d.properties.osm_id)
+    map.flyTo({center: d.geometry.coordinates, zoom: app.config.mapZoomDetail});
+    loadFOSBySettlement(d)
+
+    // Info Box
+    // showInfoBox(d);
+}
+
+
+/////////////////////////
+// Database Connection
+/////////////////////////
+
+function loadFOSBySettlement(d) {
+
+    var osmID = d.properties.osm_id;
+    var coordinates = d.geometry.coordinates;
+    var coordsStr = coordinates[1]+','+coordinates[0];
+
+    // var url = app.config.apiBase+'/fos/place/'+osmID+'/1200';
+    var uri =  app.config.apiBase + '/fos/point/' + coordsStr + '/1200';
+
+    // Define a callback function to process the response.
+    var onFOSResult = function(featureCollection) {
+
+        var source = new mapboxgl.GeoJSONSource({
+            data: featureCollection
+        });
+
+        map.addSource("colombia-fos-"+osmID, source);
+
+        map.addLayer({
+            "id": "fos3-"+osmID,
+            "type": "fill",
+            "source": "colombia-fos-"+osmID,
+            "filter": ["==", "fos", 3],
+            "paint": {
+                "fill-color": "#F7D57F",
+                "fill-opacity": 0.8,
+                "fill-antialias": false
+            }
+        });
+        map.addLayer({
+            "id": "fos2-"+osmID,
+            "type": "fill",
+            "source": "colombia-fos-"+osmID,
+            "filter": ["==", "fos", 2],
+            "paint": {
+                "fill-color": "#F5A623",
+                "fill-opacity": 0.8,
+                "fill-antialias": false
+            }
+        });
+        map.addLayer({
+            "id": "fos1-"+osmID,
+            "type": "fill",
+            "source": "colombia-fos-"+osmID,
+            "filter": ["==", "fos", 1],
+            "paint": {
+                "fill-color": "#ED5D5A",
+                "fill-opacity": 0.8,
+                "fill-antialias": false
+            }
+        });
+    };
+
+    // Load FOS with AJAX
+    $.ajax({
+        dataType: "json",
+        url: uri,
+        success: onFOSResult,
+        error: function(error) {
+            alert(error);
+        }
+    });
 }

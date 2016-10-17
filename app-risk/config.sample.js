@@ -18,3 +18,6 @@ config.theme = "dark"; // Possible values: 'light', 'dark'. Default: 'light'
 
 // Debug mode
 config.layoutdebug = false;
+
+// Map zoom on detail
+config.mapZoomDetail = 14;

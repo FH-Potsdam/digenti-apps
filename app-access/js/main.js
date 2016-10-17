@@ -12,7 +12,6 @@
 
 
 
-
 //////////
 // Vars
 //////////
@@ -253,7 +252,7 @@ function mapDraw(geojson) {
                         .interpolate("linear");
 
     // Initialize the settlementPointLayer. It holds the circles of the settlements
-    settlementPointLayer = svg.append("g").attr("id", "settlementPointLayer");
+    settlementPointLayer = svg.append("g").attr("id", "settlement-point-layer");
 
     // Binding the settlement data to our layer. Positions of the settlements are saved in app.villagePositionsMap-Array
     settlementPointLayer.selectAll("circle")
@@ -361,19 +360,9 @@ function update(transition_time) {
 }
 
 
-
 ///////////////////
-// TRIGGER VIEWS
+// Views / Modes
 ///////////////////
-
-function reorderSmallMultiples(ob) {
-    app.orderby = ob;
-    d3.selectAll(".orderby").classed("active", false);
-    d3.selectAll("."+app.orderby).classed("active", true);
-    update(app.config.transitionTime);
-}
-
-
 
 function setMode(mode) {
 
@@ -434,6 +423,19 @@ function triggerSmallMultiplesView() {
     update(app.config.transitionTime);
 }
 
+function reorderSmallMultiples(ob) {
+    app.orderby = ob;
+    d3.selectAll(".orderby").classed("active", false);
+    d3.selectAll("."+app.orderby).classed("active", true);
+    update(app.config.transitionTime);
+}
+
+function activateButtons() {
+    d3.selectAll(".disabled")
+        .attr("disabled", null);
+}
+
+
 //////////////////////
 // Map Interactions
 //////////////////////
@@ -459,9 +461,6 @@ function showMap() {
 
     d3.selectAll(".mapboxgl-canvas")
         .classed('hidden', false);
-
-    // setMapOpacity(1);
-    // enableMapInteraction();
 }
 
 function hideMap() {
@@ -471,31 +470,12 @@ function hideMap() {
 
     d3.selectAll(".mapboxgl-canvas")
         .classed('hidden', true);
-
-    // setMapOpacity(0.08);
-    // disableMapInteraction();
-}
-
-// function setMapOpacity(value) {
-//
-//     d3.selectAll(".mapboxgl-canvas")
-//         .transition()
-//         .duration(500)
-//             .style("opacity", value);
-//
-//     d3.selectAll(".mapboxgl-control-container")
-//         .transition()
-//         .duration(500)
-//             .style("opacity", value);
-// }
-
-
-function activateButtons() {
-    d3.selectAll(".disabled")
-        .attr("disabled", null);
 }
 
 
+//////////////////////
+// UPDATE Functions
+//////////////////////
 
 function updateSettlementPointLayer(transition_time) {
 
@@ -514,14 +494,8 @@ function updateSettlementPointLayer(transition_time) {
                     .attr("cx", app.villagePositions[current_id].x)
                     .attr("cy", app.villagePositions[current_id].y);
         }
-
     });
-
 }
-
-
-
-
 
 
 function calculateLayoutVars() {

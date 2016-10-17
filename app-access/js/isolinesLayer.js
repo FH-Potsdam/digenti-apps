@@ -100,13 +100,13 @@ function isolinesLayer() {
         // console.log("isolines query uri: " + uri);
 
         // Define a callback function to process the isoline response.
-        var onIsolineResult = function(featuredCollection) {
+        var onIsolineResult = function(featureCollection) {
 
             parent.isolinesQueried++;
 
-            for (var i=0; i<featuredCollection.features.length; i++) {
+            for (var i=0; i<featureCollection.features.length; i++) {
 
-                var polygon = featuredCollection.features[i],
+                var polygon = featureCollection.features[i],
                     isolineRange = polygon.properties.range;
 
                 // polygon.properties.objectsID = objectID;

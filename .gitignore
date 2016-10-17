@@ -1,4 +1,3 @@
-
 *.codekit
 
 config.codekit
@@ -7,7 +6,9 @@ config.codekit
 
 .DS_Store
 
-app/config.js
+app-access/config.js
+app-risk/config.js
+
 **.sass-cache**
 
 .codekit-cache

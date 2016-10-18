@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <script src="../../../lib/mapbox-gl.js"></script>
+    <script src="../../../lib/jquery-1.10.2.js"></script>
+    <script src="../../../lib/turf.min.js"></script>
+
+    <script src="../../../lib/bundle.js"></script>
+
+    <!-- <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//npmcdn.com/@turf/turf@3.5.1/turf.min.js"></script> -->
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+        .mapboxgl-ctrl { display: none; }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+
+<script>
+
+var concaveman = require('concaveman');
+
+mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+var map = new mapboxgl.Map({
+    container: 'map',
+    // style: 'config.js',
+    // style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
+    style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi', // light
+    center: [-73.0270699,10.3910411],
+    zoom: 15
+    // center: [-73.02501519413,10.3997166291507],
+    // zoom: 17
+});
+
+
+map.on('load', function () {
+
+    // processFOSResult(fcTest);
+    loadFOSBySettlement(468769318);
+});
+
+function loadFOSBySettlement(osmID) {
+
+    var uri = 'http://jorditost.local:61002/api/fos/place/'+osmID+'/1200';
+
+    // Define a callback function to process the response.
+    var onFOSResult = function(featureCollection) {
+        var fos1 = filter(featureCollection, "fos", 1);
+        processFOSResult(fos1);
+    };
+
+    // Load FOS with AJAX
+    $.ajax({
+        dataType: "json",
+        url: uri,
+        success: onFOSResult,
+        error: function(error) {
+            alert(error);
+        }
+    });
+}
+
+
+//////////////////////////
+// Processing Functions
+//////////////////////////
+
+function processFOSResult(fc) {
+
+    console.log("process - length: " + fc.features.length);
+
+    //////////////////////
+    // Original dataset
+    //////////////////////
+    var source = new mapboxgl.GeoJSONSource({
+        data: fc
+    });
+
+    map.addSource("colombia-fos-o", source);
+    map.addLayer({
+        "id": "fos-o",
+        "type": "fill",
+        "source": "colombia-fos-o",
+        "paint": {
+            "fill-color": "#ED5D5A",
+            "fill-opacity": 0.4,
+            "fill-antialias": false
+        }
+    });
+
+    //////////////////////
+    // Buffered dataset
+    //////////////////////
+
+    var buffered = turf.buffer(fc, 100, 'meters');
+    var reduced = turf.buffer(buffered, -100, 'meters');
+    console.log("reduced - length: " + reduced.features.length);
+    reduced = validateGeoJSON(reduced);
+    console.log("validated - length: " + reduced.features.length);
+
+    // var sourceBuffered = new mapboxgl.GeoJSONSource({
+    //     data: reduced
+    // });
+    //
+    // map.addSource("colombia-fos-buffered", sourceBuffered);
+    // map.addLayer({
+    //     "id": "fos",
+    //     "type": "fill",
+    //     "source": "colombia-fos-buffered",
+    //     "paint": {
+    //         "fill-color": "#ED5D5A",
+    //         "fill-opacity": 0.5,
+    //         "fill-antialias": false
+    //     }
+    // });
+
+    fc = reduced;
+
+    //////////////////////
+    // Search clusters
+    //////////////////////
+
+    // fc = turf.simplify(fc, 0.0001, false);
+
+    console.log("simplified");
+
+    var clustered = cluster(fc, 20);
+
+    // var buffered = turf.buffer(clustered, 100, 'meters');
+    // clustered = turf.buffer(buffered, -100, 'meters');
+
+    var sourceClustered = new mapboxgl.GeoJSONSource({
+        data: clustered
+    });
+
+    map.addSource("colombia-fos-clustered", sourceClustered);
+    map.addLayer({
+        "id": "fos-c",
+        "type": "fill",
+        "source": "colombia-fos-clustered",
+        "paint": {
+            "fill-color": "#0f0",
+            "fill-opacity": 0.5,
+            "fill-antialias": false
+        }
+    });
+}
+
+function validateGeoJSON(collection) {
+    var newFC = turf.featureCollection([]);
+    for(var i = 0; i < collection.features.length; i++) {
+        if(collection.features[i].geometry.coordinates[0].length > 0) {
+            newFC.features.push(collection.features[i]);
+        } else {
+            console.log("!!! empty polygon");
+        }
+    }
+    return newFC;
+}
+
+function filter(collection, key, val) {
+    var newFC = turf.featureCollection([]);
+    for(var i = 0; i < collection.features.length; i++) {
+        if(collection.features[i].properties[key] === val) {
+            newFC.features.push(collection.features[i]);
+        }
+    }
+    return newFC;
+}
+
+function duplicate(fc) {
+    var newFC = turf.featureCollection([]);
+    for(var i = 0; i < fc.features.length; i++) {
+        var feature = turf.feature(fc.features[i].geometry, fc.features[i].properties);
+        newFC.features.push(feature);
+    }
+    return newFC;
+}
+
+function cluster(featureCollection, thres) {
+
+    var fc = duplicate(featureCollection),//turf.featureCollection(featureCollection.features),
+        clustersFC = turf.featureCollection([]);
+
+    // var count = 0;
+
+    while (fc.features.length > 0) {
+
+        var intersect = false;
+
+        // Get current polygon
+        var p = fc.features[0];
+        var coordArray = p.geometry.coordinates[0];      // coords array for concave hull
+        var pBuffered = turf.buffer(p, thres, 'meters'); // Calculate buffer with threshold
+
+        for (var i=1; i < fc.features.length; i++) {
+
+            // If intersects, merge polygons
+            if (turf.intersect(fc.features[i], pBuffered) !== undefined) {
+
+                // console.log("--- " + i + " intersects with " + j);
+
+                // Merge geometries
+                coordArray = coordArray.concat(fc.features[i].geometry.coordinates[0]);
+
+                // This is a clustered polygon
+                var merged = getConcaveHullFromCoordsArray(coordArray);
+
+                // Replace current position with the merged polygon
+                fc.features[0] = merged;
+
+                // Remove intersected element
+                fc.features.splice(i, 1);
+
+                intersect = true;
+
+                // count++;
+
+                // Abord loop
+                break;
+            }
+        }
+
+        // When the cluster has now more polygons to join add it to the clusters and remove it from the input feature collection
+        if (!intersect) {
+            clustersFC.features.push(fc.features[0]);
+            fc.features.splice(0, 1);
+        }
+    }
+
+    console.log("number of clusters: " + clustersFC.features.length);
+    // console.log("number of operations: " + count);
+
+    return clustersFC;
+}
+
+function getConcaveHullFromCoordsArray(coordArray) {
+
+    // console.log("calculate convex hull");
+
+    // Calculate convex hull and update cluster from it
+    var concave = concaveman(coordArray);
+    // var concave = concaveman(coordArray, 10);
+    return turf.polygon([concave]);
+}
+
+function getConvexHullFromCoordsArray(coordArray) {
+    var fc = coordsArrayToFeatureCollection(coordArray);
+    var hull = turf.convex(fc);
+    return hull;
+}
+
+function coordsArrayToFeatureCollection(coordsArray) {
+
+    var newFC = turf.featureCollection([]);
+    for(var i = 0; i < coordsArray.length; i++) {
+        newFC.features.push(turf.point(coordsArray[i]));
+    }
+    return newFC;
+}
+
+</script>
+
+</body>
+</html>

@@ -542,7 +542,7 @@ function processFOSResult(fc) {
     var clustered = cluster(fc, 20);
 
     var buffered = turf.buffer(clustered, 100, 'meters');
-    var clustered = turf.buffer(buffered, -100, 'meters');
+    clustered = turf.buffer(buffered, -100, 'meters');
 
     // var buffered = turf.buffer(clustered, 100, 'meters');
     // clustered = turf.buffer(buffered, -100, 'meters');
@@ -673,7 +673,6 @@ function getConcaveHullFromCoordsArray(coordArray) {
 
     // Calculate convex hull and update cluster from it
     var concave = concaveman(coordArray);
-    // var concave = concaveman(coordArray, 2);
     return turf.polygon([concave]);
 }
 

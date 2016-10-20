@@ -91,7 +91,7 @@ function loadFOSByRoad(osmID) {
     // Define a callback function to process the response.
     var onFOSResult = function(featureCollection) {
         var fos1 = filter(featureCollection, "fos", 1);
-        console.log(JSON.stringify(fos1));
+        // console.log(JSON.stringify(fos1));
         processFOSResult(fos1);
     };
 
@@ -118,29 +118,29 @@ function processFOSResult(fc) {
     // Buffered dataset
     //////////////////////
 
-    var buffered = turf.buffer(fc, 100, 'meters');
-    var reduced = turf.buffer(buffered, -100, 'meters');
-    console.log("reduced - length: " + reduced.features.length);
-    reduced = validateGeoJSON(reduced);
-    console.log("validated - length: " + reduced.features.length);
-
-    // var sourceBuffered = new mapboxgl.GeoJSONSource({
-    //     data: reduced
-    // });
+    // var buffered = turf.buffer(fc, 100, 'meters');
+    // var reduced = turf.buffer(buffered, -100, 'meters');
+    // console.log("reduced - length: " + reduced.features.length);
+    // reduced = validateGeoJSON(reduced);
+    // console.log("validated - length: " + reduced.features.length);
     //
-    // map.addSource("colombia-fos-buffered", sourceBuffered);
-    // map.addLayer({
-    //     "id": "fos",
-    //     "type": "fill",
-    //     "source": "colombia-fos-buffered",
-    //     "paint": {
-    //         "fill-color": "#ED5D5A",
-    //         "fill-opacity": 0.5,
-    //         "fill-antialias": false
-    //     }
-    // });
-
-    fc = reduced;
+    // // var sourceBuffered = new mapboxgl.GeoJSONSource({
+    // //     data: reduced
+    // // });
+    // //
+    // // map.addSource("colombia-fos-buffered", sourceBuffered);
+    // // map.addLayer({
+    // //     "id": "fos",
+    // //     "type": "fill",
+    // //     "source": "colombia-fos-buffered",
+    // //     "paint": {
+    // //         "fill-color": "#ED5D5A",
+    // //         "fill-opacity": 0.5,
+    // //         "fill-antialias": false
+    // //     }
+    // // });
+    //
+    // fc = reduced;
 
     //////////////////////
     // Search clusters
@@ -148,8 +148,8 @@ function processFOSResult(fc) {
 
     var clustered = cluster(fc, 20);
 
-    // var buffered = turf.buffer(clustered, 100, 'meters');
-    // clustered = turf.buffer(buffered, -100, 'meters');
+    var buffered = turf.buffer(clustered, 100, 'meters');
+    clustered = turf.buffer(buffered, -100, 'meters');
 
     var sourceClustered = new mapboxgl.GeoJSONSource({
         data: clustered

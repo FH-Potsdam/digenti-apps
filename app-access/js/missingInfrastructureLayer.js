@@ -253,8 +253,8 @@ function missingInfrastructureLayer() {
                     var y2 = project(d.properties.connections.nearest_point).y - y1;
 
                     current_el
-                        .attr("transform", "translate("+x1+","+y1+")")
                         .transition()
+                        .attr("transform", "translate("+x1+","+y1+")")
                         .duration(transition_time)
                             .style("opacity", 1);
 

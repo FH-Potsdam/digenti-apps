@@ -117,11 +117,15 @@ function init() {
         type:'HEAD',
         error: function() {
 
+            // API is not availabe -> abort
+
             $(".spinner").remove();
             $(".alert").html("Can't reach API under <i>" + app.config.apiBase + "</i>. It seems to be offline.<br>Please start the API and reload the app.");
 
         },
         success: function() {
+
+            // API is available -> go on
 
             // Include scripts of layer modules
             $.when(

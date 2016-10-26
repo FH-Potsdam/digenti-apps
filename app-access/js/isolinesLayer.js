@@ -124,7 +124,9 @@ function isolinesLayer() {
 
                 var polygonBuffered = turf.buffer(polygon, 2000, "meters");
 
-                if (turf.inside(settlementPoint, polygonBuffered.features[0])) {
+                console.log(polygonBuffered);
+
+                if (turf.inside(settlementPoint, polygonBuffered)) {
 
                     // Add OSM ID to polygon
                     polygon.properties.osm_id = d.properties.osm_id;

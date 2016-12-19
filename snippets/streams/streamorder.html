@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.28.0/mapbox-gl.js'></script>
+    <script src='https://npmcdn.com/@turf/turf@3.5.1/turf.min.js'></script>
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+        .mapboxgl-ctrl { display: none; }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/satellite-v9',
+    style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
+    // center: [-86.28524780273438, 40.250184183819854],
+    center: [-73.0670699,10.3910411],
+    zoom: 10,
+    pitch: 40, // pitch in degrees
+});
+
+// Load in GeoJSON
+map.on('load', function() {
+
+    mapboxgl.util.getJSON('../../data/streams_aoi.json', function(err, resp) {
+
+        map.addSource('streams', {
+            'type': 'geojson',
+            'data': resp
+        });
+
+        map.addLayer({
+            "id": "streams",
+            "type": "line",
+            "source": "streams",
+            "layout": {
+                "line-join": "round",
+                "line-cap": "round"
+            },
+            "paint": {
+                "line-color": "#55f",
+                "line-width": {
+                    'type': "identity",
+                    "property": "streamorder"
+                }
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>

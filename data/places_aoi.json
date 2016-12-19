@@ -5,7 +5,7 @@
 "features": [
 { "type": "Feature", "properties": { "osm_id": "468769318", "name": "Manaure Balcón del Cesar", "type": "town", "population": 14855 }, "geometry": { "type": "Point", "coordinates": [ -73.027069899999987, 10.3910411, 757.8865356445312 ] } },
 { "type": "Feature", "properties": { "osm_id": "703170190", "name": "La Jagua del Pilar", "type": "town", "population": 3253 }, "geometry": { "type": "Point", "coordinates": [ -73.070995599999975, 10.5102023, 203.64219665527344 ] } },
-{ "type": "Feature", "properties": { "osm_id": "703273611", "name": "Vda-Resguardo Caño Padilla", "type": "village", "population": null }, "geometry": { "type": "Point", "coordinates": [ -73.083120099999988, 10.2968203, 1058.419677734375 ] } },
+{ "type": "Feature", "properties": { "osm_id": "703273611", "name": "Vda-Resguardo Caño Padilla", "type": "village", "population": 93 }, "geometry": { "type": "Point", "coordinates": [ -73.083120099999988, 10.2968203, 1058.419677734375 ] } },
 { "type": "Feature", "properties": { "osm_id": "703273765", "name": "Caracoli Hueco", "type": "hamlet", "population": null }, "geometry": { "type": "Point", "coordinates": [ -73.118906, 10.3043226, 761.9884033203125 ] } },
 { "type": "Feature", "properties": { "osm_id": "703273768", "name": "El Silenio", "type": "hamlet", "population": null }, "geometry": { "type": "Point", "coordinates": [ -73.024731799999984, 10.2916755, 2196.0478515625 ] } },
 { "type": "Feature", "properties": { "osm_id": "703273775", "name": "Los Deseos", "type": "hamlet", "population": null }, "geometry": { "type": "Point", "coordinates": [ -73.093140299999988, 10.3244605, 644.829345703125 ] } },
@@ -42,7 +42,7 @@
 { "type": "Feature", "properties": { "osm_id": "703378987", "name": "Los Garabatos", "type": "locality", "population": null }, "geometry": { "type": "Point", "coordinates": [ -72.936731499999979, 10.5265767, 1617.820556640625 ] } },
 { "type": "Feature", "properties": { "osm_id": "703378989", "name": "Santana", "type": "locality", "population": null }, "geometry": { "type": "Point", "coordinates": [ -72.933264199999982, 10.4644542, 1687.7242431640625 ] } },
 { "type": "Feature", "properties": { "osm_id": "703378990", "name": "Nueva Idea", "type": "locality", "population": null }, "geometry": { "type": "Point", "coordinates": [ -72.944099499999979, 10.468066, 1642.5863037109375 ] } },
-{ "type": "Feature", "properties": { "osm_id": "1184555661", "name": "Resguardo indígena La Laguna", "type": "village", "population": null }, "geometry": { "type": "Point", "coordinates": [ -73.0276838, 10.3083374, 1710.653076171875 ] } },
+{ "type": "Feature", "properties": { "osm_id": "1184555661", "name": "Resguardo indígena La Laguna", "type": "village", "population": 182 }, "geometry": { "type": "Point", "coordinates": [ -73.0276838, 10.3083374, 1710.653076171875 ] } },
 { "type": "Feature", "properties": { "osm_id": "2292338307", "name": "San José del Oriente", "type": "village", "population": null }, "geometry": { "type": "Point", "coordinates": [ -73.044403399999979, 10.3506951, 741.1632690429688 ] } },
 { "type": "Feature", "properties": { "osm_id": "3436479985", "name": null, "type": "hamlet", "population": null }, "geometry": { "type": "Point", "coordinates": [ -73.0008688, 10.2933213, 1614.745361328125 ] } }
 ]

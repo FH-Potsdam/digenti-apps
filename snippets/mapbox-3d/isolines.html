@@ -22,9 +22,10 @@ var map = new mapboxgl.Map({
     container: 'map',
     // style: 'mapbox://styles/mapbox/satellite-v9',
     style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
-    center: [-73.0270699,10.3910411],
+    center: [-72.9570699,10.3910411],
     zoom: 11,
     pitch: 40, // pitch in degrees
+    // bearing: 15, // bearing in degrees
 });
 
 // Load in GeoJSON
@@ -47,14 +48,14 @@ map.on('load', function() {
                     'type': 'exponential',
                     'stops': [
                         [330, 330],
-                        [3330, 5000]]
+                        [3330, 6000]]
                 },
                 'fill-extrusion-height': {
                     'property': 'elev',
                     'type': 'exponential',
                     'stops': [
                         [330, 330],
-                        [3330, 5000]]
+                        [3330, 6000]]
                 },
                 'fill-extrusion-color': {
                     'property': 'elev',
@@ -62,7 +63,7 @@ map.on('load', function() {
                     'stops': [
                         [330, '#070707'],
                         [1800, '#2FB8E9'],
-                        [3330, '#fff']]
+                        [3330, '#ffffb9']]
                 },
                 'fill-extrusion-opacity': 0.6
             }

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.28.0/mapbox-gl.js'></script>
+    <script src='https://npmcdn.com/@turf/turf@3.5.1/turf.min.js'></script>
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+        .mapboxgl-ctrl { display: none; }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/satellite-v9',
+    style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
+    center: [-118.35353935915064, 33.336176209674996],
+    // center: [-73.0270699,10.3910411],
+    zoom: 13,
+    pitch: 40, // pitch in degrees
+});
+
+// Load in GeoJSON
+map.on('load', function() {
+
+    mapboxgl.util.getJSON('data/course.geojson', function(err, resp) {
+
+        map.addSource('course', {
+            'type': 'geojson',
+            'data': resp
+        });
+
+        map.addLayer({
+            'id': 'course',
+            'source': 'course',
+            'type': 'fill-extrusion',
+            'paint': {
+                // 'fill-extrusion-base': {
+                //     'property': 'elev',
+                //     'type': 'identity'
+                // },
+                'fill-extrusion-height': {
+                    'property': 'e',
+                    'type': 'identity'
+                },
+                // 'fill-extrusion-color': 'yellow',
+                'fill-extrusion-color': {
+                    'property': 'e',
+                    'type': 'exponential',
+                    'stops': [
+                        [0, '#2FB8E9'],
+                        [2000, 'yellow']]
+                },
+                'fill-extrusion-opacity': 0.7
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>

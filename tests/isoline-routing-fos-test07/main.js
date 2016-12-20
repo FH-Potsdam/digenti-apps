@@ -108,8 +108,8 @@ function mapDraw(geojson) {
 
     var map = new mapboxgl.Map({
         container: 'map',
-        // style: 'mapbox://styles/jorditost/cipseaugm001ycunimvr00zea',
-        style: 'mapbox://styles/mapbox/outdoors-v9',
+        style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
+        // style: 'mapbox://styles/mapbox/satellite-v9',
         zoom: 11,
         center: [-73.02, 10.410]
     });
@@ -170,9 +170,9 @@ function mapDraw(geojson) {
                 "line-cap": "round"
             },
             "paint": {
-                "line-color": "#e6dc51",
+                "line-color": "#F7D57F",
                 "line-width": 2,
-                "line-opacity": 0.3
+                "line-opacity": 0.4
             }
         });
         map.addLayer({
@@ -186,9 +186,9 @@ function mapDraw(geojson) {
                 "line-cap": "round"
             },
             "paint": {
-                "line-color": "#d9943f",
+                "line-color": "#F5A623",
                 "line-width": 2,
-                "line-opacity": 0.3
+                "line-opacity": 0.4
             }
         });
         map.addLayer({
@@ -202,9 +202,9 @@ function mapDraw(geojson) {
                 "line-cap": "round"
             },
             "paint": {
-                "line-color": "#c74d4d",
+                "line-color": "#ED5D5A",
                 "line-width": 2,
-                "line-opacity": 0.3
+                "line-opacity": 0.4
             }
         });
 

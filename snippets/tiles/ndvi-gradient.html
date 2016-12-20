@@ -9,7 +9,7 @@
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.css' rel='stylesheet' />
 
-    <link href="../../app/css/app.css" rel="stylesheet" />
+    <link href="../../app-access/css/app.css" rel="stylesheet" />
     <!-- <link href="../../digenti-framework/css/main.css" rel="stylesheet" /> -->
 
     <style>
@@ -151,10 +151,10 @@ map.on('load', function () {
     /////////////////////
     // NDVI - Gradient
     /////////////////////
-
     map.addSource('ndvi_gradient', {
         "type": "vector",
         "tiles": [
+        //   "http://jorditost.local:61001/v2/tiles/{z}/{x}/{y}.pbf"
           "http://tostnik.deneb.uberspace.de/digenti-tiles/v2/tiles/{z}/{x}/{y}.pbf"
         ],
         "minzoom": 9,

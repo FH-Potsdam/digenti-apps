@@ -113,9 +113,7 @@ function isolinesLayer() {
 
                 var settlementPoint = {
                     "type": "Feature",
-                    "properties": {
-                        "marker-color": "#f00"
-                    },
+                    "properties": {},
                     "geometry": {
                         "type": "Point",
                         "coordinates": coordinates
@@ -345,7 +343,7 @@ function isolinesLayer() {
                     this.svglayer.selectAll(".isoline-group")
                         .transition()
                         .duration(transition_time)
-                            .style("opacity", 1)
+                            //.style("opacity", 1)
                             .attr("transform", function() {
                                 return "translate("+ d3.select(this).attr("data-transformX") +","+ d3.select(this).attr("data-transformY") +")";
                             });
@@ -354,7 +352,7 @@ function isolinesLayer() {
                     this.svglayer.selectAll(".isoline-group-vis")
                         .transition()
                         .duration(transition_time)
-                            .style("opacity", 1)
+                            //.style("opacity", 1)
                             .attr("transform", function() {
                                 return "translate("+d3.select(this).attr("data-transformX")+","+d3.select(this).attr("data-transformY")+") scale("+parent.scaleFactor+")";
                             });
@@ -368,7 +366,7 @@ function isolinesLayer() {
                     this.svglayer.selectAll(".isoline-group")
                         .transition()
                         .duration(transition_time)
-                            .style("opacity", 1)
+                            //.style("opacity", 1)
                             .attr("transform", "");
 
                     this.svglayer.selectAll(".isoline-group-vis")

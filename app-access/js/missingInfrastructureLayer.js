@@ -73,7 +73,7 @@ function missingInfrastructureLayer() {
         // add new group for this layer to svg
         this.svglayer = svg.append("g").attr("id", "missinginfrastructure");
         // Deactivate this layer by default
-        this.setActive(false);
+        this.setActive(true);
 
         this.villages = this.svglayer.selectAll("g")
                             .data(geojson.features)
@@ -207,7 +207,7 @@ function missingInfrastructureLayer() {
                 current_el
                     .transition()
                     .duration(transition_time)
-                        .style("opacity", 1)
+                        //.style("opacity", 1)
                         .attr("transform", "translate(" + current_el.attr("data-transformX") + "," + current_el.attr("data-transformY") + ")");
 
 
@@ -216,7 +216,7 @@ function missingInfrastructureLayer() {
                             current_el.select(".nearest-road")
                                 .transition()
                                 .duration(transition_time)
-                                    .style("opacity", 1)
+                                    //.style("opacity", 1)
                                     .attr("cy", parent.positionSmallVisY)
                                     .attr("cx", 0);
 
@@ -231,13 +231,6 @@ function missingInfrastructureLayer() {
 
                         }
 
-                current_el.selectAll("text")
-                    .attr("x", 0)
-                    .attr("y", app.layout.heightperelement)
-                    .transition()
-                    .duration(app.config.transitionTime)
-                        .style("opacity", 1);
-
             });
 
         // Map with missing infrastructure
@@ -247,41 +240,40 @@ function missingInfrastructureLayer() {
 
                     var current_el = d3.select(this);
 
-                    var x1 = project(d.geometry.coordinates).x;
-                    var y1 = project(d.geometry.coordinates).y;
-                    var x2 = project(d.properties.connections.nearest_point).x - x1;
-                    var y2 = project(d.properties.connections.nearest_point).y - y1;
+                    if (d.properties.connections !== undefined) {
 
-                    current_el
-                        .transition()
-                        .attr("transform", "translate("+x1+","+y1+")")
-                        .duration(transition_time)
-                            .style("opacity", 1);
+                        var x1 = project(d.geometry.coordinates).x;
+                        var y1 = project(d.geometry.coordinates).y;
+                        var x2 = project(d.properties.connections.nearest_point).x - x1;
+                        var y2 = project(d.properties.connections.nearest_point).y - y1;
 
-                    if (d.properties.connections.distance_to_street > parent.distance_threshold) {
-
-                        current_el.select("line")
-                            .style("opacity", 0.5)
+                        current_el
                             .transition()
                             .duration(transition_time)
-                                .attr("x1", x2)
-                                .attr("y1", y2)
-                                .attr("x2", 0)
-                                .attr("y2", 0);
+                            .attr("transform", "translate("+x1+","+y1+")");
+                                //.style("opacity", 1);
 
-                        current_el.select(".nearest-road")
-                            .transition()
-                            .duration(transition_time)
-                                .style("opacity", 1)
-                                .attr("cx", x2)
-                                .attr("cy", y2);
+                        if (d.properties.connections.distance_to_street > parent.distance_threshold) {
+
+                            current_el.select("line")
+                                //.style("opacity", 0.5)
+                                .transition()
+                                .duration(transition_time)
+                                    .attr("x1", x2)
+                                    .attr("y1", y2)
+                                    .attr("x2", 0)
+                                    .attr("y2", 0);
+
+                            current_el.select(".nearest-road")
+                                .transition()
+                                .duration(transition_time)
+                                    //.style("opacity", 1)
+                                    .attr("cx", x2)
+                                    .attr("cy", y2);
+
+                        }
 
                     }
-
-                    current_el.selectAll("text")
-                        .transition()
-                        .duration(transition_time)
-                            .style("opacity", 0);
 
                 });
 
@@ -388,7 +380,7 @@ function missingInfrastructureLayer() {
                         distance_to_street = d.properties.connections.distance_to_street;
                     }
 
-                    var current_el_text = current_el.append("text").attr("y", "0");
+                    /*var current_el_text = current_el.append("text").attr("y", "0");
 
                     current_el_text.append("tspan")
                         .text(d.properties.name)
@@ -396,11 +388,10 @@ function missingInfrastructureLayer() {
                         .attr("x", 0)
                         .attr("dy", "0");
 
-
                     current_el_text.append("tspan")
                         .text(Math.round(distance_to_street)+" m to street")
                         .attr("x", 0)
-                        .attr("dy", "1em");
+                        .attr("dy", "1em");*/
 
                 });
 

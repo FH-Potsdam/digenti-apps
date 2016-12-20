@@ -9,7 +9,7 @@
 /* exported routesArray */
 /* exported toggleViews */
 /* exported reorderSmallMultiples */
-
+/* exported repositionLabels */
 
 
 //////////
@@ -34,6 +34,9 @@ app.orderby = "size";
 app.layers = [];
 app.villagePositions = [];
 app.villagePositionsMap = [];
+app.selectedSettlements = [];
+
+var smpos = [];
 
 
 // DOM Elements
@@ -125,7 +128,7 @@ function init() {
         },
         success: function() {
 
-            // API is available -> go on
+            // API is availabel -> go on
 
             // Include scripts of layer modules
             $.when(
@@ -216,7 +219,7 @@ function mapDraw(geojson) {
 
     // disable right click
     if (config.tabletop) {
-        $(document).bind('contextmenu', function (e) { e.preventDefault(); });
+        //$(document).bind('contextmenu', function (e) { e.preventDefault(); });
     }
 
     // Disable Browser zoom
@@ -240,9 +243,9 @@ function mapDraw(geojson) {
 
     // add some event handlers to our map
     map.on("viewreset", update);
-    map.on("moveend", update);
-    map.on("move", update);
-    map.on("load", hideSplashScreen);
+    map.on("moveend",   update);
+    map.on("move",      update);
+    map.on("load",      hideSplashScreen);
 
 
     // Create d3 canvas on map canvas container. This will hold our visual elements
@@ -254,6 +257,30 @@ function mapDraw(geojson) {
                         .x(function(d) { return project(d).x; })
                         .y(function(d) { return project(d).y; })
                         .interpolate("linear");
+
+
+
+    // Initialize the labelLayer
+    labelLayer = svg.append("g").attr("id", "label-layer");
+
+    labelLayer.selectAll("g")
+        .data(places_aoi.features)
+        .enter()
+        .append("g")
+            .attr("class", "")
+            .attr("data-id", function(d) { return d.properties.osm_id; })
+            .each(function() {
+                var current_el = d3.select(this);
+                current_el.append("text").append("tspan")
+                    .text(function(d) { return d.properties.name; })
+                    .style("opactity", 0)
+                    .attr("class", "title")
+                    .attr("y", "132");
+
+                if (app.config.layoutdebug === true) {
+                    current_el.append("rect").attr("class", "layoutdebug");
+                }
+            });
 
     // Initialize the settlementPointLayer. It holds the circles of the settlements
     settlementPointLayer = svg.append("g").attr("id", "settlement-point-layer");
@@ -288,6 +315,8 @@ function mapDraw(geojson) {
     $("#basemap_select").change(function() {
         switchBasemap($(this).val());
     });
+
+    settlementPointLayer.moveToFront();
 
     // Function to change the basemap
     function switchBasemap(layer) {
@@ -361,38 +390,63 @@ function update(transition_time) {
         }
     }
 
+    // Reposition the Labels
+    renderLabels(transition_time);
+
 }
+
+
+
+
 
 
 ///////////////////
 // Views / Modes
 ///////////////////
 
-function setMode(mode) {
+// DEPRECATED
+/*function setMode(mode) {
 
-    app.mode = mode;
+    if (app.mode === mode) {
 
-    var timeout = 0;
-    if (app.view === "smallmultiples") { timeout = 500; }
-
-    for (var key in app.layers) {
-        if (app.layers.hasOwnProperty(key)) {
-            if (mode === key) { app.layers[key].active = true; }
-            else { app.layers[key].active = false; }
-            app.layers[key].layer.setActive(app.layers[key].active);
-            d3.selectAll(".mode#"+key).classed("active", app.layers[key].active);
+        for (var key in app.layers) {
+            if (app.layers.hasOwnProperty(key)) {
+                app.layers[key].active = false;
+                app.layers[key].layer.setActive(app.layers[key].active);
+                d3.selectAll(".mode#"+key).classed("active", app.layers[key].active);
+            }
         }
-    }
 
-    // Mode specific GUI elements
-    if (app.mode === 'isolines') {
-        $('#isolines-ui').removeClass('disabled');
+        update(app.config.transitionTime);
+
     } else {
-        $('#isolines-ui').addClass('disabled');
+
+        app.mode = mode;
+
+        var timeout = 0;
+        if (app.view === "smallmultiples") { timeout = 500; }
+
+        for (var key in app.layers) {
+            if (app.layers.hasOwnProperty(key)) {
+                if (mode === key) { app.layers[key].active = true; }
+                else { app.layers[key].active = false; }
+                app.layers[key].layer.setActive(app.layers[key].active);
+                d3.selectAll(".mode#"+key).classed("active", app.layers[key].active);
+            }
+        }
+
+        // Mode specific GUI elements
+        if (app.mode === 'isolines') {
+            $('#isolines-ui').removeClass('disabled');
+        } else {
+            $('#isolines-ui').addClass('disabled');
+        }
+
+        update(app.config.transitionTime);
+
     }
 
-    update(app.config.transitionTime);
-}
+}*/
 
 function toggleViews() {
     if (app.view === "smallmultiples") {
@@ -483,8 +537,6 @@ function hideMap() {
 
 function updateSettlementPointLayer(transition_time) {
 
-    //settlementPointLayer.moveToFront();
-
     settlementPointLayer.selectAll("circle").each(function() {
 
         var current_el = d3.select(this);
@@ -499,6 +551,48 @@ function updateSettlementPointLayer(transition_time) {
                     .attr("cy", app.villagePositions[current_id].y);
         }
     });
+}
+
+
+
+
+
+function renderLabels(transition_time) {
+
+    if (app.view === "smallmultiples") {
+        labelLayer
+            .transition()
+            .duration(transition_time)
+                .style("opacity", 1);
+    } else {
+        labelLayer
+            .transition()
+            .duration(transition_time)
+                .style("opacity", 0);
+    }
+
+    //repositionLabels(transition_time);
+
+}
+
+
+function repositionLabels(transition_time) {
+
+    labelLayer.selectAll("g").each(function() {
+
+        var current_el = d3.select(this);
+        var current_id = current_el.attr("data-id");
+
+        current_el
+            .transition()
+            .duration(transition_time)
+                .style("opacity", 1)
+                .attr("transform", function() {
+                    return "translate("+ smpos[current_id].x +","+ smpos[current_id].y +")";
+                });
+
+    });
+
 }
 
 
@@ -613,9 +707,8 @@ function rangeSliderInput() {
     app.layers['isolines'].layer.setRange(range);
 
     // Toggle isolines if isolines view is active
-    if (app.layers['isolines'].active) {
-        app.layers['isolines'].layer.toggleIsolines();
-    }
+    app.layers['isolines'].layer.toggleIsolines();
+
 }
 
 
@@ -652,6 +745,12 @@ function showInfoBox(d) {
     $infoBox.find(".close").one("click", function() {
         $infoBox.removeClass("show");
     });
+}
+
+
+function hideInfoBox(d) {
+    if (!$infoBox) $infoBox = $("#info");
+    $infoBox.removeClass("show");
 }
 
 
@@ -694,8 +793,6 @@ function drawRoute(d, routeData) {
     // svgRoute = d3.select("#microvis")
         .append("svg")
         .attr("class", "route")
-
-    console.log("append svg route");
 
     // svgRoute.append("text").text("Route from Valledupar");
 
@@ -808,10 +905,98 @@ function resizeElevationProfile() {
 
 // This callback is called when clicking on a location
 function clickCallback(d) {
-    app.layout = calculateLayoutVars();
-    showInfoBox(d);
 
-    // Get coordinates from the symbol and center the map on those coordinates
-    // map.flyTo({center: d.geometry.coordinates, zoom: 13});
-    // loadFOS(d.properties.osm_id)
+    console.log("There have been a click on settlement nr. " + d.properties.osm_id + "!");
+
+    // check if settlement is already active
+    if ($.inArray(d.properties.osm_id, app.selectedSettlements) >= 0) {
+
+        // settlement is already active > make it inactive
+        d3.selectAll("g[data-id='"+d.properties.osm_id+"']").classed("selectedSettlement", false);
+        app.selectedSettlements.remove(d.properties.osm_id);
+
+    } else {
+
+        // Get coordinates from the symbol and center the map on those coordinates
+        // map.flyTo({center: d.geometry.coordinates, zoom: 11});
+        // loadFOS(d.properties.osm_id)
+
+        /*var onlyOne = true;
+
+        if (onlyOne) {
+
+            settlementPointLayer.selectAll("circle").classed("selected", false);
+
+            for (var i=0; i<app.selectedSettlements; i++) {
+                console.log(app.selectedSettlements[i]);
+                d3.selectAll("g[data-id='"+app.selectedSettlements[i]+"']").classed("selectedSettlement", false);
+                app.selectedSettlements.remove(app.selectedSettlements[i]);
+            }
+
+        }*/
+
+        // settlement is not active > make it active
+        d3.selectAll("g[data-id='"+d.properties.osm_id+"']").classed("selectedSettlement", true);
+        app.selectedSettlements.push(d.properties.osm_id);
+
+        // show the info box
+        showInfoBox(d);
+
+    }
+
+    console.log(app.selectedSettlements);
+
+    // check if any settlement is active
+    if (app.selectedSettlements.length > 0) {
+
+        // at least one settlement is active > deactivate the other layers
+        for (var key in app.layers) {
+            if (app.layers.hasOwnProperty(key)) {
+                app.layers[key].active = false;
+                app.layers[key].layer.setActive(app.layers[key].active);
+                d3.selectAll(".mode#"+key).classed("active", app.layers[key].active);
+            }
+        }
+
+        app.layout = calculateLayoutVars();
+
+        update(app.config.transitionTime);
+
+    } else {
+
+        for (var key in app.layers) {
+            if (key === "routesfromvalledupar" || key === "missinginfrastructure") {
+                if (app.layers.hasOwnProperty(key)) {
+                    app.layers[key].active = true;
+                    app.layers[key].layer.setActive(app.layers[key].active);
+                    d3.selectAll(".mode#"+key).classed("active", app.layers[key].active);
+                }
+            }
+        }
+
+        app.layout = calculateLayoutVars();
+        hideInfoBox(d);
+
+        update(app.config.transitionTime);
+
+    }
+
 }
+
+
+
+
+
+
+
+
+Array.prototype.remove = function() {
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
+    }
+    return this;
+};

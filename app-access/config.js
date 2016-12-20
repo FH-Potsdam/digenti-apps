@@ -11,7 +11,7 @@ config.apiBase = "http://localhost:61002/api";
 config.coordHomeBase = "10.471667,-73.25";
 
 // Vis params
-config.circleRadius = 5;
+config.circleRadius = 6;
 config.transitionTime = 500;
 
 // Theme

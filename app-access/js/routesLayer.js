@@ -7,6 +7,7 @@
 /*global routesArray:true */
 /*global routesJSON:true */
 /*global lineFunction:true */
+/*global repositionLabels:true */
 /* exported routesLayer */
 
 
@@ -70,7 +71,7 @@ function routesLayer() {
         // add new group for this layer to svg
         this.svglayer = svg.append("g").attr("id", "routesfromvalledupar");
         // Deactivate this layer by default
-        this.setActive(false);
+        this.setActive(true);
 
         function routing(start, end, placeID) {
 
@@ -83,15 +84,13 @@ function routesLayer() {
                 for (var i=0; i<route.properties.id.length; i++) {
 
                     // Add route path to svg
-                    parent.svglayer.selectAll("g[data-id='"+route.properties.id[i]+"']").selectAll("g")
+                    parent.svglayer.selectAll("g[data-id='"+route.properties.id[i]+"']")
                             .append("path")
                                 .attr("data-id", uid)
                                 //.attr("data-traveltime", route.travelTime)
                                 .attr("class", "route")
-                                //.attr("opacity", route.properties.importancescore*0.0238)
-                                //.attr("stroke-width", route.properties.importancescore*0.13 + 2)
-                                //.attr("stroke-width", 3)
-                                .attr("stroke-width", route.properties.importancescore*0.15 + 1)
+                                .attr("data-stroke-width", route.properties.importancescore*0.4 + 1)
+                                .attr("stroke-width", route.properties.importancescore*0.4 + 1)
                                 .attr("d", lineFunction(route.geometry.coordinates));
 
                     // push route geometry to routes_geo-Array
@@ -169,27 +168,12 @@ function routesLayer() {
             .data(geojson.features)
             .enter()
             .append("g")
-                .attr("class", "smallmultiple")
+                .attr("class", "smallmultiple sm_vis")
                 .attr("data-id", function(d) { return d.properties.osm_id; })
-                .each(function() {
-                    var current_el = d3.select(this);
-                    current_el.append("text")
-                        .text(function(d) { return d.properties.name; })
-                        .style("opactity", 0)
-                        .attr("class", "title")
-                        .attr("y", "30");
-
-                    if (app.config.layoutdebug === true) {
-                        current_el.append("rect")
-                            .attr("class", "layoutdebug");
-                    }
-                })
-                .append("g")
-                    .attr("class", "sm_vis")
-                    .each(function(d) {
-                        var coord_end = (d.geometry.coordinates[1]+","+d.geometry.coordinates[0]);
-                        routing(app.config.coordHomeBase, coord_end, d.properties.osm_id);
-                    });
+                .each(function(d) {
+                    var coord_end = (d.geometry.coordinates[1]+","+d.geometry.coordinates[0]);
+                    routing(app.config.coordHomeBase, coord_end, d.properties.osm_id);
+                });
 
     };
 
@@ -219,7 +203,7 @@ function routesLayer() {
             // Calculate max. width and height of
             var max_path_w = 0;
             var max_path_h = 0;
-            this.svglayer.selectAll(".smallmultiple").selectAll("g").each(function() {
+            this.svglayer.selectAll(".smallmultiple").each(function() {
                 // Calculate Max height and width of all paths
                 var bbox = d3.select(this).node().getBBox();
                 if (bbox.height > max_path_h) { max_path_h = bbox.height; }
@@ -248,28 +232,30 @@ function routesLayer() {
                     .attr("data-transformX", smallmultiple_x)
                     .attr("data-transformY", smallmultiple_y);
 
-                smallmultiple.selectAll("g").each(function() {
+                smpos[smallmultiple.attr("data-id")] = {};
+                smpos[smallmultiple.attr("data-id")].x = smallmultiple_x;
+                smpos[smallmultiple.attr("data-id")].y = smallmultiple_y;
 
-                    var smallmultiple_group = d3.select(this);
-                    var bbox = smallmultiple_group.node().getBBox();
+                console.log(smpos[smallmultiple.attr("data-id")]);
 
-                    var smallmultiple_group_x = -bbox.x * parent.scaleFactor;
-                    var smallmultiple_group_y = (-bbox.y-bbox.height + (app.layout.heightperelement-20)/parent.scaleFactor) * parent.scaleFactor;
+                var bbox = smallmultiple.node().getBBox();
 
-                    smallmultiple_group
-                        .attr("data-transformX", smallmultiple_group_x)
-                        .attr("data-transformY", smallmultiple_group_y);
+                var smallmultiple_group_x = -bbox.x * parent.scaleFactor;
+                var smallmultiple_group_y = (-bbox.y-bbox.height + (app.layout.heightperelement-20)/parent.scaleFactor) * parent.scaleFactor;
 
+                smallmultiple
+                    .attr("data-transformX", smallmultiple_group_x)
+                    .attr("data-transformY", smallmultiple_group_y);
 
-                    var realX = parseFloat(project(thedata).x * parent.scaleFactor) + smallmultiple_group_x + smallmultiple_x;
-                    var realY = parseFloat(project(thedata).y * parent.scaleFactor) + smallmultiple_group_y + smallmultiple_y;
+                var realX = parseFloat(project(thedata).x * parent.scaleFactor) + smallmultiple_group_x + smallmultiple_x;
+                var realY = parseFloat(project(thedata).y * parent.scaleFactor) + smallmultiple_group_y + smallmultiple_y;
 
-                    if (parent.active) {
-                        app.villagePositions[smallmultiple.attr("data-id")] = {};
-                        app.villagePositions[smallmultiple.attr("data-id")].x = realX;
-                        app.villagePositions[smallmultiple.attr("data-id")].y = realY;
-                    }
-                });
+                if (parent.active) {
+                    app.villagePositions[smallmultiple.attr("data-id")] = {};
+                    app.villagePositions[smallmultiple.attr("data-id")].x = realX;
+                    app.villagePositions[smallmultiple.attr("data-id")].y = realY;
+                }
+
             });
 
         } else {
@@ -306,14 +292,7 @@ function routesLayer() {
             this.svglayer.selectAll(".smallmultiple").each(function() {
 
                 var current_el = d3.select(this);
-
-                current_el
-                    .transition()
-                    .duration(transition_time)
-                        .style("opacity", 1)
-                        .attr("transform", function() {
-                            return "translate("+ d3.select(this).attr("data-transformX") +","+ d3.select(this).attr("data-transformY") +")";
-                        });
+                var current_id = current_el.attr("data-id");
 
                 if (app.config.layoutdebug === true) {
                     current_el.selectAll(".layoutdebug")
@@ -321,50 +300,32 @@ function routesLayer() {
                         .attr("height", app.layout.heightperelement);
                 }
 
-                current_el.selectAll("text")
-                    .attr("x", 0)
-                    .attr("y", app.layout.heightperelement)
-                    .transition().delay(transition_time).duration(transition_time)
-                        .style("opacity", 1);
-
-                current_el.selectAll("g")
+                current_el
                     .transition()
                     .duration(transition_time)
-                        .style("opacity", 1)
+                        //.style("opacity", 1)
                         .attr("transform", function() {
-                            return "translate("+ d3.select(this).attr("data-transformX") +","+ d3.select(this).attr("data-transformY") +") scale("+parent.scaleFactor+")";
+                            return "translate("+ smpos[current_id].x +","+ smpos[current_id].y +") scale("+parent.scaleFactor+")";
                         });
-
 
             });
 
 
         } else {
 
-
             this.svglayer.selectAll(".smallmultiple").each(function() {
 
                 var current_el = d3.select(this);
 
                 if (parent.lastView !== app.view || parent.lastView === "") {
-
                     current_el
                         .transition()
                         .duration(transition_time)
-                            .style("opacity", 1)
+                            //.style("opacity", 1)
                             .attr("transform", "");
-
-                    current_el.selectAll("g")
-                        .transition()
-                        .duration(transition_time)
-                            .attr("transform", "");
-
-                    current_el.selectAll("text")
-                            .style("opacity", 0);
-
                 }
 
-                current_el.selectAll("g").selectAll("path")
+                current_el.selectAll("path")
                     .each(function() {
                         var current_path = d3.select(this);
                         current_path.attr("d", lineFunction(parent.routes_geo[current_path.attr("data-id")]));

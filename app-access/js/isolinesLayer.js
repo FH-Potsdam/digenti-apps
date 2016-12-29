@@ -31,18 +31,18 @@ function isolinesLayer() {
 
     //this.svglayer = "";
     this.isolinesQueried = 0;
-    this.active = true;
+    // DEPRECATED this.active = true;
     this.scaleFactor = 0;
     this.lastView = "";
 
     this.isolinesGeoJSON = {
         "type":"FeatureCollection",
-        "crs":{
+        /*"crs":{
             "type":"name",
             "properties":{
                 "name":"urn:ogc:def:crs:OGC:1.3:CRS84"
             }
-        },
+        },*/
         "features":[]
     };
 
@@ -58,19 +58,19 @@ function isolinesLayer() {
      * toogle opacity of the layer
      * @param {state} boolean
      */
-    this.setActive = function (state) {
+    /*this.setActive = function (state) {
 
         if (state === null) { this.active = !this.active; }
         else                { this.active = state; }
 
         this.svglayer.classed('disabled', !this.active);
 
-    };
+    };*/
+
 
     // Set ranges to query. E.g. '15,30,45'
     this.setQueryRanges = function(ranges) {
         this.queryRanges = ranges;
-        // console.log("set query ranges: " + ranges);
     };
 
     // Set range value
@@ -80,7 +80,7 @@ function isolinesLayer() {
 
     // Show/hide isolines by range value
     this.toggleIsolines = function() {
-        this.svglayer.selectAll('.isoline-group-vis path.isoline').classed("disabled", function() {
+        this.svglayer.selectAll('.isoline-group path.isoline').classed("disabled", function() {
             var isoline = d3.select(this);
             return isoline.attr("data-range") != parent.range;
         });
@@ -92,12 +92,8 @@ function isolinesLayer() {
         var coordinates = d.geometry.coordinates;
 
         var coordsStr = coordinates[1]+','+coordinates[0];
-        // var currentRange = parseInt($("#range__slider").val());
-        // var range = '15,30,45';
 
         var uri = app.config.apiBase + '/isoline/' + coordsStr + '/' + parent.queryRanges;
-
-        // console.log("isolines query uri: " + uri);
 
         // Define a callback function to process the isoline response.
         var onIsolineResult = function(featureCollection) {
@@ -132,7 +128,7 @@ function isolinesLayer() {
                     parent.isolinesGeoJSON.features.push(polygon);
 
                     // Isoline group
-                    var g = parent.svglayer.select('g[data-id="'+objectID+'"]').select(".isoline-group-vis");
+                    var g = parent.svglayer.select('g[data-id="'+objectID+'"]');
 
                     // d3 isoline
                     g.append("path")
@@ -174,7 +170,7 @@ function isolinesLayer() {
         // add new group for this layer to svg
         this.svglayer = svg.append("g").attr("id", "isolines");
         // Deactivate this layer by default
-        this.setActive(false);
+        // DEPRECATED this.setActive(false);
 
         // append groups and bind data
         this.svglayer
@@ -184,18 +180,19 @@ function isolinesLayer() {
                 .append("g")
                     .attr("data-id", function(d) { return d.properties.osm_id; })
                     .attr("class", "isoline-group")
-                    .each(function() {
+                    .each(function(d) {
+                        getIsoline(d, d.properties.osm_id);
                         // Only add helper when 'layoutdebug' is set
                         if (app.config.layoutdebug === true) {
                             d3.select(this).append("rect")
                                 .attr("class", "layoutdebug");
                         }
-                    })
-                    .append("g")
+                    });
+                    /*.append("g")
                         .attr("class", "isoline-group-vis")
                         .each(function(d) {
                             getIsoline(d, d.properties.osm_id);
-                        });
+                        });*/
 
 
 
@@ -275,8 +272,8 @@ function isolinesLayer() {
                             .attr("data-transformX", isoline_group_vis_x)
                             .attr("data-transformY", isoline_group_vis_y);
 
-                        if (parent.active) {
-
+                        // DEPRECATED if (parent.active) {
+                        /*
                             var realX, realY;
 
                             if (bbox.width === 0 && bbox.height === 0) {
@@ -290,8 +287,8 @@ function isolinesLayer() {
                             app.villagePositions[isoline_group.attr("data-id")] = {};
                             app.villagePositions[isoline_group.attr("data-id")].x = realX;
                             app.villagePositions[isoline_group.attr("data-id")].y = realY;
-
-                        }
+                        */
+                        // DEPRECATED }
 
 
                     });
@@ -299,12 +296,6 @@ function isolinesLayer() {
 
                 });
 
-
-
-            } else {
-                if (parent.active) {
-                    app.villagePositions = app.villagePositionsMap.slice();
-                }
             }
 
         }

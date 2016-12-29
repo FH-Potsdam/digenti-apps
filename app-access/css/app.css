@@ -328,10 +328,7 @@ text {
   stroke-width: 1.5;
   stroke-linejoin: round;
   stroke-linecap: round;
-  /*stroke: $color-isoline;*/
   transition: fill-opacity 0.3s ease, opacity 0.3s ease; }
-  .isoline:hover {
-    fill-opacity: 0.25; }
   .isoline.disabled {
     opacity: 0;
     pointer-events: none; }
@@ -632,5 +629,8 @@ body.tabletop {
   #isolines-ui.disabled {
     bottom: -70px; }
 
-.map-features > g.disabled > g.selectedSettlement {
+.map-features > g > g.isoline-group {
+  opacity: 0; }
+
+.map-features > g > g.selectedSettlement {
   opacity: 1; }

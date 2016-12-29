@@ -37,7 +37,7 @@ function missingInfrastructureLayer() {
        "features":[]
     };
 
-    this.active = true;
+    // DEPRECATED this.active = true;
     this.factor = 0;
     // position of vis in smallmultiple-container
     this.positionSmallVisY = app.layout.heightperelement - 40;
@@ -52,14 +52,15 @@ function missingInfrastructureLayer() {
      * toogle opacity of the layer
      * @param {state} boolean
      */
-    this.setActive = function (state) {
+     // DEPRECATED
+    /*this.setActive = function (state) {
 
         if (state === null) { this.active = !this.active; }
         else                { this.active = state; }
 
         this.svglayer.classed('disabled', !this.active);
 
-    };
+    };*/
 
 
 
@@ -73,7 +74,7 @@ function missingInfrastructureLayer() {
         // add new group for this layer to svg
         this.svglayer = svg.append("g").attr("id", "missinginfrastructure");
         // Deactivate this layer by default
-        this.setActive(true);
+        // DEPRECATED this.setActive(true);
 
         this.villages = this.svglayer.selectAll("g")
                             .data(geojson.features)
@@ -132,11 +133,11 @@ function missingInfrastructureLayer() {
                 var cx = 8;
                 if (d.properties.connections.distance_to_street > 0) { cx = 2*parent.faktor*d.properties.connections.distance_to_street; }
 
-                if (parent.active) {
+                //if (parent.active) {
                     app.villagePositions[village_group.attr("data-id")] = {};
                     app.villagePositions[village_group.attr("data-id")].x = village_group_x + cx;
                     app.villagePositions[village_group.attr("data-id")].y = village_group_y + parent.positionSmallVisY;
-                }
+                //}
 
                 if (app.orderby === "size") {
                     ix++;
@@ -147,10 +148,6 @@ function missingInfrastructureLayer() {
 
             });
 
-        } else {
-            if (parent.active) {
-                app.villagePositions = app.villagePositionsMap.slice();
-            }
         }
 
 

@@ -85,7 +85,10 @@ $(document).ready(function() {
         app.config = config;
 
         // Hello DIGENTI APP!
-        console.log("DIGENTI APP started. Loading requirements…");
+        console.log("#################################################");
+        console.log("##  DIGENTI APP started. Loading requirements… ##");
+        console.log("#################################################");
+        console.log(" ");
 
         // Set theme configured in config.js using body class
         if (typeof app.config.theme === 'undefined') app.config.theme = 'light';
@@ -138,8 +141,6 @@ function init() {
                 $.Deferred(function(deferred) { $(deferred.resolve); })
             // all scripts loaded
             ).done(function() {
-
-                console.log("add layers");
 
                 // add layers
                 addLayer("routesfromvalledupar", false, routesLayer);
@@ -367,14 +368,12 @@ function update(transition_time) {
     // calculating new views of the individual layers by calling their calc function
     for (var key in app.layers) {
         if (app.layers.hasOwnProperty(key)) {
-            //if (app.layers[key].active) {
-                app.layers[key].layer.calc();
-            //}
+            app.layers[key].layer.calc();
         }
     }
 
     // Necessary to show villages when no mode is selected
-    if (app.mode === '') {
+    if (app.view !== "smallmultiples") {
         app.villagePositions = app.villagePositionsMap.slice();
     }
 
@@ -384,9 +383,7 @@ function update(transition_time) {
     // rendering the layer views by calling each layers render function
     for (key in app.layers) {
         if (app.layers.hasOwnProperty(key)) {
-            //if (app.layers[key].active) {
-                app.layers[key].layer.render(transition_time);
-            //}
+            app.layers[key].layer.render(transition_time);
         }
     }
 
@@ -906,8 +903,6 @@ function resizeElevationProfile() {
 // This callback is called when clicking on a location
 function clickCallback(d) {
 
-    console.log("There have been a click on settlement nr. " + d.properties.osm_id + "!");
-
     // check if settlement is already active
     if ($.inArray(d.properties.osm_id, app.selectedSettlements) >= 0) {
 
@@ -944,8 +939,6 @@ function clickCallback(d) {
 
     }
 
-    console.log(app.selectedSettlements);
-
     // check if any settlement is active
     if (app.selectedSettlements.length > 0) {
 
@@ -953,7 +946,7 @@ function clickCallback(d) {
         for (var key in app.layers) {
             if (app.layers.hasOwnProperty(key)) {
                 app.layers[key].active = false;
-                app.layers[key].layer.setActive(app.layers[key].active);
+                //app.layers[key].layer.setActive(app.layers[key].active);
                 d3.selectAll(".mode#"+key).classed("active", app.layers[key].active);
             }
         }
@@ -968,7 +961,7 @@ function clickCallback(d) {
             if (key === "routesfromvalledupar" || key === "missinginfrastructure") {
                 if (app.layers.hasOwnProperty(key)) {
                     app.layers[key].active = true;
-                    app.layers[key].layer.setActive(app.layers[key].active);
+                    //app.layers[key].layer.setActive(app.layers[key].active);
                     d3.selectAll(".mode#"+key).classed("active", app.layers[key].active);
                 }
             }

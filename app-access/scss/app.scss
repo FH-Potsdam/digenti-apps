@@ -115,8 +115,10 @@
 
 
 
+.map-features > g > g.isoline-group {
+    opacity: 0;
+}
 
-
-.map-features > g.disabled > g.selectedSettlement {
+.map-features > g > g.selectedSettlement {
     opacity: 1;
 }

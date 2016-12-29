@@ -38,7 +38,7 @@ function routesLayer() {
 
     this.svglayer = "";
     this.routes_geo = [];
-    this.active = true;
+    // DEPRECATED this.active = true;
     this.scaleFactor = 0;
     this.lastView = "";
 
@@ -50,14 +50,15 @@ function routesLayer() {
      * toogle opacity of the layer
      * @param {state} boolean
      */
-    this.setActive = function (state) {
+     // DEPRECATED
+    /*this.setActive = function (state) {
 
         if (state === null) { this.active = !this.active; }
         else                { this.active = state; }
 
         this.svglayer.classed('disabled', !this.active);
 
-    };
+    };*/
 
 
 
@@ -71,7 +72,7 @@ function routesLayer() {
         // add new group for this layer to svg
         this.svglayer = svg.append("g").attr("id", "routesfromvalledupar");
         // Deactivate this layer by default
-        this.setActive(true);
+        // DEPRECATED this.setActive(true);
 
         function routing(start, end, placeID) {
 
@@ -250,19 +251,18 @@ function routesLayer() {
                 var realX = parseFloat(project(thedata).x * parent.scaleFactor) + smallmultiple_group_x + smallmultiple_x;
                 var realY = parseFloat(project(thedata).y * parent.scaleFactor) + smallmultiple_group_y + smallmultiple_y;
 
-                if (parent.active) {
+                // DEPRECATED if (parent.active) {
+                /*
                     app.villagePositions[smallmultiple.attr("data-id")] = {};
                     app.villagePositions[smallmultiple.attr("data-id")].x = realX;
                     app.villagePositions[smallmultiple.attr("data-id")].y = realY;
-                }
+                    */
+                // DEPRECATED }
 
             });
 
-        } else {
-            if (parent.active) {
-                app.villagePositions = app.villagePositionsMap.slice();
-            }
         }
+
     };
 
 

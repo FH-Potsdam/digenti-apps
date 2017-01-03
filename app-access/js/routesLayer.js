@@ -100,7 +100,10 @@ function routesLayer() {
             }
 
             // succeeded!
-            function onSuccess(r) {
+            function onSuccess(response) {
+
+                // If the response is an array, in the first position you find the route and in the second a featured collection with the sliced route with elevation.
+                var r = (response instanceof Array) ? response[0] : response;
 
                 // initialize route from response
                 var route = {
@@ -150,12 +153,10 @@ function routesLayer() {
                 //processRoute(routesArray[placeID]);
             } else {
                 // call API
-                //console.log("ROUTING VIA API");
-                //router.calculateRoute(routeRequestParams, onSuccess, onError);
-
                 $.ajax({
                     dataType: "json",
                     url: app.config.apiBase + "/route/"+start+"/"+end,
+                    // url: app.config.apiBase + "/route/"+start+"/"+end+"/?slice=true",
                     success: onSuccess,
                     error: function(error) {
                         alert(error);

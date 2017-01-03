@@ -32,7 +32,7 @@ var map = new mapboxgl.Map({
 // Load in GeoJSON
 map.on('load', function() {
 
-    mapboxgl.util.getJSON('data/road_sliced_3d.json', function(err, resp) {
+    mapboxgl.util.getJSON('data/road_sliced_3d_here.json', function(err, resp) {
 
         // var jsonLine = resp.features[0];
         var slicedLine = resp;

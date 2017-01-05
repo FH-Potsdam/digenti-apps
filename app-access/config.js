@@ -17,5 +17,8 @@ config.transitionTime = 500;
 // Theme
 config.theme = "dark"; // Possible values: 'light', 'dark'. Default: 'light'
 
+// Settlements mode
+config.multipleSettlements = false;
+
 // Debug mode
 config.layoutdebug = false;

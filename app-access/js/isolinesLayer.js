@@ -137,7 +137,6 @@ function isolinesLayer() {
                         .classed("disabled", function() { return isolineRange != parent.range; })
                         .attr("data-range", isolineRange)
                         .attr("data-id", objectID);
-
                 }
             }
 

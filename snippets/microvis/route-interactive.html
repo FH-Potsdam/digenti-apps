@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style> /* set the CSS */
+
+body {
+    background: #191F23;
+    font: 12px Arial;
+}
+
+svg {
+    display: block;
+    margin: 0 auto;
+}
+
+.path {
+    stroke: white;
+    stroke-width: 3;
+    fill: none;
+}
+
+.follow {
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    stroke-width: 3;
+}
+
+.current {
+    stroke: white !important;
+    stroke-opacity: 1;
+    fill: white !important;
+    fill-opacity: 1;
+    /*display: none;*/
+    /*stroke: 0;*/
+    stroke-width: 1.5px;
+}
+    line.current {
+        stroke-width: 1.5px;
+    }
+
+text {
+    font-family: Arial;
+    font-size: 10px;
+    stroke:  white;
+}
+
+.area {
+    stroke: none;
+    /*stroke-width: 2;*/
+    fill: white;
+    fill-opacity: 0.3;
+}
+
+.line {
+    stroke-width: 3;
+    stroke-opacity: 0.2;
+    fill-opacity: 0.2;
+}
+
+circle {
+    stroke: 0;
+    fill: white;
+    fill-opacity: 0.5;
+}
+
+</style>
+<body>
+
+<!-- load the d3.js library -->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<script>
+
+// for better approximations using interpolations check the following links:
+// https://bl.ocks.org/mbostock/8027637
+// https://bl.ocks.org/mbostock/5649592
+// https://bl.ocks.org/mbostock/1705868
+
+// Set the dimensions of the canvas / graph
+var width = 600,
+    height = 270;
+// var margin = {top: 30, right: 20, bottom: 30, left: 50},
+//     width = 600 - margin.left - margin.right,
+//     height = 270 - margin.top - margin.bottom;
+
+// Parse the date / time
+// var parseDate = d3.time.format("%d-%b-%y").parse;
+
+// Set the ranges
+var xScale = d3.scale.linear().range([0, width]);
+var yScale = d3.scale.linear().domain([0, 1000]).range([height, 0]);
+
+// Color range
+var colorScale = d3.scale.linear()
+  .domain([0, 1000]) // this is updated when data loaded
+  .range(["#2FB8E9", "yellow"]);
+
+
+// Check interpolations here:
+// http://jorditost.local:5757/snippets/microvis/graph.html
+
+// Define the line
+var line = d3.svg.line()
+    .interpolate("cardinal")
+    .x(function(d, i) { return xScale(i); })
+    .y(function(d, i) { return yScale(d[2]); })
+
+var area = d3.svg.area()
+    .interpolate("cardinal")
+    // .interpolate("basis")
+    .x(function(d, i) { return xScale(i); })
+    .y0(height)
+    .y1(function(d, i) { return yScale(d[2]); })
+
+// Adds the svg canvas
+var svg = d3.select("body")
+    .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        // .attr("width", width + margin.left + margin.right)
+        // .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+        // .attr("transform",
+        //       "translate(" + margin.left + "," + margin.top + ")");
+
+// Get the data
+d3.json("route.json", function(error, json) {
+
+    var routeData = json.route.geometry.coordinates;
+
+    console.log("length: " + routeData.length + ", min: " + d3.min(routeData, function(d) { return d[2]; }) + ", max: " + d3.max(routeData, function(d) { return d[2]; }));
+
+    // Scale the range of the data
+    xScale.domain([0, routeData.length]);
+    // yScale.domain([0, d3.max(routeData, function(d) { return d[2]; })]);
+
+    // Add the background
+    // svg.append("path")
+    //     .attr("class", "area")
+    //     .attr("d", area(routeData));
+
+    // Add the line
+    // var path = svg.append("path")
+    //     .attr("class", "path")
+    //     .attr("d", line(routeData));
+
+    // Add lines for each position
+    var stepLine = svg.selectAll("line")
+            .data(routeData);
+
+    stepLine.enter().append("line")
+        .attr("class", "line")
+        .attr("x1", function(d, i) { return xScale(i); })
+        .attr("y1", function(d) { return yScale(0); })
+        .attr("x2", function(d, i) { return xScale(i); })
+        .attr("y2", function(d) { var elev=d[2]; return yScale(elev); })
+        // .attr("cy", function(d) { return (2*radius)*(data.analytics.maxDOY-itemsPerTimePoint(d.publishedAt.doy)+1) + radius; })
+        .style("stroke", function(d, i) {
+            var elev=d[2];
+            return colorScale(elev);
+        })
+        .on("mouseover", handleMouseOver)
+        // .on("mouseout", handleMouseOut);
+
+    // var stepLine = svg.selectAll("rect")
+    //         .data(routeData);
+    //
+    // stepLine.enter().append("rect")
+    //     .attr("class", "line")
+    //     .attr("x", function(d, i) { return xScale(i); })
+    //     .attr("y", function(d) { var elev=d[2]; return yScale(elev); })
+    //     .attr("width", 3)
+    //     .attr("height", function(d, i) { var elev=d[2]; return height - yScale(elev); })
+    //     // .attr("cy", function(d) { return (2*radius)*(data.analytics.maxDOY-itemsPerTimePoint(d.publishedAt.doy)+1) + radius; })
+    //     .style("fill", function(d, i) {
+    //         var elev=d[2];
+    //         return colorScale(elev);
+    //     })
+
+    // Add circles for each position
+    var circle = svg.selectAll("circle")
+            .data(routeData);
+
+    // circle.enter().append("circle")
+    //     .attr("cx", function(d, i) { return xScale(i); })
+    //     .attr("cy", function(d, i) {
+    //         var elev = d[2];
+    //         return yScale(elev);
+    //     })
+    //     // .attr("cy", function(d) { return (2*radius)*(data.analytics.maxDOY-itemsPerTimePoint(d.publishedAt.doy)+1) + radius; })
+    //     .attr("r", 2)
+    //     // .style("fill", function(d, i) {
+    //     //     var elev=d[2];
+    //     //     return colorScale(elev);
+    //     // })
+
+    // Lines following the profile shape
+    svg.selectAll(".follow")
+        .data(routeData).enter().append("line")
+        .attr("class", "follow")
+        .attr("x1", function(d, i) {
+            var pos = (i>0) ? i - 1 : 0;
+            return xScale(pos);
+        })
+        .attr("y1", function(d, i) {
+            var pos = (i>0) ? i - 1 : 0;
+            var elev = routeData[pos][2];
+            return yScale(elev);
+        })
+        .attr("x2", function(d, i) { return xScale(i); })
+        .attr("y2", function(d, i) {
+            var elev = routeData[i][2];
+            return yScale(elev);
+        })
+        .style("stroke", function(d, i) {
+            var elev=d[2];
+            return colorScale(elev);
+        })
+
+    // Helper elements (rollover)
+    var currentLine = svg.append("line").attr("class", "current")
+        .attr("x1", -10).attr("y1", 0)
+        .attr("x2", -10).attr("y2", height);
+    var currentCircle = svg.append("circle").attr("class", "current")
+        .attr("cx", -10)
+        .attr("cy", -10)
+        .attr("r", 2);
+    var currentText = svg.append("text").attr("class", "current-text")
+        // .attr({
+        //    id: "t" + d[0] + "-" + d[1] + "-" + i,  // Create an id for text so we can select it later for removing on mouseout
+        //     x: function() { return xScale(i) - 30; },
+        //     y: function() { return yScale(elev) - 15; }
+        // })
+
+    // svg.on("mouseout", handleMouseOut);
+
+    // Mouse interaction
+    // function mousemoved() {
+    //     var m = d3.mouse(this);
+    //
+    //     console.log(m);
+    //     // p = closestPoint(path.node(), m);
+    //     // line.attr("x1", p[0]).attr("y1", p[1]).attr("x2", m[0]).attr("y2", m[1]);
+    //     // circle.attr("cx", p[0]).attr("cy", p[1]);
+    // }
+
+    // Create Event Handlers for mouse
+    function handleMouseOver(d, i) {  // Add interactivity
+
+        console.log("over: " + i);
+
+        var elev = d[2];
+
+        currentLine
+            .attr("x1", xScale(i))
+            .attr("y1", yScale(0))
+            .attr("x2", xScale(i))
+            .attr("y2", yScale(elev))
+
+        currentCircle
+            .attr("cx", xScale(i))
+            .attr("cy", yScale(elev))
+
+        // Use D3 to select element, change color and size
+        // d3.select(this).classed("active", true);
+
+        // Specify where to put label of text
+        // svg.append("text").attr({
+        //    id: "t" + d[0] + "-" + d[1] + "-" + i,  // Create an id for text so we can select it later for removing on mouseout
+        //     x: function() { return xScale(i) - 30; },
+        //     y: function() { return yScale(elev) - 15; }
+        // })
+        currentText
+            .attr("x", xScale(i) - 10)
+            .attr("y", yScale(elev) - 15)
+            .text(function() {
+              return elev + "m";  // Value of the text
+            });
+
+        // svg.append("text").attr({
+        //    id: "t" + d.x + "-" + d.y + "-" + i,  // Create an id for text so we can select it later for removing on mouseout
+        //     x: function() { return xScale(d.x) - 30; },
+        //     y: function() { return yScale(d.y) - 15; }
+        // })
+        // .text(function() {
+        //   return [d.x, d.y];  // Value of the text
+        // });
+      }
+
+    function handleMouseOut(d, i) {
+
+        currentLine
+            .attr("x1", -10).attr("y1", 0)
+            .attr("x2", -10).attr("y2", height)
+        currentCircle
+            .attr("cx", -10)
+            .attr("cy", -10)
+
+        currentText
+            .attr("x", -10)
+            .attr("y", -15)
+            .text("");
+        // Use D3 to select element, change color back to normal
+        // d3.select(this).classed("active", false);
+
+        // Select text by id and then remove
+        // d3.select("#t" + d.x + "-" + d.y + "-" + i).remove();  // Remove text location
+      }
+});
+
+
+</script>
+</body>

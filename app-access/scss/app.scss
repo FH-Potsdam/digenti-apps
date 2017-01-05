@@ -23,22 +23,24 @@
 
 #nav {
 
+    background-color: transparent;
+
     // Buttons
-    #modes {
-        button {
-            &#routesfromvalledupar {
-                @include background-image('../img/icon-routes.svg', center center);
-            }
-
-            &#missinginfrastructure {
-                @include background-image('../img/icon-missing.svg', center center);
-            }
-
-            &#isolines {
-                @include background-image('../img/icon-isolines.svg', center center);
-            }
-        }
-    }
+    // #modes {
+    //     button {
+    //         &#routesfromvalledupar {
+    //             @include background-image('../img/icon-routes.svg', center center);
+    //         }
+    //
+    //         &#missinginfrastructure {
+    //             @include background-image('../img/icon-missing.svg', center center);
+    //         }
+    //
+    //         &#isolines {
+    //             @include background-image('../img/icon-isolines.svg', center center);
+    //         }
+    //     }
+    // }
 
     // Map view <> Small multiples view
     #view {
@@ -119,9 +121,6 @@
         bottom: -70px;
     }
 }
-
-
-
 
 
 .map-features > g > g.isoline-group {

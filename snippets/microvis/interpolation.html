@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<body>
+<style>
+
+body {
+    background: #191F23;
+    font: 12px Arial;
+}
+
+path {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 3px;
+}
+
+circle {
+  fill: steelblue;
+  stroke: #fff;
+  stroke-width: 3px;
+}
+
+</style>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script>
+
+var points = [
+  [480, 200],
+  [580, 400],
+  [680, 100],
+  [780, 300],
+  [180, 300],
+  [280, 100],
+  [380, 400]
+];
+
+var svg = d3.select("body").append("svg")
+    .attr("width", 960)
+    .attr("height", 500);
+
+var line = d3.svg.line()
+    .interpolate("basis")
+    .x(function(d, i) { return d[0]; })
+    .y(function(d, i) { return d[1]; })
+
+var path = svg.append("path")
+    .attr("d", line(points));
+    // .data([points])
+    // .attr("d", d3.svg.line()
+    // .tension(0) // Catmull–Rom
+    // .interpolate("basis"));
+
+// Add data points
+svg.selectAll(".point")
+    .data(points)
+  .enter().append("circle")
+    .attr("r", 4)
+    .attr("transform", function(d) { return "translate(" + d + ")"; });
+
+svg.selectAll(".point")
+    .data(points)
+  .enter().append("circle")
+    .attr("r", 4)
+    .attr("transform", function(d) {
+        console.log("hola: " + line([d]));
+        // var p = closestPoint(path.node(), d);
+        return "translate(" + line([d]) + ")";
+    });
+    // .attr("transform", function(d) { return "translate(" + d + ")"; });
+
+// Add circle
+var circle = svg.append("circle")
+    .attr("r", 13)
+    .attr("transform", "translate(" + points[0] + ")");
+
+
+function closestPoint(pathNode, d) {
+    // console.log(pathNode);
+    var pathLength = pathNode.getTotalLength();
+    // console.log("path length: " + pathLength);
+    return d;
+}
+
+
+// transition();
+
+function transition() {
+  circle.transition()
+      .duration(10000)
+      .attrTween("transform", translateAlong(path.node()))
+      .each("end", transition);
+}
+
+// Returns an attrTween for translating along the specified path element.
+function translateAlong(path) {
+
+  var l = path.getTotalLength();
+  return function(d, i, a) {
+    return function(t) {
+        // console.log("total length: " + l + ", now: " + (t*l));
+      var p = path.getPointAtLength(t * l);
+      return "translate(" + p.x + "," + p.y + ")";
+    };
+  };
+}
+
+</script>

@@ -294,8 +294,8 @@ function mapDraw(geojson) {
             .attr("class", "village")
             .attr("r", app.config.circleRadius)
             .on("click", function(d) {
-                var currentSettlement = d3.select(this);
-                currentSettlement.classed("selected", !currentSettlement.classed("selected"));
+                // var currentSettlement = d3.select(this);
+                // currentSettlement.classed("selected", !currentSettlement.classed("selected")); // This is done inside clickCallback(d) now
                 clickCallback(d);
             })
             .attr("data-id", function(d) { return d.properties.osm_id; })
@@ -731,8 +731,7 @@ function showInfoBox(d) {
     // $infoBox.find(".description").html();
     $infoBox.find(".type").next('dd').text(String(d.properties.type).capitalize());
     $infoBox.find(".population").next('dd').text(getPlacePopulation(d.properties));
-    $infoBox.find(".elevation").next('dd').text(parseInt(d.geometry.coordinates[2]) + "m");
-    // $infoBox.find(".objectID").next('dd').text(d.properties.osm_id);
+    // $infoBox.find(".elevation").next('dd').text(parseInt(d.geometry.coordinates[2]) + "m");
 
     drawMicroVis(d);
 
@@ -741,6 +740,7 @@ function showInfoBox(d) {
 
     $infoBox.find(".close").one("click", function() {
         $infoBox.removeClass("show");
+        deactivateSelectedSettlements();
     });
 }
 
@@ -767,9 +767,13 @@ function drawMicroVis(d) {
     routeJSON = getElementByPlaceID(d.properties.osm_id, routesJSON.routes);
     routeData = routeJSON.route.geometry.coordinates;
 
+    // Add route stats
     $infoBox.find("#microvis-route-stats").empty().append(routeJSON.route.distance/1000 + " km | " + parseInt(routeJSON.route.travelTime/60) + " min");
 
-    drawRoute(d, routeData);
+    // Draw route
+    // drawRoute(d, routeData);
+
+    // Draw elevation profile
     drawElevationProfile(d, routeData);
 
     // Define responsive behavior
@@ -782,50 +786,153 @@ function drawMicroVis(d) {
     d3.select(window).on('resize', resizeMicrovis);
 }
 
-var svgRoute;
+var svgElev, gElev, lineElev, areaElev, xElev, yElev;
+var maxElev = 1000;
 
-function drawRoute(d, routeData) {
+function drawElevationProfile(d, routeData) {
 
-    svgRoute = d3.select("#microvis-route")
-    // svgRoute = d3.select("#microvis")
+    // Set the ranges
+    xElev = d3.scale.linear().range([0, app.layout.microvisWidth]);
+    yElev = d3.scale.linear().range([app.layout.microvisHeight, 0]).domain([0, maxElev]);
+
+    console.log("length: " + routeData.length + ", min: " + d3.min(routeData, function(d) { return d[2]; }) + ", max: " + d3.max(routeData, function(d) { return d[2]; }));
+
+    // Scale the range of the data
+    xElev.domain([0, routeData.length]);
+    // yElev.domain([0, d3.max(routeData, function(d) { return d[2]; })]);
+
+    // Color range
+    var colorElev = d3.scale.linear()
+      .domain([0, maxElev])
+      .range(["#2FB8E9", "yellow"]);
+
+    // Adds the svg canvas
+    svgElev = d3.select("#microvis-elev")
         .append("svg")
-        .attr("class", "route")
+            .attr("class", "elevation")
+            .attr("width", app.layout.microvisWidth)
+            .attr("height", app.layout.microvisHeight)
+        .append("g")
 
-    // svgRoute.append("text").text("Route from Valledupar");
+    // svgElev.append("text").text("Elevation profile");
+    // gElev = svgElev.append("g");
 
-    svgRoute.append("g")
-            .append("path")
-                .attr("data-id", d.properties.osm_id)
-                .attr("class", "line route")
-                .attr("d", lineFunction(routeData));
+
+    // Add lines for each position
+    var stepLine = svgElev.selectAll("line")
+            .data(routeData);
+
+    stepLine.enter().append("line")
+        .attr("class", "line")
+        .attr("x1", function(d, i) { return xElev(i); })
+        .attr("y1", function(d) { return yElev(0); })
+        .attr("x2", function(d, i) { return xElev(i); })
+        .attr("y2", function(d) { var elev=d[2]; return yElev(elev); })
+        .style("stroke", function(d, i) {
+            var elev=d[2];
+            return colorElev(elev);
+        });
+
+    // Lines following the profile shape
+    svgElev.selectAll(".follow")
+        .data(routeData).enter().append("line")
+        .attr("class", "follow")
+        .attr("x1", function(d, i) {
+            var pos = (i>0) ? i - 1 : 0;
+            return xElev(pos);
+        })
+        .attr("y1", function(d, i) {
+            var pos = (i>0) ? i - 1 : 0;
+            var elev = routeData[pos][2];
+            return yElev(elev);
+        })
+        .attr("x2", function(d, i) { return xElev(i); })
+        .attr("y2", function(d, i) {
+            var elev = routeData[i][2];
+            return yElev(elev);
+        })
+        .style("stroke", function(d, i) {
+            var elev=d[2];
+            return colorElev(elev);
+        })
+
+    // Helper elements (rollover)
+    var currentLine = svgElev.append("line").attr("class", "current")
+        .attr("x1", -10).attr("y1", 0)
+        .attr("x2", -10).attr("y2", app.layout.microvisHeight);
+    var currentCircle = svgElev.append("circle").attr("class", "current")
+        .attr("cx", -10)
+        .attr("cy", -10)
+        .attr("r", 2);
+    var currentText = svgElev.append("text").attr("class", "current-text")
+
+    svgElev.on("mousemove", mousemoved);
+    svgElev.on("mouseout", mouseout);
+
+    // Mouse interaction
+    function mousemoved() {
+        var m = d3.mouse(this);
+
+        var mouseX = m[0]
+        var i = Math.round(xElev.invert(mouseX));
+
+        var elev = routeData[i][2];
+
+        console.log("i: " + i + ", elev: " + elev);
+
+        currentLine
+            .attr("x1", xElev(i))
+            .attr("y1", yElev(0))
+            .attr("x2", xElev(i))
+            .attr("y2", yElev(elev))
+
+        currentCircle
+            .attr("cx", xElev(i))
+            .attr("cy", yElev(elev))
+
+        currentText
+            .attr("x", xElev(i) - 10)
+            .attr("y", yElev(elev) - 15)
+            .text(function() {
+              return elev + "m";  // Value of the text
+            });
+
+        // line.attr("x1", p[0]).attr("y1", p[1]).attr("x2", m[0]).attr("y2", m[1]);
+        // circle.attr("cx", p[0]).attr("cy", p[1]);
+    }
+
+    function mouseout(d, i) {
+        currentLine
+            .attr("x1", -10).attr("y1", 0)
+            .attr("x2", -10).attr("y2", app.layout.microvisHeight)
+        currentCircle
+            .attr("cx", -10)
+            .attr("cy", -10)
+
+        currentText
+            .attr("x", -10)
+            .attr("y", -15)
+            .text("");
+    }
 
     // Call the resize function whenever a resize event occurs
-    // d3.select(window).on('resize', resizeRoute);
-
-    resizeRoute();
+    // d3.select(window).on('resize', resizeElevationProfile);
+    resizeElevationProfile();
 }
 
 // Resize Elevation Profile
-function resizeRoute() {
+function resizeElevationProfile() {
 
-    var gRoute = svgRoute.select("g");
-    var bbox = gRoute.node().getBBox();
-    var factor = app.layout.microvisWidth/bbox.width;
-    var offsetX = -bbox.x * factor;
-    var offsetY = -bbox.y * factor;
+    svgElev.attr("width", app.layout.microvisWidth);
 
-    // console.log(bbox);
-    // console.log("microvis width: " + app.layout.microvisWidth + ", bbox width: " + bbox.width + ", factor: " + factor);
+    // Update the range of the scale with new width/height
+    xElev.range([0, app.layout.microvisWidth]);
+    // yElev.range([layoutVars.microvisHeight, 0]);
 
-    svgRoute.attr("width", app.layout.microvisWidth)
-            .attr("height", factor*bbox.height);
-
-    gRoute.attr("transform", " translate("+offsetX+","+offsetY+") scale("+factor+")");
+    // Force D3 to recalculate and update the line
 }
 
-var svgElev, gElev, lineElev, areaElev, xElev, yElev;
-
-function drawElevationProfile() {
+/*function drawElevationProfile(d, routeData) {
 
     // Set the ranges
     xElev = d3.scale.linear().range([0, app.layout.microvisWidth]);
@@ -835,6 +942,10 @@ function drawElevationProfile() {
     xElev.domain([0, routeData.length]);
     yElev.domain([0, d3.max(routeData, function(d) { return d[2]; })]);
 
+    // Color range
+    var color = d3.scale.linear()
+      .domain([0, 1500]) // this is updated when data loaded
+      .range(["#2FB8E9", "yellow"]);
 
     // Check interpolations here:
     // http://jorditost.local:5757/snippets/microvis/graph.html
@@ -893,6 +1004,48 @@ function resizeElevationProfile() {
 
     svgElev.selectAll('.area')
             .attr("d", areaElev(routeData));
+}*/
+
+
+var svgRoute;
+
+function drawRoute(d, routeData) {
+
+    svgRoute = d3.select("#microvis-route")
+    // svgRoute = d3.select("#microvis")
+        .append("svg")
+        .attr("class", "route")
+
+    // svgRoute.append("text").text("Route from Valledupar");
+
+    svgRoute.append("g")
+            .append("path")
+                .attr("data-id", d.properties.osm_id)
+                .attr("class", "line route")
+                .attr("d", lineFunction(routeData));
+
+    // Call the resize function whenever a resize event occurs
+    // d3.select(window).on('resize', resizeRoute);
+
+    resizeRoute();
+}
+
+// Resize Elevation Profile
+function resizeRoute() {
+
+    var gRoute = svgRoute.select("g");
+    var bbox = gRoute.node().getBBox();
+    var factor = app.layout.microvisWidth/bbox.width;
+    var offsetX = -bbox.x * factor;
+    var offsetY = -bbox.y * factor;
+
+    // console.log(bbox);
+    // console.log("microvis width: " + app.layout.microvisWidth + ", bbox width: " + bbox.width + ", factor: " + factor);
+
+    svgRoute.attr("width", app.layout.microvisWidth)
+            .attr("height", factor*bbox.height);
+
+    gRoute.attr("transform", " translate("+offsetX+","+offsetY+") scale("+factor+")");
 }
 
 
@@ -903,34 +1056,33 @@ function resizeElevationProfile() {
 // This callback is called when clicking on a location
 function clickCallback(d) {
 
-    // check if settlement is already active
+    // Check if settlement is already active
     if ($.inArray(d.properties.osm_id, app.selectedSettlements) >= 0) {
 
         // settlement is already active > make it inactive
+        d3.selectAll(".village[data-id='"+d.properties.osm_id+"']").classed("selected", false);
         d3.selectAll("g[data-id='"+d.properties.osm_id+"']").classed("selectedSettlement", false);
         app.selectedSettlements.remove(d.properties.osm_id);
 
+    // If it is not active, activate it
     } else {
 
         // Get coordinates from the symbol and center the map on those coordinates
         // map.flyTo({center: d.geometry.coordinates, zoom: 11});
         // loadFOS(d.properties.osm_id)
 
-        /*var onlyOne = true;
+        // var currentSettlement = d3.select(this);
+        // currentSettlement.classed("selected", !currentSettlement.classed("selected")); // This is done inside clickCallback(d) now
 
-        if (onlyOne) {
+        // Deactivate active settlements, if only one is configured
+        if (!app.config.multipleSettlements) {
+            deactivateSelectedSettlements();
+        }
 
-            settlementPointLayer.selectAll("circle").classed("selected", false);
+        // Activate selected settlement's dot
+        d3.selectAll(".village[data-id='"+d.properties.osm_id+"']").classed("selected", true);
 
-            for (var i=0; i<app.selectedSettlements; i++) {
-                console.log(app.selectedSettlements[i]);
-                d3.selectAll("g[data-id='"+app.selectedSettlements[i]+"']").classed("selectedSettlement", false);
-                app.selectedSettlements.remove(app.selectedSettlements[i]);
-            }
-
-        }*/
-
-        // settlement is not active > make it active
+        // Activate selected settlement's group
         d3.selectAll("g[data-id='"+d.properties.osm_id+"']").classed("selectedSettlement", true);
         app.selectedSettlements.push(d.properties.osm_id);
 
@@ -977,7 +1129,32 @@ function clickCallback(d) {
 }
 
 
+function deactivateSelectedSettlements() {
 
+    if (app.selectedSettlements.length == 0) {
+        return false;
+    }
+
+    console.log("remove remove");
+
+    // Deactivate active settlement
+    var currentSettlement = app.selectedSettlements[0];
+
+    // Activate dot
+    d3.selectAll(".village[data-id='"+currentSettlement+"']").classed("selected", false);
+
+    // Activate group (isolines, etc.)
+    d3.selectAll("g[data-id='"+currentSettlement+"']").classed("selectedSettlement", false);
+
+    app.selectedSettlements.remove(currentSettlement);
+
+    // for (var i=0; i<app.selectedSettlements; i++) {
+    //     // console.log(app.selectedSettlements[i]);
+    //     d3.selectAll(".village[data-id='"+app.selectedSettlements[i]+"']").classed("selected", false);
+    //     d3.selectAll("g[data-id='"+app.selectedSettlements[i]+"']").classed("selectedSettlement", false);
+    //     app.selectedSettlements.remove(app.selectedSettlements[i]);
+    // }
+}
 
 
 

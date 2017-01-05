@@ -302,7 +302,7 @@ text {
   fill: #f9bd38;
   fill-opacity: 0.5;
   stroke: #f9bd38;
-  stroke-width: 2;
+  stroke-width: 1.5;
   transition: stroke 0.6s, fill 0.6s, stroke-width 0.6s, fill-opacity 0.6s; }
   .village:hover, .village.active {
     fill-opacity: 1; }
@@ -312,8 +312,8 @@ text {
 
 .village-group .nearest-road {
   stroke: #dadff0;
-  stroke-width: 1;
-  fill: red; }
+  stroke-width: 1.5;
+  fill: #ff5050; }
 .village-group .missing {
   stroke-width: 2;
   stroke: #ff5050;
@@ -328,10 +328,7 @@ text {
   stroke-width: 1.5;
   stroke-linejoin: round;
   stroke-linecap: round;
-  /*stroke: $color-isoline;*/
   transition: fill-opacity 0.3s ease, opacity 0.3s ease; }
-  .isoline:hover {
-    fill-opacity: 0.25; }
   .isoline.disabled {
     opacity: 0;
     pointer-events: none; }
@@ -365,20 +362,28 @@ text {
 
 #microvis svg {
   width: 100%; }
-#microvis .line {
-  stroke: white;
+#microvis .follow {
   stroke-width: 2;
-  fill: none; }
-#microvis .area {
-  stroke: none;
-  fill: white;
-  fill-opacity: 0.2; }
-#microvis .route {
-  stroke: #099; }
-#microvis .elevation .line {
-  stroke: #099; }
-#microvis .elevation .area {
-  fill: #099; }
+  stroke-linejoin: round;
+  stroke-linecap: round; }
+#microvis .line {
+  stroke-width: 3;
+  stroke-opacity: 0.1;
+  fill-opacity: 0.1; }
+#microvis .current {
+  stroke: white !important;
+  stroke-opacity: 1;
+  fill: white !important;
+  fill-opacity: 1;
+  /*display: none;*/
+  /*stroke: 0;*/
+  stroke-width: 1px; }
+#microvis line.current {
+  stroke-width: 1.5px; }
+#microvis text {
+  font-family: Arial;
+  font-size: 10px;
+  stroke: white; }
 
 .layoutdebug {
   fill: rgba(255, 0, 255, 0.3); }
@@ -450,7 +455,7 @@ body.tabletop {
 
 .modal {
   padding: 0;
-  width: 155px;
+  width: 145px;
   max-width: none; }
   .modal > *:not(.close) {
     padding: 20px;
@@ -519,16 +524,16 @@ body.tabletop {
     margin-bottom: 25px; }
 
 #info {
-  right: -25vw;
+  right: -22vw;
   top: 0;
   opacity: 0;
-  width: 25vw;
+  width: 22vw;
   height: 100%; }
   #info.show {
     right: 0;
     opacity: 1; }
   #info .content {
-    padding: 30px 40px; }
+    padding: 22.5px 30px; }
   #info .title {
     margin-bottom: 10px; }
   #info .properties {
@@ -574,48 +579,38 @@ body.tabletop {
 .mapboxgl-ctrl {
   display: none; }
 
-#nav #modes button#routesfromvalledupar {
-  background-image: url("../img/icon-routes.svg");
-  background-position: center center;
-  background-repeat: no-repeat; }
-#nav #modes button#missinginfrastructure {
-  background-image: url("../img/icon-missing.svg");
-  background-position: center center;
-  background-repeat: no-repeat; }
-#nav #modes button#isolines {
-  background-image: url("../img/icon-isolines.svg");
-  background-position: center center;
-  background-repeat: no-repeat; }
-#nav #view {
-  padding: 0; }
-  #nav #view .button-wrapper {
-    display: block;
-    width: 155px;
-    height: 155px; }
-  #nav #view button {
-    background-image: url("../img/icon-small-multiples.svg");
-    background-position: center 44px;
-    background-repeat: no-repeat;
-    background-color: transparent;
-    display: block;
-    width: 100%;
-    height: 100%; }
-    #nav #view button.active, #nav #view button:hover {
-      background-color: #3dbee7; }
-      .dark #nav #view button.active, .dark #nav #view button:hover {
-        background-color: #4B565F; }
-    .tabletop #nav #view button:hover {
-      background-color: transparent !important; }
-    .tabletop #nav #view button.active {
-      background-color: #3dbee7 !important; }
-    .tabletop.dark #nav #view button.active {
-      background-color: #4B565F !important; }
-  #nav #view label {
-    position: absolute;
-    bottom: 35px;
-    width: 100%;
-    text-align: center;
-    display: block; }
+#nav {
+  background-color: transparent; }
+  #nav #view {
+    padding: 0; }
+    #nav #view .button-wrapper {
+      display: block;
+      width: 145px;
+      height: 145px; }
+    #nav #view button {
+      background-image: url("../img/icon-small-multiples.svg");
+      background-position: center 33px;
+      background-repeat: no-repeat;
+      background-color: transparent;
+      display: block;
+      width: 100%;
+      height: 100%; }
+      #nav #view button.active, #nav #view button:hover {
+        background-color: #3dbee7; }
+        .dark #nav #view button.active, .dark #nav #view button:hover {
+          background-color: #4B565F; }
+      .tabletop #nav #view button:hover {
+        background-color: transparent !important; }
+      .tabletop #nav #view button.active {
+        background-color: #3dbee7 !important; }
+      .tabletop.dark #nav #view button.active {
+        background-color: #4B565F !important; }
+    #nav #view label {
+      position: absolute;
+      bottom: 30px;
+      width: 100%;
+      text-align: center;
+      display: block; }
 
 #legend {
   bottom: 10px;

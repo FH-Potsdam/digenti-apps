@@ -67,7 +67,7 @@ var svg = d3.select("body")
         //       "translate(" + margin.left + "," + margin.top + ")");
 
 // Get the data
-d3.json("route.json", function(error, json) {
+d3.json("data/route.json", function(error, json) {
 
     console.log(json);
     var routeData = json.route.geometry.coordinates;

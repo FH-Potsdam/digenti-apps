@@ -4,7 +4,6 @@
 /*global alert:true */
 /*global project:true */
 /*global updateSettlementPointLayer:true */
-/*global routesArray:true */
 /*global routesJSON:true */
 /*global lineFunction:true */
 /*global repositionLabels:true */
@@ -100,10 +99,12 @@ function routesLayer() {
             }
 
             // succeeded!
-            function onSuccess(response) {
+            function onRouteLoadSuccess(response) {
+
+                var isSliced = (response instanceof Array);
 
                 // If the response is an array, in the first position you find the route and in the second a featured collection with the sliced route with elevation.
-                var r = (response instanceof Array) ? response[0] : response;
+                var r = isSliced ? response[0] : response;
 
                 // initialize route from response
                 var route = {
@@ -117,19 +118,29 @@ function routesLayer() {
                         }
                     }.init();
 
-                var routeasjson = {};
-                routeasjson.id = placeID;
-                routeasjson.route = route;
-                routesJSON.routes.push(routeasjson);
+                var routeObj = {};
+                routeObj.id = placeID;
+                routeObj.route = route;
+
+                if (isSliced) {
+                    routeObj.route_sliced = response[1];
+                }
+
+                // Push in routes global array
+                routesJSON.routes.push(routeObj);
 
                 // All routes retrieved
                 if (routesJSON.routes.length === geojson.features.length) {
+
+                    console.log(routesJSON);
 
                     // Make ajax Call to API to get route parts
                     $.ajax({
                         method: "POST",
                         url: app.config.apiBase + "/geoprocessing/routeparts",
-                        data: JSON.stringify(jsonToObject(routesJSON.routes)),
+                        data: JSON.stringify(jsonToObjectRouteOnly(routesJSON.routes)),
+                        // data: JSON.stringify(jsonToObject(routesJSON.routes)),
+                        // data: JSON.stringify(jsonToObject(routesJSONSimplify(routesJSON.routes))),
                         contentType: "application/json; charset=utf-8",
                         dataType: "json",
                         success: function (r) {
@@ -155,9 +166,9 @@ function routesLayer() {
                 // call API
                 $.ajax({
                     dataType: "json",
-                    url: app.config.apiBase + "/route/"+start+"/"+end,
-                    // url: app.config.apiBase + "/route/"+start+"/"+end+"/?slice=true",
-                    success: onSuccess,
+                    // url: app.config.apiBase + "/route/"+start+"/"+end,
+                    url: app.config.apiBase + "/route/"+start+"/"+end+"/?profile=true",
+                    success: onRouteLoadSuccess,
                     error: function(error) {
                         alert(error);
                     }
@@ -259,24 +270,9 @@ function routesLayer() {
                     app.villagePositions[smallmultiple.attr("data-id")].y = realY;
                     */
                 // DEPRECATED }
-
             });
-
         }
-
     };
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

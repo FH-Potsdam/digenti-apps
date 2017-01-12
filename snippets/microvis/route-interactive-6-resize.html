@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style> /* set the CSS */
+
+body {
+    background: #191F23;
+    font: 12px Arial;
+    margin: 0;
+    padding: 0;
+}
+
+#microvis-route-profile {
+    display: block;
+    margin: 0 auto;
+
+    /*width: 600px;
+    height: 270px;*/
+    width: 100vw;
+    height: 100vh;
+}
+svg {
+    width: 100%;
+    height: 100%;
+}
+
+.axis {}
+    .axis path {
+        fill: none;
+        stroke: none;
+    }
+    .axis text {
+        fill: #868b90;
+    }
+    .axis.y line {
+        stroke: white;
+        opacity: .6;
+        stroke-dasharray: 1px 7px;
+        stroke-width: 1px;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .axis.x .tick:first-child {
+        visibility: hidden;
+    }
+    .axis.x line {
+        stroke: none;
+    }
+    .axis.x text {
+        fill: #868b90;
+        text-anchor: end !important;
+    }
+
+.profile {
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    stroke-width: 3;
+    stroke: #dadff0;
+    fill: none;
+}
+    .profile.route {
+        /*stroke: #099;*/
+        stroke: #90D97D;
+    }
+
+    .profile.missing {
+        stroke: #ff5050;
+        stroke-dasharray: 0px 5px;
+    }
+
+    .follow {
+        stroke-linejoin: round;
+        stroke-linecap: round;
+        stroke-width: 3;
+    }
+
+    .line {
+        stroke-width: 3;
+        stroke-opacity: 0.2;
+        fill-opacity: 0.2;
+    }
+
+    .point, .current {
+        stroke: white !important;
+        stroke-opacity: 1;
+        fill: white !important;
+        fill-opacity: 1;
+        /*display: none;*/
+        /*stroke: 0;*/
+        stroke-width: 1.5px;
+    }
+        line.current {
+            stroke-width: 1.5px;
+        }
+
+    text {
+        font-family: 'Source Sans Pro', sans-serif;
+        font-size: 10px;
+        fill:  white;
+    }
+
+    text.sec {
+        fill: #999;
+    }
+
+    .hit {
+        /*fill: white;
+        fill-opacity: 0.05;*/
+        fill: none;
+        cursor: crosshair;
+        pointer-events: all;
+    }
+
+
+</style>
+<body>
+
+    <div id="microvis-route-profile"></div>
+
+<!-- load the d3.js library -->
+<!-- <script src="http://d3js.org/d3.v3.min.js"></script> -->
+<script src='../../lib/d3.min.js' charset="utf-8"></script>
+<script src='../../lib/d3-queue.v3.min.js' charset="utf-8"></script>
+
+<script>
+
+/*
+    Tierra Nueva
+    ============
+    localhost:61002/api/route/10.471667,-73.25/10.3170803,-73.034950499999979?profile=true
+    localhost:61002/api/profile/points/10.310154,-73.0106091/10.3170803,-73.034950499999979
+
+    Santana
+    =======
+    localhost:61002/api/route/10.471667,-73.25/10.4644542,-72.933264199999982?profile=true
+    localhost:61002/api/profile/points/10.4311967,-73.0008888/10.4644542,-72.93326419999998
+
+    El Pintado
+    ==========
+    localhost:61002/api/route/10.471667,-73.25/10.4036554,-72.924673799999979?profile=true
+    localhost:61002/api/profile/points/10.3887963,-72.976191/10.4036554,-72.924673799999979
+*/
+
+// var settlement = 'tierranueva';
+var settlement = 'santana';
+// var settlement = 'elpintado';
+
+// for better approximations using interpolations check the following links:
+// https://bl.ocks.org/mbostock/8027637
+// https://bl.ocks.org/mbostock/5649592
+// https://bl.ocks.org/mbostock/1705868
+
+// Set the dimensions of the canvas / graph
+// var graphWidth = 600,
+//     graphHeight = 270;
+
+// Sizes
+var margin = {top: 30, right: 60, bottom: 50, left: 50},
+    // microvisWidth = 600,
+    // microvisHeight = 220,
+    microvisWidth = parseInt(d3.select('#microvis-route-profile').style('width'), 10),
+    microvisHeight = parseInt(d3.select('#microvis-route-profile').style('height'), 10),
+    graphWidth = microvisWidth - margin.left - margin.right,
+    graphHeight = microvisHeight - margin.top - margin.bottom;
+
+    console.log("w: " + microvisWidth + ", h: " + microvisHeight);
+
+// Domains
+var maxElev = 2600;
+    maxDistance = 60000; // 60km
+
+// SVG vars
+var svgElev, gProfile,
+    xElev, yElev,
+    xElevAxis, yElevAxis,
+    profilePath;
+
+// Helpers
+var currentLine, currentCircle, currentText, currentTextPlace, currentTextElev;
+
+
+// Get the data
+d3.queue()
+    .defer(d3.json, 'data/'+settlement+'-route.json')
+    .defer(d3.json, 'data/'+settlement+'-missing.json')
+    // all jsons are loaded
+    .await(function(error, data1, data2) {
+
+        var routeData = data1[1].features;
+        var missingData = data2[1].features;
+        var totalData = routeData.concat(missingData);
+
+        // Set the ranges
+        xElev = d3.scale.linear().range([0, graphWidth]).domain([0, maxDistance/10]) // maxDistance/10 because each step are 10m
+        yElev = d3.scale.linear().range([graphHeight, 0]).domain([0, maxElev]);
+
+        // Axis
+        yElevAxis = d3.svg.axis()
+            .ticks(4)
+            .tickFormat(function(d) { return d + "m"; })
+            .tickSize(-graphWidth)
+            .tickPadding(5)
+            .scale(yElev)
+            .orient("left");
+
+        xElevAxis = d3.svg.axis()
+            .ticks(5)
+            .tickFormat(function(d) { return (d*10)/1000 + "km"; })
+            // .tickSize(-graphHeight)
+            // .tickSize(0)
+            .tickPadding(8)
+            .scale(xElev)
+            .orient("bottom")
+
+        // Define the path
+        profilePath = d3.svg.line()
+            .interpolate("basis")
+            .x(function(d, i) { return xElev(i); })
+            .y(function(d, i) { return yElev(d.properties.elevation); })
+
+
+        // Adds the svg canvas
+        svgElev = d3.select("#microvis-route-profile")
+            .append("svg")
+                .attr("width", microvisWidth)
+                .attr("height", microvisHeight);
+
+        //////////
+        // Axis
+        //////////
+
+        svgElev.append("g")
+            .attr("class", "axis y")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .call(yElevAxis)
+
+        svgElev.append("g")
+            .attr("class", "axis x")
+            .attr("transform", "translate(" + margin.left + "," + (graphHeight + margin.top) + ")")
+            .call(xElevAxis)
+            .selectAll("text")
+                .style("text-anchor", "end");
+
+        ///////////////////////
+        // Elevation profile
+        ///////////////////////
+
+        gProfile = svgElev.append("g")
+            .attr("class", "profile-group")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // Add the road route path.
+        gProfile.append("path")
+            .attr("class", "profile route")
+            .attr("d", profilePath(routeData));
+
+        // Add the missing route path
+        gProfile.append("path")
+            .attr("class", "profile missing")
+            .attr("d", profilePath(missingData))
+            .attr("transform", "translate(" + xElev(routeData.length) + ",0)")
+
+        /////////////////////
+        // Helper elements
+        /////////////////////
+
+        var currentLine = gProfile.append("line").attr("class", "current")
+            .attr("x1", 0).attr("y1", 0)
+            .attr("x2", 0).attr("y2", graphHeight)
+            .style("visibility", "hidden");
+        var currentCircle = gProfile.append("circle").attr("class", "current")
+            .attr("cx", 0)
+            .attr("cy", 0)
+            .attr("r", 2)
+            .style("visibility", "hidden");
+        // var currentText = gProfile.append("text").attr("class", "current-text")
+        var currentText = gProfile.append("g").attr("class", "current-text")
+            .style("visibility", "hidden");
+        var currentTextPlace = currentText.append("text");
+        var currentTextElev = currentText.append("text").attr("class", "sec");
+
+        gProfile.append("rect")
+            .attr("class", "hit")
+            .attr("width", graphWidth)
+            .attr("height", graphHeight)
+            .on("mouseenter", mouseenter)
+            .on("mousemove", mousemoved)
+            .on("mouseout", mouseout);
+
+        function mouseenter() {
+            currentLine.style("visibility", "visible");
+            currentCircle.style("visibility", "visible");
+            currentText.style("visibility", "visible");
+        }
+
+        function mousemoved() {
+            var m = d3.mouse(this);
+
+            // Get domain value
+            var mouseX = m[0];
+            var i = Math.round(xElev.invert(mouseX));
+
+            // Check invalid values
+            if (i < 0) { i = 0; }
+            if (i >= totalData.length) { i = totalData.length-1; }
+
+            // Get elevation
+            var dist = (i*10)/1000;
+            var elev = Math.round(totalData[i].properties.elevation);
+
+            // if (i < 0) { i = 0; }
+            // if (i >= routeData.length) { i = routeData.length-1; }
+            //
+            // // Get elevation
+            // var elev = Math.round(routeData[i].properties.elevation);
+
+            currentLine
+                .attr("x1", xElev(i))
+                .attr("y1", yElev(0))
+                .attr("x2", xElev(i))
+                .attr("y2", yElev(elev))
+
+            currentCircle
+                .attr("cx", xElev(i))
+                .attr("cy", yElev(elev))
+
+            currentTextPlace
+                .attr("x", xElev(i) - 2)
+                .attr("y", yElev(elev) - 22)
+                .text(function() {
+                  return "Dist: " + dist + " km";  // Value of the text
+                });
+
+            currentTextElev
+                .attr("x", xElev(i) - 2)
+                .attr("y", yElev(elev) - 12)
+                .text(function() {
+                  return "Elev: " + elev + " m";  // Value of the text
+                });
+
+            // line.attr("x1", p[0]).attr("y1", p[1]).attr("x2", m[0]).attr("y2", m[1]);
+            // circle.attr("cx", p[0]).attr("cy", p[1]);
+        }
+
+        function mouseout(d, i) {
+            currentLine.style("visibility", "hidden");
+            currentCircle.style("visibility", "hidden");
+            currentText.style("visibility", "hidden");
+            // currentLine
+            //     .attr("x1", -100).attr("y1", 0)
+            //     .attr("x2", -100).attr("y2", graphHeight)
+            // currentCircle
+            //     .attr("cx", -100)
+            //     .attr("cy", -100)
+            //
+            // currentText
+            //     .attr("x", -100)
+            //     .attr("y", -100)
+            //     .text("");
+        }
+
+        ////////////
+        // Labels
+        ////////////
+
+        // var gLabels = svgElev.append("g")
+        //     .attr("class", "profile-group")
+        //     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        //
+        // var originLabel = gLabels.append("g").attr("class", "destination")
+        //     .attr("transform", "translate(" + xElev(0) + "," + yElev(totalData[0].properties.elevation) + ")")
+        //
+        // originLabel.append("circle").attr("class", "point").attr("r", 2);
+        //
+        // originLabel.append("text")
+        //     .attr("x", -2)
+        //     .attr("y", -20)
+        //     .text("Valledupar");
+        //
+        // originLabel.append("text")
+        //     .attr("x", -2)
+        //     .attr("y", -10)
+        //     .text(yElev(totalData[0].properties.elevation) + "m");
+        //
+        // var destinationLabel = gLabels.append("g").attr("class", "origin")
+        //     .attr("transform", "translate(" + xElev(totalData.length-1) + "," + yElev(totalData[totalData.length-1].properties.elevation) + ")")
+        //
+        // destinationLabel.append("circle").attr("class", "point").attr("r", 2);
+
+        d3.select(window).on('resize', resize);
+
+        function resize() {
+            // update width
+            microvisWidth = parseInt(d3.select('#microvis-route-profile').style('width'), 10);
+            microvisHeight = parseInt(d3.select('#microvis-route-profile').style('height'), 10);
+
+            graphWidth = microvisWidth - margin.left - margin.right;
+            graphHeight = microvisHeight - margin.top - margin.bottom;
+
+            // reset ranges
+            xElev.range([0, graphWidth]);
+            yElev.range([graphHeight, 0]);
+
+            // resize svg element
+            svgElev.attr("width", microvisWidth);
+            svgElev.attr("height", microvisHeight);
+
+            // resize paths
+            svgElev.select(".profile.route")
+                .attr("d", profilePath(routeData));
+
+            // Add the missing route path
+            svgElev.select(".profile.missing")
+                .attr("d", profilePath(missingData))
+                .attr("transform", "translate(" + xElev(routeData.length) + ",0)")
+
+            svgElev.select("rect.hit")
+                .attr("width", graphWidth)
+                .attr("height", graphHeight);
+
+            // update axes
+            yElevAxis.tickSize(-graphWidth);
+
+            svgElev.select('.x.axis')
+                .attr("transform", "translate(" + margin.left + "," + (graphHeight + margin.top) + ")")
+                .call(xElevAxis);
+            svgElev.select('.y.axis').call(yElevAxis);
+        }
+});
+
+
+</script>
+</body>

@@ -55,23 +55,22 @@
 
         <div id="info" class="modal">
             <div class="content">
-                <h2 class="title"></h2>
-                <div class="description"></div>
-                <div class="properties">
-                    <dl>
-                        <dt class="type">Place type:</dt><dd></dd>
-                        <dt class="population">Population:</dt><dd></dd>
-                        <!-- <dt class="elevation">Elevation:</dt><dd></dd> -->
-                        <!-- <dt class="objectID">OSM ID:</dt><dd></dd> -->
-                    </dl>
+                <div id="basic-info">
+                    <h2 class="title"></h2>
+                    <div class="description"></div>
+                    <div class="details">
+                        <!-- <dl>
+                            <dt class="type">Place type:</dt><dd></dd>
+                            <dt class="population">Population:</dt><dd></dd>
+                            <dt class="elevation">Elevation:</dt><dd></dd>
+                        </dl> -->
+                    </div>
                 </div>
                 <div id="microvis">
                     <h3>Route from Valledupar</h3>
+                    <div id="microvis-route-stats" class="details"></div>
                     <div class="microvis-wrap">
-                        <div id="microvis-elev"></div>
-                    </div>
-                    <div class="microvis-wrap">
-                        <div id="microvis-route-stats"></div>
+                        <div id="microvis-route-profile"></div>
                     </div>
                 </div>
             </div>
@@ -111,7 +110,8 @@
 
         <!-- DIGENTI Framework and main app scripts -->
         <script src="../digenti-framework/js/min/digenti-framework-min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="js/min/main-min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="js/main.js" type="text/javascript" charset="utf-8"></script>
+        <!-- <script src="js/min/main-min.js" type="text/javascript" charset="utf-8"></script> -->
     </body>
 
 </html>

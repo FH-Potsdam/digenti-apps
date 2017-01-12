@@ -4,6 +4,7 @@
 /*global project:true */
 /*global places_aoi:true */
 /*global updateSettlementPointLayer:true */
+/*global routesJSON:true */
 /* exported missingInfrastructureLayer */
 
 
@@ -36,6 +37,8 @@ function missingInfrastructureLayer() {
        },
        "features":[]
     };
+
+    this.missingProfileArray = [];
 
     // DEPRECATED this.active = true;
     this.factor = 0;
@@ -85,11 +88,7 @@ function missingInfrastructureLayer() {
 
 
         calculateAllDistances();
-
     };
-
-
-
 
 
 
@@ -239,6 +238,8 @@ function missingInfrastructureLayer() {
 
                     if (d.properties.connections !== undefined) {
 
+                        // console.log("id: " + d.properties.osm_id + ", nearest: " + d.properties.connections.nearest_point);
+
                         var x1 = project(d.geometry.coordinates).x;
                         var y1 = project(d.geometry.coordinates).y;
                         var x2 = project(d.properties.connections.nearest_point).x - x1;
@@ -280,18 +281,13 @@ function missingInfrastructureLayer() {
 
 
 
-
-
-
-
-
-
-
-
     /////////////////////////
     // Calculate Distances
     /////////////////////////
 
+    /**
+     * Calculate all distances to next road for all settlements
+     */
     function calculateAllDistances() {
 
         for (var i=0; i<places_aoi.features.length; i++) {
@@ -300,35 +296,86 @@ function missingInfrastructureLayer() {
 
     }
 
-
+    /**
+     * calculates distance between settlement and nearest road
+     */
     function calculateSingleDistance(feature) {
 
         var json_result;
 
         var coord_settlement = feature.geometry.coordinates[1]+","+feature.geometry.coordinates[0];
 
-        function onSuccess(r) {
+        // console.log("route: " + app.config.apiBase + "/route/" + app.config.coordHomeBase + "/" + coord_settlement);
 
+        $.ajax({
+            dataType: "json",
+            url: app.config.apiBase + "/route/" + app.config.coordHomeBase + "/" + coord_settlement,
+            success: onRouteLoadSuccess,
+            error: function(error) {
+                console.log(error);
+            }
+        });
+
+        // Called when loaded
+        function onRouteLoadSuccess(r) {
+
+            // Waypoint 1 is the the destionation (0 is origin)
             var nearest_point = r.properties.waypoints[1].mappedPosition;
+
+            // Distance is the distance from the input coordinate (settlement) and the mapped position (nearest point in road)
             var distance = r.properties.waypoints[1].distance;
 
+            // If the distance is below a threshold, we supose it is directly connected to the street
             if (distance < parent.distance_threshold) {
                 json_result = {
                     "touches_street": true,
                     "distance_to_street": distance,
                     "nearest_point": nearest_point
                 };
-            } else {  // Point is not Inside Polygon and therefor not connected to street
+
+            // Point is not Inside Polygon and therefore not connected to street
+            } else {
                 json_result = {
                     "touches_street": false,
                     "distance_to_street": distance,
                     "nearest_point": nearest_point
                 };
+
+                // Load missing profile
+                var coord_street = nearest_point[1] + "," + nearest_point[0];
+
+                // console.log("load missing profile – id: " + feature.properties.osm_id + ", name: " + feature.properties.name + ", nearest point: " + coord_street + ", settlement: " + coord_settlement);
+
+                $.ajax({
+                    dataType: "json",
+                    url: app.config.apiBase + "/profile/points/" + coord_street + "/" + coord_settlement,
+                    // success: onMissingProfileLoadSuccess,
+                    success: function(response) {
+                        // console.log("missing route loaded: " + feature.properties.osm_id);
+                        var placeID = feature.properties.osm_id;
+                        var isSliced = (response instanceof Array);
+
+                        var missingObj = {};
+                        missingObj.id = placeID;
+                        missingObj.missing = response[0];
+
+                        if (isSliced) {
+                            missingObj.missing_sliced = response[1];
+                        }
+
+                        // Push in routes global array
+                        routesJSON.missing.push(missingObj);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
             }
 
             feature.properties.connections = json_result;
             parent.places_aoi_street_distance.features.push(feature);
 
+            // All settlements processed
             if (parent.places_aoi_street_distance.features.length === places_aoi.features.length) {
 
                 var features = parent.places_aoi_street_distance.features;
@@ -396,17 +443,5 @@ function missingInfrastructureLayer() {
             }
 
         }
-
-        $.ajax({
-            dataType: "json",
-            url: app.config.apiBase + "/route/" + app.config.coordHomeBase + "/" + coord_settlement,
-            success: onSuccess,
-            error: function(error) {
-                console.log(error);
-            }
-        });
-
-
     }
-
 }

@@ -36,6 +36,14 @@ html, body, #wrapper {
   padding: 0px;
   margin: 0px; }
 
+h3 {
+  font-size: 1.1em; }
+
+.details {
+  color: #333; }
+  .dark .details {
+    color: #868b90; }
+
 button, select, input, label {
   font-family: "Source Sans Pro", sans-serif;
   font-size: 0.875em;
@@ -188,12 +196,12 @@ button {
   vertical-align: top;
   zoom: 1;
   *display: inline;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   cursor: pointer;
   position: absolute;
-  top: 5px;
-  right: 5px; }
+  top: 10px;
+  right: 10px; }
   .close::before, .close::after {
     content: '';
     position: absolute;
@@ -361,29 +369,62 @@ text {
   shape-rendering: crispEdges; }
 
 #microvis svg {
-  width: 100%; }
-#microvis .follow {
-  stroke-width: 2;
+  display: block; }
+#microvis .axis path {
+  fill: none;
+  stroke: none; }
+#microvis .axis text {
+  fill: #868b90; }
+#microvis .axis.y line {
+  stroke: white;
+  opacity: .6;
+  stroke-dasharray: 1px 7px;
+  stroke-width: 1px;
+  stroke-linecap: round;
+  stroke-linejoin: round; }
+#microvis .axis.x .tick:first-child {
+  visibility: hidden;
+  display: none; }
+#microvis .axis.x line {
+  stroke: none; }
+#microvis .axis.x text {
+  fill: #868b90; }
+#microvis .profile {
   stroke-linejoin: round;
-  stroke-linecap: round; }
+  stroke-linecap: round;
+  stroke-width: 3;
+  stroke: #dadff0;
+  fill: none; }
+  #microvis .profile.route {
+    /*stroke: #099;*/
+    stroke: #90D97D; }
+  #microvis .profile.missing {
+    stroke: #ff5050;
+    stroke-dasharray: 0px 5px; }
 #microvis .line {
   stroke-width: 3;
-  stroke-opacity: 0.1;
-  fill-opacity: 0.1; }
-#microvis .current {
+  stroke-opacity: 0.2;
+  fill-opacity: 0.2; }
+#microvis .point, #microvis .current {
   stroke: white !important;
   stroke-opacity: 1;
   fill: white !important;
   fill-opacity: 1;
   /*display: none;*/
   /*stroke: 0;*/
-  stroke-width: 1px; }
+  stroke-width: 1.5px; }
 #microvis line.current {
   stroke-width: 1.5px; }
 #microvis text {
-  font-family: Arial;
+  font-family: 'Source Sans Pro', sans-serif;
   font-size: 10px;
-  stroke: white; }
+  fill: white; }
+  #microvis text.sec {
+    fill: #999; }
+#microvis .hit {
+  fill: none;
+  cursor: crosshair;
+  pointer-events: all; }
 
 .layoutdebug {
   fill: rgba(255, 0, 255, 0.3); }
@@ -524,39 +565,56 @@ body.tabletop {
     margin-bottom: 25px; }
 
 #info {
-  right: -22vw;
-  top: 0;
-  opacity: 0;
-  width: 22vw;
-  height: 100%; }
+  width: 100%;
+  height: 28vh;
+  min-height: 280px;
+  left: 0;
+  bottom: -28vh; }
+  #info h1, #info h2, #info h3, #info h4 {
+    line-height: 20px;
+    margin-bottom: 4px;
+    display: inline-block;
+    vertical-align: sub; }
   #info.show {
-    right: 0;
+    bottom: 0 !important;
     opacity: 1; }
   #info .content {
-    padding: 22.5px 30px; }
-  #info .title {
-    margin-bottom: 10px; }
-  #info .properties {
-    margin-bottom: 30px; }
-  #info dl {
-    zoom: 1; }
-    #info dl:before, #info dl:after {
-      content: "";
-      display: table; }
-    #info dl:after {
-      clear: both; }
-    #info dl dt, #info dl dd {
-      float: left; }
-    #info dl dt {
-      font-weight: 700;
-      clear: left;
-      margin-right: 5px; }
-  #info #microvis .microvis-wrap {
-    margin-top: 20px; }
-    #info #microvis .microvis-wrap > h3, #info #microvis .microvis-wrap > h4 {
-      margin-bottom: 0; }
-    #info #microvis .microvis-wrap #microvis-route-stats {
-      margin-top: -10px; }
+    padding: 22.5px 30px;
+    width: 100%;
+    height: 100%; }
+    #info .content > * {
+      display: -moz-inline-stack;
+      display: inline-block;
+      vertical-align: top;
+      zoom: 1;
+      *display: inline; }
+  #info #basic-info {
+    width: 250px;
+    margin-right: 100px; }
+    #info #basic-info .details {
+      margin-bottom: 30px; }
+    #info #basic-info dl {
+      zoom: 1; }
+      #info #basic-info dl:before, #info #basic-info dl:after {
+        content: "";
+        display: table; }
+      #info #basic-info dl:after {
+        clear: both; }
+      #info #basic-info dl dt, #info #basic-info dl dd {
+        float: left; }
+      #info #basic-info dl dt {
+        font-weight: 700;
+        clear: left;
+        margin-right: 5px; }
+  #info #microvis {
+    width: 600px;
+    max-width: 600px; }
+    #info #microvis .microvis-wrap {
+      margin-top: -8px; }
+      #info #microvis .microvis-wrap > h3, #info #microvis .microvis-wrap > h4 {
+        margin-bottom: 0; }
+      #info #microvis .microvis-wrap #microvis-route-stats {
+        margin-top: -10px; }
 
 #filters {
   top: 1vw;

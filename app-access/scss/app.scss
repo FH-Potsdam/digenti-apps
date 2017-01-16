@@ -17,6 +17,7 @@
 @import '../../digenti-framework/scss/base-app';
 
 
+
 //////////////////
 // Main sidebar
 //////////////////
@@ -120,13 +121,4 @@
     &.disabled {
         bottom: -70px;
     }
-}
-
-
-.map-features > g > g.isoline-group {
-    opacity: 0;
-}
-
-.map-features > g > g.selectedSettlement {
-    opacity: 1;
 }

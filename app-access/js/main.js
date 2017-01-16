@@ -253,7 +253,7 @@ function mapDraw(geojson) {
 
 
     // Create d3 canvas on map canvas container. This will hold our visual elements
-    svg = d3.select(map.getCanvasContainer()).append("svg").attr("class", "map-features");
+    svg = d3.select(map.getCanvasContainer()).append("svg").attr("id", "map-features");
 
 
     // This function generates a line object out of a set of points
@@ -663,12 +663,6 @@ function projectPoint(lon, lat) {
 function isDefined(v) {
     return (typeof v !== 'undefined' && v !== null);
 }
-
-d3.selection.prototype.moveToFront = function() {
-  return this.each(function() {
-      this.parentNode.appendChild(this);
-  });
-};
 
 
 /////////////////////////////
@@ -1150,16 +1144,26 @@ function resizeRoute() {
 // Settlement Click Callback
 ///////////////////////////////
 
+d3.selection.prototype.moveToFront = function() {
+  return this.each(function(){
+    this.parentNode.appendChild(this);
+  });
+};
+
 // This callback is called when clicking on a location
 function clickCallback(d) {
 
     // Check if settlement is already active
     if ($.inArray(d.properties.osm_id, app.selectedSettlements) >= 0) {
-
         // settlement is already active > make it inactive
         d3.selectAll(".village[data-id='"+d.properties.osm_id+"']").classed("selected", false);
-        d3.selectAll("g[data-id='"+d.properties.osm_id+"']").classed("selectedSettlement", false);
+        d3.selectAll("g[data-id='"+d.properties.osm_id+"']").classed("selected-settlement", false);
         app.selectedSettlements.remove(d.properties.osm_id);
+
+        // This class is used for CSS control
+        if (app.selectedSettlements.length == 0) {
+            svg.classed("detail", false);
+        }
 
     // If it is not active, activate it
     } else {
@@ -1180,8 +1184,16 @@ function clickCallback(d) {
         d3.selectAll(".village[data-id='"+d.properties.osm_id+"']").classed("selected", true);
 
         // Activate selected settlement's group
-        d3.selectAll("g[data-id='"+d.properties.osm_id+"']").classed("selectedSettlement", true);
+        d3.selectAll("g[data-id='"+d.properties.osm_id+"']").classed("selected-settlement", true);
+
+        // Move route to front
+        var route = d3.select("#routesfromvalledupar g[data-id='"+d.properties.osm_id+"']")
+        route.moveToFront();
+
         app.selectedSettlements.push(d.properties.osm_id);
+
+        // This class is used for CSS control
+        svg.classed("detail", true);
 
         // show the info box
         showInfoBox(d);
@@ -1231,8 +1243,6 @@ function deactivateSelectedSettlements() {
         return false;
     }
 
-    console.log("remove remove");
-
     // Deactivate active settlement
     var currentSettlement = app.selectedSettlements[0];
 
@@ -1240,14 +1250,18 @@ function deactivateSelectedSettlements() {
     d3.selectAll(".village[data-id='"+currentSettlement+"']").classed("selected", false);
 
     // Activate group (isolines, etc.)
-    d3.selectAll("g[data-id='"+currentSettlement+"']").classed("selectedSettlement", false);
+    d3.selectAll("g[data-id='"+currentSettlement+"']").classed("selected-settlement", false);
 
     app.selectedSettlements.remove(currentSettlement);
+
+    if (app.selectedSettlements.length == 0) {
+        svg.classed("detail", false);
+    }
 
     // for (var i=0; i<app.selectedSettlements; i++) {
     //     // console.log(app.selectedSettlements[i]);
     //     d3.selectAll(".village[data-id='"+app.selectedSettlements[i]+"']").classed("selected", false);
-    //     d3.selectAll("g[data-id='"+app.selectedSettlements[i]+"']").classed("selectedSettlement", false);
+    //     d3.selectAll("g[data-id='"+app.selectedSettlements[i]+"']").classed("selected-settlement", false);
     //     app.selectedSettlements.remove(app.selectedSettlements[i]);
     // }
 }

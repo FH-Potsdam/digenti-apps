@@ -161,7 +161,6 @@ function routesLayer(svg) {
 
         }
 
-
         parent.svglayer.selectAll("g")
             .data(geojson.features)
             .enter()
@@ -189,7 +188,6 @@ function routesLayer(svg) {
                         var coord_end = (d.geometry.coordinates[1]+","+d.geometry.coordinates[0]);
                         routingCar(coord_valledupar, coord_end, d.properties.osm_id);
                     });
-
     }
 
 

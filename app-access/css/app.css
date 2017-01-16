@@ -3,7 +3,8 @@
 * {
   margin: 0;
   padding: 0;
-  border: 0; }
+  border: 0;
+  outline: none; }
 
 @font-face {
   font-family: 'League Spartan';
@@ -77,7 +78,7 @@ button {
     .missing-mode button:hover, .missing-mode button.active {
       background-color: #ff5050; }
     .infrastructure-mode button:hover, .infrastructure-mode button.active {
-      background-color: #099; }
+      background-color: #a4d296; }
   button:disabled {
     background-color: #eee !important;
     cursor: default; }
@@ -262,22 +263,36 @@ button {
   .mapboxgl-canvas-container svg.map-morphed {
     overflow: visible; }
 
-.map-features > g {
-  transition: opacity 0.5s; }
-  .map-features > g > g {
-    transition: opacity 0.5s;
+#map-features > g {
+  transition: opacity 0.5s ease; }
+  #map-features > g > g {
+    transition: opacity 0.4s ease;
     opacity: 1;
     pointer-events: all; }
-  .map-features > g.disabled > g {
+    #map-features > g > g.isoline-group {
+      opacity: 0;
+      pointer-events: none; }
+    #map-features > g > g.selected-settlement {
+      opacity: 1 !important; }
+  #map-features > g.disabled > g {
     opacity: 0;
     pointer-events: none; }
+#map-features.detail #routesfromvalledupar > g path.route {
+  stroke: #191F23; }
+#map-features.detail #routesfromvalledupar > g.selected-settlement path.route {
+  stroke: #a4d296; }
+#map-features.detail #missinginfrastructure .village-group {
+  opacity: 0.3; }
+#map-features.detail #settlement-point-layer > * {
+  opacity: 0.5; }
 
 path {
   vector-effect: non-scaling-stroke;
   stroke: black;
   fill: none;
   stroke-linejoin: round;
-  stroke-linecap: round; }
+  stroke-linecap: round;
+  transition: stroke 0.4s, stroke-width 0.4s; }
   path.route, path.distance {
     stroke: #dadff0; }
   path.time {
@@ -293,28 +308,17 @@ text {
   text.title, text .title {
     font-weight: 700; }
 
-.villages {
-  cursor: pointer;
-  fill: #ff5050;
-  stroke: none; }
-  .villages .selected {
-    fill: #099; }
-  .villages circle {
-    fill-opacity: 0.6; }
-    .villages circle:hover, .villages circle.active {
-      fill-opacity: 1.0;
-      transition: fill-opacity 0.6s; }
-
 .village {
   cursor: pointer;
   fill: #f9bd38;
-  fill-opacity: 0.5;
   stroke: #f9bd38;
+  fill-opacity: 0.5;
   stroke-width: 1.5;
-  transition: stroke 0.6s, fill 0.6s, stroke-width 0.6s, fill-opacity 0.6s; }
+  transition: stroke 0.6s, fill 0.6s, stroke-width 0.6s, fill-opacity 0.6s, opacity 0.5s; }
   .village:hover, .village.active {
     fill-opacity: 1; }
   .village.selected {
+    opacity: 1 !important;
     stroke-width: 18;
     fill-opacity: 1; }
 
@@ -336,7 +340,7 @@ text {
   stroke-width: 1.5;
   stroke-linejoin: round;
   stroke-linecap: round;
-  transition: fill-opacity 0.3s ease, opacity 0.3s ease; }
+  transition: fill-opacity 0.5s ease, opacity 0.5s ease; }
   .isoline.disabled {
     opacity: 0;
     pointer-events: none; }
@@ -349,7 +353,7 @@ text {
   transform-origin: 50% 50%; }
 
 .route-dots {
-  fill: #099;
+  fill: #a4d296;
   fill-opacity: 0.5; }
 
 .route-lines {
@@ -393,14 +397,13 @@ text {
   stroke-linejoin: round;
   stroke-linecap: round;
   stroke-width: 3;
-  stroke: #dadff0;
+  stroke: #a4d296;
   fill: none; }
   #microvis .profile.route {
-    /*stroke: #099;*/
-    stroke: #90D97D; }
+    stroke: #a4d296; }
   #microvis .profile.missing {
     stroke: #ff5050;
-    stroke-dasharray: 0px 5px; }
+    stroke-dasharray: 0px 6px; }
 #microvis .line {
   stroke-width: 3;
   stroke-opacity: 0.2;
@@ -566,10 +569,10 @@ body.tabletop {
 
 #info {
   width: 100%;
-  height: 28vh;
+  height: 20vh;
   min-height: 280px;
   left: 0;
-  bottom: -28vh; }
+  bottom: -20vh; }
   #info h1, #info h2, #info h3, #info h4 {
     line-height: 20px;
     margin-bottom: 4px;
@@ -688,9 +691,3 @@ body.tabletop {
     margin-top: 15px; }
   #isolines-ui.disabled {
     bottom: -70px; }
-
-.map-features > g > g.isoline-group {
-  opacity: 0; }
-
-.map-features > g > g.selectedSettlement {
-  opacity: 1; }

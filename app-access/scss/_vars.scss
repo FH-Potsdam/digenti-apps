@@ -6,8 +6,9 @@ $offline: false;
 
 $button-size: 115px;
 $button-margin: 20px;
-$modal-padding: 15px;
-$modal-width: $button-size + 2*$modal-padding;
+$modal-padding-tb: 15px;
+$modal-padding-rl: 20px;
+$modal-width: $button-size + 2*$modal-padding-rl;
 
 // $info-width: 22vw;
 $info-width: 100%;

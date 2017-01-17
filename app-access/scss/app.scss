@@ -47,12 +47,17 @@
     #view {
         padding: 0;
 
+        $view-padding: $modal-padding-rl + 10px;
+        $button-size: 70px;
+
         .button-wrapper {
-            @include block($modal-width, $modal-width);
+            position: relative;
+            // @include block($modal-width, $modal-width);
+            @include block($button-size + 2*$view-padding, $button-size + 2*$view-padding);
         }
 
         button {
-            @include background-image('../img/icon-small-multiples.svg', center 2.2*$modal-padding);
+            @include background-image('../img/icon-small-multiples.svg', center $view-padding);
             background-color: transparent;
             @include expand();
 
@@ -79,10 +84,13 @@
 
         label {
             position: absolute;
-            bottom: $modal-padding + 15px;
-            width: 100%;
-
-            text-align: center;
+            // bottom: $modal-padding-rl + 15px;
+            // width: 100%;
+            // text-align: center;
+            bottom: $view-padding + 2px;
+            // top: $button-size + 5px;
+            left: $view-padding;
+            text-align: left;
             display: block;
         }
     }
@@ -93,9 +101,46 @@
 ////////////
 
 #legend {
-    bottom: 10px;
+    top: 10px;
     right: 10px;
+    width: auto;
+
+    h2 {
+        margin-bottom: 25px;
+    }
+
+    .routes {
+        @include background-image('../img/legend-routes.svg', left top);
+        display: block;
+        width: 123px;
+        height: 233px;
+    }
+
+    .road-load {
+        @include background-image('../img/legend-road-load.svg', left top);
+        display: block;
+        width: 166px;
+        height: 44px;
+    }
+
+    .legend-item {
+        margin-bottom: 30px;
+        h3, h4 {
+            margin-bottom: 15px;
+        }
+    }
 }
+
+// #legend-test {
+//     @include background-image('../img/legend.png', center top);
+//     display: block;
+//     width: 202px;
+//     height: 476px;
+//     position: fixed;
+//     top: 10px;
+//     right: 10px;
+//     z-index: 9999;
+// }
 
 /////////////////
 // Isolines UI

@@ -86,6 +86,23 @@ function isolinesLayer() {
         });
     }
 
+    this.hasIsolines = function(placeID) {
+
+        for (var i=0; i<this.isolinesGeoJSON.features.length; i++) {
+            if (this.isolinesGeoJSON.features[i].properties.osm_id == placeID) {
+                return true;
+            }
+        }
+
+        return false;
+
+        // var result = $.grep(array, function(n, i) {
+        //     return (n.id === placeID);
+        // })
+        //
+        // return (result.length > 0) ? result[0] : null;
+    }
+
 
     function getIsoline(d, objectID) {
 

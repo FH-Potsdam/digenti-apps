@@ -209,7 +209,7 @@ function mapDraw(geojson) {
         style: baseMap,
         zoom: 11.2,
         // zoom: 11.4,
-        center: [-73.09, 10.415],
+        center: [-73.09, 10.422],
         // center: [-73.12, 10.410],
         // pitch: 45 // pitch in degrees
         // bearing: -60 // bearing in degrees
@@ -706,6 +706,7 @@ function rangeSliderInput() {
 
     var range = parseInt($rangeSlider.val());
     $rangeText.html(range + " min");
+    // $infoBox.find("#isolines-ui .details span").html(range + " min");
 
     // Set range in isolines layer
     app.layers['isolines'].layer.setRange(range);
@@ -726,8 +727,8 @@ function showInfoBox(d) {
     if (!$infoBox) $infoBox = $("#info");
 
     // Get data
-    $infoBox.find(".title").text(d.properties.name);
-    $infoBox.find(".details").text(String(d.properties.type).capitalize() + ", " + getPlacePopulation(d.properties) + " inhabitants")
+    $infoBox.find("#basic-info .title").text(d.properties.name);
+    $infoBox.find("#basic-info .details").text(String(d.properties.type).capitalize() + ", " + getPlacePopulation(d.properties) + " inhabitants")
     // $infoBox.find(".description").html();
     // $infoBox.find(".type").next('dd').text(String(d.properties.type).capitalize());
     // $infoBox.find(".population").next('dd').text(getPlacePopulation(d.properties));
@@ -735,12 +736,27 @@ function showInfoBox(d) {
 
     drawMicrovis(d);
 
+    // Show item in legend
+    $("#legend .legend-item.isolines").removeClass("hide");
+
+    // Check isolines
+    var hasIsolines = app.layers['isolines'].layer.hasIsolines(d.properties.osm_id);
+    if (hasIsolines) {
+        $infoBox.find("#isolines-ui .isolines-wrap").removeClass("hide");
+        $infoBox.find("#isolines-ui .no-reachable").addClass("hide");
+    } else {
+        $infoBox.find("#isolines-ui .isolines-wrap").addClass("hide");
+        $infoBox.find("#isolines-ui .no-reachable").removeClass("hide");
+    }
+
     // Show
     $infoBox.addClass("show");
 
     $infoBox.find(".close").one("click", function() {
-        $infoBox.removeClass("show");
+        hideInfoBox();
         deactivateSelectedSettlements();
+        // Show item in legend
+        $("#legend .legend-item.isolines").addClass("hide");
     });
 }
 
@@ -1231,6 +1247,9 @@ function clickCallback(d) {
 
         app.layout = calculateLayoutVars();
         hideInfoBox(d);
+
+        // Show item in legend
+        $("#legend .legend-item.isolines").addClass("hide");
 
         update(app.config.transitionTime);
 

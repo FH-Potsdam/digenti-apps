@@ -22,10 +22,72 @@
 // Main sidebar
 //////////////////
 
-#nav {
+// Map view <> Small multiples view
+#view {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 3000;
 
-    background-color: transparent;
+    padding: 0;
 
+    $view-padding: $modal-padding-rl + 5px;
+    $button-size: 70px;
+
+    // position: fixed;
+    // bottom: 0;
+    // left: 0;
+
+    .button-wrapper {
+        position: relative;
+        // @include block($modal-width, $modal-width);
+        @include block($button-size + 2*$view-padding, $button-size + 2*$view-padding);
+    }
+
+    button {
+        @include background-image('../img/icon-small-multiples.svg', center $view-padding);
+        background-color: transparent;
+        @include expand();
+
+        @include no-text();
+        padding: 0;
+
+        &.active,
+        &:hover {
+            background-color: $color-active;
+            .dark & {
+                background-color: $color-active-dark;
+            }
+        }
+
+        .tabletop &:hover {
+            background-color: transparent !important;
+        }
+
+        .tabletop &.active {
+            background-color: $color-active !important;
+        }
+
+        .tabletop.dark &.active {
+            background-color: $color-active-dark !important;
+        }
+    }
+
+    label {
+        position: absolute;
+        // bottom: $modal-padding-rl + 15px;
+        // width: 100%;
+        // text-align: center;
+        bottom: $view-padding + 2px;
+        // top: $button-size + 5px;
+        left: $view-padding;
+        text-align: left;
+        display: block;
+    }
+}
+
+// #nav {
+//     background-color: transparent;
     // Buttons
     // #modes {
     //     button {
@@ -42,59 +104,8 @@
     //         }
     //     }
     // }
+// }
 
-    // Map view <> Small multiples view
-    #view {
-        padding: 0;
-
-        $view-padding: $modal-padding-rl + 10px;
-        $button-size: 70px;
-
-        .button-wrapper {
-            position: relative;
-            // @include block($modal-width, $modal-width);
-            @include block($button-size + 2*$view-padding, $button-size + 2*$view-padding);
-        }
-
-        button {
-            @include background-image('../img/icon-small-multiples.svg', center $view-padding);
-            background-color: transparent;
-            @include expand();
-
-            &.active,
-            &:hover {
-                background-color: $color-active;
-                .dark & {
-                    background-color: $color-active-dark;
-                }
-            }
-
-            .tabletop &:hover {
-                background-color: transparent !important;
-            }
-
-            .tabletop &.active {
-                background-color: $color-active !important;
-            }
-
-            .tabletop.dark &.active {
-                background-color: $color-active-dark !important;
-            }
-        }
-
-        label {
-            position: absolute;
-            // bottom: $modal-padding-rl + 15px;
-            // width: 100%;
-            // text-align: center;
-            bottom: $view-padding + 2px;
-            // top: $button-size + 5px;
-            left: $view-padding;
-            text-align: left;
-            display: block;
-        }
-    }
-}
 
 ////////////
 // Legend
@@ -103,31 +114,133 @@
 #legend {
     top: 10px;
     right: 10px;
-    width: auto;
+    width: $legend-width;
+    background: transparent;
+
+    & > div {
+        padding: 12px 15px;
+        border-top: 2px solid $color-ui-dark;
+        background: $color-blue-darkest;
+
+        &:first-child {
+            border-top: 0;
+            // padding-bottom: 4px;
+            // background-color: #111;
+            // background-color: $color-ui-dark;
+        }
+    }
 
     h2 {
-        margin-bottom: 25px;
-    }
-
-    .routes {
-        @include background-image('../img/legend-routes.svg', left top);
-        display: block;
-        width: 123px;
-        height: 233px;
-    }
-
-    .road-load {
-        @include background-image('../img/legend-road-load.svg', left top);
-        display: block;
-        width: 166px;
-        height: 44px;
+        font-size: $font-size-h3;
+        margin-bottom: 0;
+        // margin-bottom: 20px;
     }
 
     .legend-item {
-        margin-bottom: 30px;
+        // margin-bottom: 35px;
+
         h3, h4 {
-            margin-bottom: 15px;
+            margin-bottom: 4px;
         }
+
+        .desc, span {
+            font-size: $font-size-small;
+
+            span {
+                font-weight: normal;
+                display: block;
+                font-size: 1em;
+            }
+        }
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        @include transition(opacity 0.5s ease);
+        &.hide {
+            @include hide(0);
+            // display: none;
+        }
+    }
+
+    [class^="graphic-"],
+    [class*=" graphic-"] {
+        position: relative;
+        max-width: 100%;
+        @include background-size(contain);
+        margin-top: 15px;
+        margin-bottom: 5px;
+
+        margin-left: auto;
+        margin-right: auto;
+
+        span {
+            position: absolute;
+            white-space: nowrap;
+        }
+    }
+
+    // Graphics
+    .graphic-routes {
+        @include background-image('../img/legend-route.svg', left top);
+        @include block(85%, 213px);
+        @include background-size(inherit);
+        // @include block(10px, 213px);
+
+        // margin-top: 20px;
+        // padding-bottom: 10px;
+        margin-top: 15px;
+        padding-bottom: 15px;
+
+        & > span {
+            left: 22px;
+            span {
+                margin-top: -2px;
+            }
+        }
+
+        .valledupar {
+            top: -3px;
+            font-weight: bold;
+        }
+
+        .road {
+            top: 57px;
+        }
+
+        .road-end {
+            top: 120px;
+            font-weight: bold;
+        }
+
+        .missing-road {
+            top: 160px;
+        }
+
+        .settlement {
+            top: 200px;
+            font-weight: bold;
+        }
+    }
+
+    .graphic-road-load {
+        @include background-image('../img/legend-road-load.svg', left top);
+        @include block(100%, 20px);
+
+        padding-bottom: 25px;
+
+        & > span {
+            bottom: 0px;
+        }
+
+        .high { left: 0; }
+        .low { right: 0; }
+    }
+
+    .graphic-isoline {
+        @include background-image('../img/legend-isoline.svg', left top);
+        @include block(100%, 78px);
     }
 }
 
@@ -147,9 +260,9 @@
 /////////////////
 
 #isolines-ui {
-    bottom: 0;
-    left: 50%;
-    opacity: 1 !important;
+    // bottom: 0;
+    // left: 50%;
+    // opacity: 1 !important;
 
     #range__slider {
         display: block;

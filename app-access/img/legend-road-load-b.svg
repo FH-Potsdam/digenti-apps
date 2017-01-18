@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="166px" height="18px" viewBox="0 0 166 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 41.2 (35397) - http://www.bohemiancoding.com/sketch -->
+    <title>Route load</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+        <g id="Artboard" stroke="#DADFF0">
+            <g id="Route-load" transform="translate(9.000000, 0.000000)">
+                <path d="M132.5,9 L155.5,9" id="Line" stroke-width="2"></path>
+                <path d="M0.5,9 L23.5,9" id="Line" stroke-width="18"></path>
+                <path d="M29.5,9 L52.5,9" id="Line" stroke-width="14"></path>
+                <path d="M57.5,9 L80.5,9" id="Line" stroke-width="10"></path>
+                <path d="M83.5,9 L106.5,9" id="Line" stroke-width="6"></path>
+                <path d="M108.5,9 L131.5,9" id="Line" stroke-width="4"></path>
+            </g>
+        </g>
+    </g>
+</svg>

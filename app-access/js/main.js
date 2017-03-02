@@ -297,7 +297,7 @@ function mapDraw(geojson) {
         .enter()
         .append("circle")
             .attr("class", "village")
-            .attr("r", app.config.circleRadius)
+            .attr("r", function(d) { return app.config.circleRadius * getPopulationFactor(d.properties); })
             .on("click", function(d) {
                 // var currentSettlement = d3.select(this);
                 // currentSettlement.classed("selected", !currentSettlement.classed("selected")); // This is done inside clickCallback(d) now
@@ -439,9 +439,9 @@ function update(transition_time) {
 
         // Mode specific GUI elements
         if (app.mode === 'isolines') {
-            $('#isolines-ui').removeClass('disabled');
+            $('#reachability').removeClass('disabled');
         } else {
-            $('#isolines-ui').addClass('disabled');
+            $('#reachability').addClass('disabled');
         }
 
         update(app.config.transitionTime);
@@ -706,7 +706,7 @@ function rangeSliderInput() {
 
     var range = parseInt($rangeSlider.val());
     $rangeText.html(range + " min");
-    // $infoBox.find("#isolines-ui .details span").html(range + " min");
+    // $infoBox.find("#reachability .details span").html(range + " min");
 
     // Set range in isolines layer
     app.layers['isolines'].layer.setRange(range);
@@ -742,11 +742,11 @@ function showInfoBox(d) {
     // Check isolines
     var hasIsolines = app.layers['isolines'].layer.hasIsolines(d.properties.osm_id);
     if (hasIsolines) {
-        $infoBox.find("#isolines-ui .isolines-wrap").removeClass("hide");
-        $infoBox.find("#isolines-ui .no-reachable").addClass("hide");
+        $infoBox.find("#reachability .isolines-wrap").removeClass("hide");
+        $infoBox.find("#reachability .no-reachable").addClass("hide");
     } else {
-        $infoBox.find("#isolines-ui .isolines-wrap").addClass("hide");
-        $infoBox.find("#isolines-ui .no-reachable").removeClass("hide");
+        $infoBox.find("#reachability .isolines-wrap").addClass("hide");
+        $infoBox.find("#reachability .no-reachable").removeClass("hide");
     }
 
     // Show

@@ -145,9 +145,7 @@ function mapDraw(geojson) {
 
 
 function update(transition_time) {
-
     config.layers.gsm.update(transition_time);
-
 }
 
 

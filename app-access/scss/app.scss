@@ -145,12 +145,15 @@
 
         .desc, span {
             font-size: $font-size-small;
-
             span {
                 font-weight: normal;
                 display: block;
-                font-size: 1em;
+                // font-size: 1em;
             }
+        }
+
+        .desc {
+            @include color-sub();
         }
 
         &:last-child {

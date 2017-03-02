@@ -1,0 +1,256 @@
+<!DOCTYPE html >
+<html>
+  <head>
+      <meta charset='utf-8' />
+      <title></title>
+      <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+      <script src='../../../lib/d3.min.js' charset="utf-8"></script>
+      <script src='../../../lib/turf.min.js' charset='utf-8'></script>
+
+      <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+      <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
+      <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.css' rel='stylesheet' />
+
+      <link href="../../../app-access/css/app.css" rel="stylesheet" />
+      <!-- <link href="../../digenti-framework/css/main.css" rel="stylesheet" /> -->
+      <style media="screen">
+        path {
+            stroke: #333 !important;
+        }
+      </style>
+  </head>
+  <body>
+    <div id='map'>
+    </div>
+    <script>
+
+        var roadsJSON = {};
+
+        ////////////
+        // Mapbox
+        ////////////
+
+    	mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+        var map = new mapboxgl.Map({
+            container: 'map',
+            // style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
+            // style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi', // light
+            // style: 'mapbox://styles/jorditost/ciznb3iyw00642snuu7ivnnfk', // light+nostreets
+            style: 'mapbox://styles/jorditost/cizo5i3fc00a82ro13xoz7fua', // light+labels
+            // style: 'mapbox://styles/jorditost/cizmzgwci005l2sqjuzfvwzms', // light+streets
+            // zoom: 11.5,
+            // center: [-72.956, 10.410],
+            center: [-73.0726, 10.3578], // detail
+            zoom: 12.7 // detail
+        });
+
+        // set-up svg canvas
+        var svg = d3.select(map.getCanvasContainer()).append("svg").attr("id", "map-features");
+        // var svg = d3.select("#svg").append("svg")
+        //     .attr("height", h)
+        //     .attr("width", w);
+
+        // Path transform
+        var transform = d3.geo.transform({point: projectPoint});
+    	var path = d3.geo.path().projection(transform);
+
+        // This function generates a line object out of a set of points
+        var lineFunction = d3.svg.line()
+                        .x(function(d) { return project(d).x; })
+                        .y(function(d) { return project(d).y; })
+                        .interpolate("linear");
+
+        var gr = svg.append("g").attr("id", "group-roads");
+        // var gi = svg.append("g").attr("id", "group-isolines"),
+        //     gp = svg.append("g").attr("id", "group-places");
+
+        var urlRoad = 'http://localhost:61002/api/route/10.3910,-73.0271/10.3507,-73.0444/';
+        // var urlRoad = 'http://localhost:61002/api/route/10.3910,-73.0271/10.3083,-73.0277/';
+        var sourceRoad = new mapboxgl.GeoJSONSource({
+            data: urlRoad
+        });
+
+        map.on('load', function () {
+
+            // Road
+            map.addSource('route', sourceRoad);
+            map.addLayer({
+                "id": "route",
+                "type": "line",
+                "source": "route",
+                "layout": {
+                    "line-join": "round",
+                    "line-cap": "round"
+                },
+                "paint": {
+                    'line-color': '#333',
+                    'line-opacity': 1,
+                    'line-width': 3
+                }
+            });
+
+            loadFOS(336609942); //loadRoad(336609942);
+            loadFOS(31148173); //loadRoad(31148173);
+            loadFOS(104256042); //loadRoad(104256042);
+            loadFOS(104256165); loadRoad(104256165);
+            loadFOS(104256058); loadRoad(104256058);
+            loadFOS(220112516); loadRoad(220112516);
+            loadFOS(220112523, true); loadRoad(220112523);
+
+            // d3.json("../../../data/roads_aoi.json", function(err, data) {
+            //
+            //     roadsJSON = data;
+            //
+            //     console.log(roadsJSON);
+            //
+            //     // Binding the settlement data to our layer. Positions of the settlements are saved in app.villagePositionsMap-Array
+            //     gr.selectAll("path")
+            //         .data(roadsJSON.features)
+            //         .enter()
+            //         .append("path")
+            //             .attr("class", "road")
+            //             .attr("data-id", function(d) { return d.properties.osm_id; })
+            //             // .attr("stroke-width", function(d) { d.properties.importancescore*0.4 + 1; })
+            //             .attr("stroke-width", function(d) { return roadStrokeWidthByType(d.properties.type);})
+            //             // .attr("d", path);
+            //
+            //     // for each village that is supplied by this route part
+            //     for (var i=0; i<roadsJSON.features.length; i++) {
+            //         var route = roadsJSON.features[i];
+            //         var type = route.properties.type;
+            //
+            //         if (type == 'primary' ||
+            //             type == 'secondary' ||
+            //             type == 'tertiary' ||
+            //             type == 'track' ||
+            //             type == 'path' ||
+            //             type == 'unclassified' ||
+            //             type == 'street') {
+            //                 loadFOS(route.properties.osm_id);
+            //             }
+            //     }
+            //
+            //     update();
+            // });
+            //
+            // function update() {
+            //     gr.selectAll("path")
+            //         .attr("d", path);
+            // }
+            //
+            // map.on("movestart", update);
+            // map.on("moveend",   update);
+            // map.on("move",      update);
+        });
+
+        function loadRoad(osmID) {
+
+            var url = 'http://jorditost.local:61002/api/roads/'+osmID+'';
+            // var url = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/400/?intersect=true';
+
+            var sourceRoad = new mapboxgl.GeoJSONSource({
+                data: url
+            });
+            // window.setInterval(function() {
+            //     source.setData(url);
+            // }, 4000);
+
+            map.addSource("road-"+osmID, sourceRoad);
+            map.addLayer({
+                "id": "road-"+osmID,
+                "type": "line",
+                "source": "road-"+osmID,
+                "layout": {
+                    "line-join": "round",
+                    "line-cap": "round"
+                },
+                "paint": {
+                    'line-color': '#333',
+                    'line-opacity': 1,
+                    'line-width': 3
+                }
+            });
+        }
+
+        function loadFOS(osmID, intersect) {
+
+            var url = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/350/';
+            // var url = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/400/?intersect=true';
+
+            if (intersect) {
+                url += '?intersect=true';
+            }
+
+            var source = new mapboxgl.GeoJSONSource({
+                data: url
+            });
+            // window.setInterval(function() {
+            //     source.setData(url);
+            // }, 4000);
+
+            map.addSource("colombia-fos-"+osmID, source);
+
+            map.addLayer({
+                "id": "fos3-"+osmID,
+                "type": "fill",
+                "source": "colombia-fos-"+osmID,
+                "filter": ["==", "fos", 3],
+                "paint": {
+                    "fill-color": "#F7D57F",
+                    "fill-opacity": 0.8,
+                    "fill-antialias": false
+                }
+            }, 'waterway-river-canal');
+            map.addLayer({
+                "id": "fos2-"+osmID,
+                "type": "fill",
+                "source": "colombia-fos-"+osmID,
+                "filter": ["==", "fos", 2],
+                "paint": {
+                    "fill-color": "#F5A623",
+                    "fill-opacity": 0.8,
+                    "fill-antialias": false
+                }
+            }, 'waterway-river-canal');
+            map.addLayer({
+                "id": "fos1-"+osmID,
+                "type": "fill",
+                "source": "colombia-fos-"+osmID,
+                "filter": ["==", "fos", 1],
+                "paint": {
+                    "fill-color": "#ED5D5A",
+                    "fill-opacity": 0.8,
+                    "fill-antialias": false
+                }
+            }, 'waterway-river-canal');
+        }
+
+        function project(d) {
+            return map.project(new mapboxgl.LngLat(+d[0], +d[1]));
+        }
+
+        function projectPoint(lon, lat) {
+            var point = map.project(new mapboxgl.LngLat(lon, lat));
+            this.stream.point(point.x, point.y);
+        }
+
+        function roadStrokeWidthByType(type) {
+
+            var swDef = 1.39;
+
+            if (type == 'primary') sw = 4;
+            else if (type == 'secondary') sw = 3.47;
+            else if (type == 'tertiary') sw = 3.47;
+            else if (type == 'track') sw = swDef;
+            else if (type == 'path') sw = swDef;
+            else if (type == 'unclassified') sw = swDef;
+            else if (type == 'street') sw = swDef;
+            else sw = swDef;
+
+            return sw;
+        }
+
+    </script>
+  </body>
+</html>

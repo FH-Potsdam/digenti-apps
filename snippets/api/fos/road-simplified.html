@@ -5,15 +5,14 @@
     <title></title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
-    <script src="../../../lib/mapbox-gl.js"></script>
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js"></script>
+    <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+    <!-- <script src="../../../lib/mapbox-gl.js"></script>
     <script src="../../../lib/jquery-1.10.2.js"></script>
-    <script src="../../../lib/turf.min.js"></script>
+    <script src="../../../lib/turf.min.js"></script> -->
 
     <script src="../../../lib/bundle.js"></script>
-
-    <!-- <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
-    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
-    <script src="//npmcdn.com/@turf/turf@3.5.1/turf.min.js"></script> -->
     <style>
         body { margin:0; padding:0; }
         #map { position:absolute; top:0; bottom:0; width:100%; }
@@ -42,8 +41,8 @@ var map = new mapboxgl.Map({
     // zoom: 17
 });
 
-// var url = 'http://jorditost.local:61002/api/fos/road/336609942/1000';
-var urlRoad = 'http://jorditost.local:61002/api/roads/336609942';
+// var url = 'http://localhost:61002/api/fos/road/336609942/1000';
+var urlRoad = 'http://localhost:61002/api/roads/336609942';
 
 map.on('load', function () {
 
@@ -86,7 +85,7 @@ function onRoadLoaded(data) {
 
 function loadFOSByRoad(osmID) {
 
-    var uri = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/1000';
+    var uri = 'http://localhost:61002/api/fos/road/'+osmID+'/1000';
 
     // Define a callback function to process the response.
     var onFOSResult = function(featureCollection) {

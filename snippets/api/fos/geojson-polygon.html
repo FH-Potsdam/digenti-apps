@@ -1,0 +1,250 @@
+<!DOCTYPE html >
+<html>
+  <head>
+      <meta charset='utf-8' />
+      <title></title>
+      <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+      <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+      <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js"></script>
+      <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+      <!-- <script src='../../../lib/turf.min.js' charset='utf-8'></script> -->
+
+      <style media="screen">
+          * {
+              padding: 0;
+              margin: 0;
+              border: 0;
+              outline: none;
+          }
+
+          html, body, #map {
+              width: 100%;
+              height: 100%;
+          }
+      </style>
+  </head>
+  <body>
+    <div id='map'>
+    </div>
+    <script>
+
+        ////////////
+        // Mapbox
+        ////////////
+
+    	mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+        var map = new mapboxgl.Map({
+            container: 'map',
+            // style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
+            // style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi', // light
+            style: 'mapbox://styles/jorditost/cizo5i3fc00a82ro13xoz7fua', // light+labels
+            // style: 'mapbox://styles/jorditost/cizmzgwci005l2sqjuzfvwzms', // light+streets
+            center: [-73.0270699,10.390411],
+            zoom: 13.8
+        });
+
+        var polygonFeature = {
+              "type": "Feature",
+              "properties": {},
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                  [
+                    [
+                      -73.02955627441406,
+                      10.405092023173735
+                    ],
+                    [
+                      -73.02955627441406,
+                      10.400195668890646
+                    ],
+                    [
+                      -73.02852630615234,
+                      10.396312298814498
+                    ],
+                    [
+                      -73.03367614746094,
+                      10.394792706073337
+                    ],
+                    [
+                      -73.04071426391602,
+                      10.394117329148553
+                    ],
+                    [
+                      -73.04792404174805,
+                      10.39327310593904
+                    ],
+                    [
+                      -73.0513572692871,
+                      10.390571576337726
+                    ],
+                    [
+                      -73.0506706237793,
+                      10.387870023379497
+                    ],
+                    [
+                      -73.04311752319336,
+                      10.387870023379497
+                    ],
+                    [
+                      -73.03831100463867,
+                      10.387870023379497
+                    ],
+                    [
+                      -73.03916931152344,
+                      10.382804548648885
+                    ],
+                    [
+                      -73.03659439086914,
+                      10.382635698077813
+                    ],
+                    [
+                      -73.02835464477538,
+                      10.382635698077813
+                    ],
+                    [
+                      -73.02406311035155,
+                      10.385506145385655
+                    ],
+                    [
+                      -73.01736831665039,
+                      10.389727343547046
+                    ],
+                    [
+                      -73.01651000976561,
+                      10.394792706073337
+                    ],
+                    [
+                      -73.01530838012695,
+                      10.396818828085124
+                    ],
+                    [
+                      -73.01427841186523,
+                      10.399351462113279
+                    ],
+                    [
+                      -73.01702499389648,
+                      10.400533350962375
+                    ],
+                    [
+                      -73.02183151245117,
+                      10.400195668890646
+                    ],
+                    [
+                      -73.0235481262207,
+                      10.401715235336724
+                    ],
+                    [
+                      -73.02526473999023,
+                      10.4034036338225
+                    ],
+                    [
+                      -73.02680969238281,
+                      10.405936214423443
+                    ],
+                    [
+                      -73.02955627441406,
+                      10.405092023173735
+                    ]
+                  ]
+                ]
+              }
+          };
+
+        map.on('load', function () {
+
+            // Source
+            var fc = turf.featureCollection([polygonFeature]);
+            map.addSource('polygon', {
+               type: 'geojson',
+               data: fc
+            });
+
+            // Layer
+            map.addLayer({
+                "id": "polygon",
+                "type": "line",
+                "source": "polygon",
+                "layout": {
+                    "line-join": "round",
+                    "line-cap": "round"
+                },
+                "paint": {
+                    'line-color': '#088',
+                    'line-opacity': 1,
+                    'line-width': 3
+                }
+            });
+
+            loadFOSByPolygon(polygonFeature);
+        });
+
+        function loadFOSByPolygon(polygonFeature) {
+
+            console.log("load FOS by GeoJSON Polygon");
+
+            var params = {
+                feature: JSON.stringify(polygonFeature),
+                intersect: true
+            };
+
+            $.ajax({
+                method: "POST",
+                url: "http://localhost:61002/api/fos/polygon/",
+                data: JSON.stringify(params),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (fosFC) {
+                    drawFOS(fosFC, 1);
+                },
+                error: function(error) {
+                    console.log(JSON.stringify(error));
+                }
+            });
+        }
+
+        function drawFOS(fosFC, id) {
+            map.addSource('fos-'+id, {
+               type: 'geojson',
+               data: fosFC
+            });
+
+            map.addLayer({
+                "id": "fos3-"+id,
+                "type": "fill",
+                "source": "fos-"+id,
+                "filter": ["==", "fos", 3],
+                "paint": {
+                    "fill-color": "#F7D57F",
+                    "fill-opacity": 0.8,
+                    "fill-antialias": false
+                }
+            });
+            map.addLayer({
+                "id": "fos2-"+id,
+                "type": "fill",
+                "source": "fos-"+id,
+                "filter": ["==", "fos", 2],
+                "paint": {
+                    "fill-color": "#F5A623",
+                    "fill-opacity": 0.8,
+                    "fill-antialias": false
+                }
+            });
+            map.addLayer({
+                "id": "fos1-"+id,
+                "type": "fill",
+                "source": "fos-"+id,
+                "filter": ["==", "fos", 1],
+                "paint": {
+                    "fill-color": "#ED5D5A",
+                    "fill-opacity": 0.8,
+                    "fill-antialias": false
+                }
+            });
+        }
+
+    </script>
+  </body>
+</html>

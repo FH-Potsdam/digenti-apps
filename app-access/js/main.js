@@ -192,13 +192,13 @@ function hideSplashScreen() {
 }
 
 
-
-
-
+/**
+ * Draw map
+ */
 function mapDraw(geojson) {
 
     // Our accessToken for the mapboxGL API
-    mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+    mapboxgl.accessToken = app.config.accessToken;
 
     // select baseMap based on selected theme
     var baseMap = (app.config.theme === 'dark') ? 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t' : 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi';
@@ -207,9 +207,9 @@ function mapDraw(geojson) {
     map = new mapboxgl.Map({
         container: 'map',
         style: baseMap,
-        zoom: 11.2,
+        zoom: app.config.map.zoom,
         // zoom: 11.4,
-        center: [-73.09, 10.422],
+        center: app.config.map.center,
         // center: [-73.12, 10.410],
         // pitch: 45 // pitch in degrees
         // bearing: -60 // bearing in degrees

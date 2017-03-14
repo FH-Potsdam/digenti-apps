@@ -20,65 +20,88 @@
         var map = new mapboxgl.Map({
             container: 'map',
             // style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
-            style: 'mapbox://styles/jorditost/cizmzgwci005l2sqjuzfvwzms', // light+streets
+            // style: 'mapbox://styles/jorditost/cizmzgwci005l2sqjuzfvwzms', // light+streets
+            style: 'mapbox://styles/jorditost/ciznb3iyw00642snuu7ivnnfk', // light+nostreets
             // zoom: 11.5,
             // center: [-72.956, 10.410],
-            center: [-73.0820699,10.3890411], // detail
-            zoom: 13.35 // detail
+            center: [-73.0770699,10.3890411], // detail
+            zoom: 13.6 // detail
+        });
+
+        var urlRoad = 'http://localhost:61002/api/roads/336609942';
+        var sourceRoad = new mapboxgl.GeoJSONSource({
+            data: urlRoad
         });
 
         map.on('load', function () {
 
-        /////////
-        // FOS
-        /////////
+            // Road
+            map.addSource('route', sourceRoad);
+            map.addLayer({
+                "id": "route",
+                "type": "line",
+                "source": "route",
+                "layout": {
+                    "line-join": "round",
+                    "line-cap": "round"
+                },
+                "paint": {
+                    'line-color': '#333',
+                    'line-opacity': 1,
+                    'line-width': 3
+                }
+            });
 
-        map.addSource('colombia_fos_h1_m0', {
-            "type": "vector",
-            "tiles": [
-              "http://localhost:61001/v2/tiles/{z}/{x}/{y}.pbf"
-            ],
-            "minzoom": 8,
-            "maxzoom": 16
+            /////////
+            // FOS
+            /////////
+
+            map.addSource('colombia_fos_h1_m0', {
+                "type": "vector",
+                "tiles": [
+                  "http://localhost:61001/v2/tiles/{z}/{x}/{y}.pbf"
+                ],
+                "minzoom": 8,
+                "maxzoom": 16
+            });
+
+            map.addLayer({
+                "id": "fos3",
+                "type": "fill",
+                "source": "colombia_fos_h1_m0",
+                "source-layer": "colombia_fos_roi_h1_m0",
+                "filter": ["==", "DN", 3],
+                "paint": {
+                    "fill-color": "#F7D57F",
+                    "fill-opacity": 0.8,
+                    "fill-antialias": false
+                }
+            }, 'waterway-river-canal');
+            map.addLayer({
+                "id": "fos2",
+                "type": "fill",
+                "source": "colombia_fos_h1_m0",
+                "source-layer": "colombia_fos_roi_h1_m0",
+                "filter": ["==", "DN", 2],
+                "paint": {
+                    "fill-color": "#F5A623",
+                    "fill-opacity": 0.8,
+                    "fill-antialias": false
+                }
+            }, 'waterway-river-canal');
+            map.addLayer({
+                "id": "fos1",
+                "type": "fill",
+                "source": "colombia_fos_h1_m0",
+                "source-layer": "colombia_fos_roi_h1_m0",
+                "filter": ["==", "DN", 1],
+                "paint": {
+                    "fill-color": "#ED5D5A",
+                    "fill-opacity": 0.8,
+                    "fill-antialias": false
+                }
+            }, 'waterway-river-canal');
         });
-
-        map.addLayer({
-            "id": "fos3",
-            "type": "fill",
-            "source": "colombia_fos_h1_m0",
-            "source-layer": "colombia_fos_roi_h1_m0",
-            "filter": ["==", "DN", 3],
-            "paint": {
-                "fill-color": "#F7D57F",
-                "fill-opacity": 0.8,
-                "fill-antialias": false
-            }
-        }, 'waterway-river-canal');
-        map.addLayer({
-            "id": "fos2",
-            "type": "fill",
-            "source": "colombia_fos_h1_m0",
-            "source-layer": "colombia_fos_roi_h1_m0",
-            "filter": ["==", "DN", 2],
-            "paint": {
-                "fill-color": "#F5A623",
-                "fill-opacity": 0.8,
-                "fill-antialias": false
-            }
-        }, 'waterway-river-canal');
-        map.addLayer({
-            "id": "fos1",
-            "type": "fill",
-            "source": "colombia_fos_h1_m0",
-            "source-layer": "colombia_fos_roi_h1_m0",
-            "filter": ["==", "DN", 1],
-            "paint": {
-                "fill-color": "#ED5D5A",
-                "fill-opacity": 0.8,
-                "fill-antialias": false
-            }
-        }, 'waterway-river-canal');
-    });
 
     </script>
   </body>

@@ -40,7 +40,7 @@ var map = new mapboxgl.Map({
     // zoom: 17
 });
 
-var urlRoad = 'http://jorditost.local:61002/api/roads/336609942';
+var urlRoad = 'http://localhost:61002/api/roads/336609942';
 var sourceRoad = new mapboxgl.GeoJSONSource({
     data: urlRoad
 });
@@ -71,7 +71,7 @@ map.on('load', function () {
 
 function loadFOSbyRoad(osmID) {
 
-    var uri = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/350/';
+    var uri = 'http://localhost:61002/api/fos/road/'+osmID+'/350/';
 
     // Define a callback function to process the response.
     var onFOSResult = function(featureCollection) {
@@ -95,7 +95,7 @@ function loadFOSbyRoad(osmID) {
 
 function loadFOSByCoord(coords) {
 
-    var uri = 'http://jorditost.local:61002/api/fos/point/'+coords[1]+','+coords[0]+'/650';
+    var uri = 'http://localhost:61002/api/fos/point/'+coords[1]+','+coords[0]+'/650';
 
     // Define a callback function to process the response.
     var onFOSResult = function(featureCollection) {

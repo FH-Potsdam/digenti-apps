@@ -148,8 +148,8 @@
 
         function loadRoad(osmID) {
 
-            var url = 'http://jorditost.local:61002/api/roads/'+osmID+'';
-            // var url = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/400/?intersect=true';
+            var url = 'http://localhost:61002/api/roads/'+osmID+'';
+            // var url = 'http://localhost:61002/api/fos/road/'+osmID+'/400/?intersect=true';
 
             var sourceRoad = new mapboxgl.GeoJSONSource({
                 data: url
@@ -177,8 +177,8 @@
 
         function loadFOS(osmID, intersect) {
 
-            var url = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/350/';
-            // var url = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/400/?intersect=true';
+            var url = 'http://localhost:61002/api/fos/road/'+osmID+'/350/';
+            // var url = 'http://localhost:61002/api/fos/road/'+osmID+'/400/?intersect=true';
 
             if (intersect) {
                 url += '?intersect=true';

@@ -5,32 +5,27 @@
       <title></title>
       <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
-      <script src='../../../lib/d3.min.js' charset="utf-8"></script>
-      <script src='../../../lib/turf.min.js' charset='utf-8'></script>
+      <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+      <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js"></script>
+      <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+      <script src="https://d3js.org/d3.v3.min.js"></script>
+      <!-- <script src='../../../lib/turf.min.js' charset='utf-8'></script> -->
+      <!-- <script src='../../../lib/d3.min.js' charset="utf-8"></script> -->
 
-      <script src="//code.jquery.com/jquery-1.10.2.js"></script>
-      <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
-      <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.css' rel='stylesheet' />
-
-      <link href="../../../app-access/css/app.css" rel="stylesheet" />
-      <!-- <link href="../../digenti-framework/css/main.css" rel="stylesheet" /> -->
       <style media="screen">
+        * {
+          padding: 0;
+          margin: 0;
+          border: 0;
+          outline: none;
+        }
+
+        html, body, #map {
+          width: 100%;
+          height: 100%;
+        }
         path {
-            stroke: #333 !important;
-        }
-
-        path.fos {
-            fill-opacity: 0.8;
-        }
-
-        path.fos3 {
-            fill: #F7D57F;
-        }
-        path.fos2 {
-            fill: #F5A623;
-        }
-        path.fos1 {
-            fill: #ED5D5A;
+          stroke: #333 !important;
         }
       </style>
   </head>
@@ -40,12 +35,6 @@
     <script>
 
         var roadsJSON = {};
-        var fosCount, fosLoaded;
-
-        var fosJSON = {
-            "type": "FeatureCollection",
-            "features": []
-        };
 
         ////////////
         // Mapbox
@@ -56,12 +45,13 @@
             container: 'map',
             // style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
             // style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi', // light
-            style: 'mapbox://styles/jorditost/ciznb3iyw00642snuu7ivnnfk', // light+nostreets
+            // style: 'mapbox://styles/jorditost/ciznb3iyw00642snuu7ivnnfk', // light+nostreets
+            style: 'mapbox://styles/jorditost/cizo5i3fc00a82ro13xoz7fua', // light+labels
             // style: 'mapbox://styles/jorditost/cizmzgwci005l2sqjuzfvwzms', // light+streets
             // zoom: 11.5,
             // center: [-72.956, 10.410],
-            center: [-73.0770699,10.3890411], // detail
-            zoom: 13.6 // detail
+            center: [-73.0726, 10.3738], // detail
+            zoom: 12.7 // detail
         });
 
         // set-up svg canvas
@@ -81,11 +71,11 @@
                         .interpolate("linear");
 
         var gr = svg.append("g").attr("id", "group-roads");
-        var gf = svg.append("g").attr("id", "group-fos");
         // var gi = svg.append("g").attr("id", "group-isolines"),
         //     gp = svg.append("g").attr("id", "group-places");
 
-        var urlRoad = 'http://jorditost.local:61002/api/roads/336609942';
+        var urlRoad = 'http://localhost:61002/api/route/10.3910,-73.0271/10.3507,-73.0444/';
+        // var urlRoad = 'http://localhost:61002/api/route/10.3910,-73.0271/10.3083,-73.0277/';
         var sourceRoad = new mapboxgl.GeoJSONSource({
             data: urlRoad
         });
@@ -108,6 +98,14 @@
                     'line-width': 3
                 }
             });
+
+            loadFOS(336609942); //loadRoad(336609942);
+            loadFOS(31148173); //loadRoad(31148173);
+            loadFOS(104256042); //loadRoad(104256042);
+            // loadFOS(104256165); //loadRoad(104256165);
+            // loadFOS(104256058); //loadRoad(104256058);
+            // loadFOS(220112516); //loadRoad(220112516);
+            // loadFOS(220112523, true); //loadRoad(220112523);
 
             // d3.json("../../../data/roads_aoi.json", function(err, data) {
             //
@@ -139,99 +137,102 @@
             //             type == 'unclassified' ||
             //             type == 'street') {
             //                 loadFOS(route.properties.osm_id);
-            //                 // fosCount++;
             //             }
             //     }
             //
             //     update();
             // });
+            //
+            // function update() {
+            //     gr.selectAll("path")
+            //         .attr("d", path);
+            // }
+            //
+            // map.on("movestart", update);
+            // map.on("moveend",   update);
+            // map.on("move",      update);
+        });
 
-            function update() {
-                gr.selectAll("path")
-                    .attr("d", path);
+        function loadRoad(osmID) {
 
-                gf.selectAll("path")
-                    .attr("d", path);
+            var url = 'http://localhost:61002/api/roads/'+osmID+'';
+            // var url = 'http://localhost:61002/api/fos/road/'+osmID+'/400/?intersect=true';
+
+            var sourceRoad = new mapboxgl.GeoJSONSource({
+                data: url
+            });
+            // window.setInterval(function() {
+            //     source.setData(url);
+            // }, 4000);
+
+            map.addSource("road-"+osmID, sourceRoad);
+            map.addLayer({
+                "id": "road-"+osmID,
+                "type": "line",
+                "source": "road-"+osmID,
+                "layout": {
+                    "line-join": "round",
+                    "line-cap": "round"
+                },
+                "paint": {
+                    'line-color': '#333',
+                    'line-opacity': 1,
+                    'line-width': 3
+                }
+            });
+        }
+
+        function loadFOS(osmID, intersect) {
+
+            var url = 'http://localhost:61002/api/fos/road/'+osmID+'/350/';
+            // var url = 'http://localhost:61002/api/fos/road/'+osmID+'/400/?intersect=true';
+
+            if (intersect) {
+                url += '?intersect=true';
             }
 
-            map.on("movestart", update);
-            map.on("moveend",   update);
-            map.on("move",      update);
-
-            /////////
-            // FOS
-            /////////
-
-            map.addSource("colombia-fos", {
-               type: "geojson",
-               data: fosJSON
+            var source = new mapboxgl.GeoJSONSource({
+                data: url
             });
+            // window.setInterval(function() {
+            //     source.setData(url);
+            // }, 4000);
+
+            map.addSource("colombia-fos-"+osmID, source);
 
             map.addLayer({
-                "id": "fos3",
+                "id": "fos3-"+osmID,
                 "type": "fill",
-                "source": "colombia-fos",
+                "source": "colombia-fos-"+osmID,
                 "filter": ["==", "fos", 3],
                 "paint": {
                     "fill-color": "#F7D57F",
                     "fill-opacity": 0.8,
                     "fill-antialias": false
                 }
-            });
+            }, 'waterway-river-canal');
             map.addLayer({
-                "id": "fos2",
+                "id": "fos2-"+osmID,
                 "type": "fill",
-                "source": "colombia-fos",
+                "source": "colombia-fos-"+osmID,
                 "filter": ["==", "fos", 2],
                 "paint": {
                     "fill-color": "#F5A623",
                     "fill-opacity": 0.8,
                     "fill-antialias": false
                 }
-            });
+            }, 'waterway-river-canal');
             map.addLayer({
-                "id": "fos1",
+                "id": "fos1-"+osmID,
                 "type": "fill",
-                "source": "colombia-fos",
+                "source": "colombia-fos-"+osmID,
                 "filter": ["==", "fos", 1],
                 "paint": {
                     "fill-color": "#ED5D5A",
                     "fill-opacity": 0.8,
                     "fill-antialias": false
                 }
-            });
-
-            loadFOS(336609942);
-        });
-
-        function loadFOS(osmID) {
-
-            var url = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/350/';
-            // var url = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/400/?intersect=true';
-
-            $.ajax({
-                dataType: "json",
-                url: url,
-                success: function(fc) {
-                    Array.prototype.push.apply(fosJSON.features, fc.features);
-                    // map.getSource('colombia-fos').setData(fosJSON);
-
-                    console.log("hola");
-
-                    gf.selectAll("path")
-                        .data(fosJSON.features)
-                        .enter()
-                        .append("path")
-                            .attr("class", function(d) { return "fos fos" + d.properties.fos; })
-                            .attr("data-fos", function(d) { return d.properties.fos; })
-                            .attr("stroke-width", 0)
-                            .attr("d", path);
-                },
-                error: function(error) {
-                    console.log(error);
-                }
-            });
-
+            }, 'waterway-river-canal');
         }
 
         function project(d) {

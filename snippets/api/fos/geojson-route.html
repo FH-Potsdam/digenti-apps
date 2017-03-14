@@ -1,0 +1,154 @@
+<!DOCTYPE html >
+<html>
+  <head>
+      <meta charset='utf-8' />
+      <title></title>
+      <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+      <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+      <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js"></script>
+      <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+      <!-- <script src='../../../lib/turf.min.js' charset='utf-8'></script> -->
+
+      <style media="screen">
+          * {
+              padding: 0;
+              margin: 0;
+              border: 0;
+              outline: none;
+          }
+
+          html, body, #map {
+              width: 100%;
+              height: 100%;
+          }
+      </style>
+  </head>
+  <body>
+    <div id='map'>
+    </div>
+    <script>
+
+        ////////////
+        // Mapbox
+        ////////////
+
+    	mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+        var map = new mapboxgl.Map({
+            container: 'map',
+            // style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
+            // style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi', // light
+            style: 'mapbox://styles/jorditost/cizo5i3fc00a82ro13xoz7fua', // light+labels
+            // style: 'mapbox://styles/jorditost/cizmzgwci005l2sqjuzfvwzms', // light+streets
+            center: [-73.0726, 10.3738], // detail
+            zoom: 12.7 // detail
+        });
+
+        map.on('load', function () {
+
+            $.ajax({
+                method: "GET",
+                url: "http://localhost:61002/api/route/10.3910,-73.0271/10.3507,-73.0444/",
+                success: function (routeFeature) {
+                    console.log("Route loaded!");
+
+                    // Road source
+                    var fc = turf.featureCollection([routeFeature]);
+                    map.addSource('route', {
+                       type: 'geojson',
+                       data: fc
+                    });
+
+                    // Road layer
+                    map.addLayer({
+                        "id": "route",
+                        "type": "line",
+                        "source": "route",
+                        "layout": {
+                            "line-join": "round",
+                            "line-cap": "round"
+                        },
+                        "paint": {
+                            'line-color': '#088',
+                            'line-opacity': 1,
+                            'line-width': 3
+                        }
+                    });
+
+                    loadFOSByLineString(routeFeature)
+                },
+                error: function(error) {
+                    alert(error);
+                }
+            });
+        });
+
+        function loadFOSByLineString(routeFeature) {
+
+            console.log("load FOS by GeoJSON LineString");
+
+            var params = {
+                feature: JSON.stringify(routeFeature),
+                buffer: 350,
+                intersect: false
+            };
+
+            $.ajax({
+                method: "POST",
+                url: "http://localhost:61002/api/fos/route/",
+                data: JSON.stringify(params),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (fosFC) {
+                    drawFOS(fosFC, 1);
+                },
+                error: function(error) {
+                    console.log(JSON.stringify(error));
+                }
+            });
+        }
+
+        function drawFOS(fosFC, id) {
+            map.addSource('fos-'+id, {
+               type: 'geojson',
+               data: fosFC
+            });
+
+            map.addLayer({
+                "id": "fos3-"+id,
+                "type": "fill",
+                "source": "fos-"+id,
+                "filter": ["==", "fos", 3],
+                "paint": {
+                    "fill-color": "#F7D57F",
+                    "fill-opacity": 0.8,
+                    "fill-antialias": false
+                }
+            });
+            map.addLayer({
+                "id": "fos2-"+id,
+                "type": "fill",
+                "source": "fos-"+id,
+                "filter": ["==", "fos", 2],
+                "paint": {
+                    "fill-color": "#F5A623",
+                    "fill-opacity": 0.8,
+                    "fill-antialias": false
+                }
+            });
+            map.addLayer({
+                "id": "fos1-"+id,
+                "type": "fill",
+                "source": "fos-"+id,
+                "filter": ["==", "fos", 1],
+                "paint": {
+                    "fill-color": "#ED5D5A",
+                    "fill-opacity": 0.8,
+                    "fill-antialias": false
+                }
+            });
+        }
+
+    </script>
+  </body>
+</html>

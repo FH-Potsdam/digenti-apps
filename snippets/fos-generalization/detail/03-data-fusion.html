@@ -40,8 +40,8 @@
             // style: 'mapbox://styles/jorditost/cizmzgwci005l2sqjuzfvwzms', // light+streets
             // zoom: 11.5,
             // center: [-72.956, 10.410],
-            center: [-73.0820699,10.3890411], // detail
-            zoom: 13.35 // detail
+            center: [-73.0770699,10.3890411], // detail
+            zoom: 13.6 // detail
         });
 
         // set-up svg canvas
@@ -64,57 +64,82 @@
         // var gi = svg.append("g").attr("id", "group-isolines"),
         //     gp = svg.append("g").attr("id", "group-places");
 
+        var urlRoad = 'http://localhost:61002/api/roads/336609942';
+        var sourceRoad = new mapboxgl.GeoJSONSource({
+            data: urlRoad
+        });
+
         map.on('load', function () {
 
-            d3.json("../../../data/roads_aoi.json", function(err, data) {
-
-                roadsJSON = data;
-
-                console.log(roadsJSON);
-
-                // Binding the settlement data to our layer. Positions of the settlements are saved in app.villagePositionsMap-Array
-                gr.selectAll("path")
-                    .data(roadsJSON.features)
-                    .enter()
-                    .append("path")
-                        .attr("class", "road")
-                        .attr("data-id", function(d) { return d.properties.osm_id; })
-                        // .attr("stroke-width", function(d) { d.properties.importancescore*0.4 + 1; })
-                        .attr("stroke-width", function(d) { return roadStrokeWidthByType(d.properties.type);})
-                        // .attr("d", path);
-
-                // for each village that is supplied by this route part
-                for (var i=0; i<roadsJSON.features.length; i++) {
-                    var route = roadsJSON.features[i];
-                    var type = route.properties.type;
-
-                    if (type == 'primary' ||
-                        type == 'secondary' ||
-                        type == 'tertiary' ||
-                        type == 'track' ||
-                        type == 'path' ||
-                        type == 'unclassified' ||
-                        type == 'street') {
-                            loadFOS(route.properties.osm_id);
-                        }
+            // Road
+            map.addSource('route', sourceRoad);
+            map.addLayer({
+                "id": "route",
+                "type": "line",
+                "source": "route",
+                "layout": {
+                    "line-join": "round",
+                    "line-cap": "round"
+                },
+                "paint": {
+                    'line-color': '#333',
+                    'line-opacity': 1,
+                    'line-width': 3
                 }
-
-                update();
             });
 
-            function update() {
-                gr.selectAll("path")
-                    .attr("d", path);
-            }
+            loadFOS(336609942);
 
-            map.on("movestart", update);
-            map.on("moveend",   update);
-            map.on("move",      update);
+            // d3.json("../../../data/roads_aoi.json", function(err, data) {
+            //
+            //     roadsJSON = data;
+            //
+            //     console.log(roadsJSON);
+            //
+            //     // Binding the settlement data to our layer. Positions of the settlements are saved in app.villagePositionsMap-Array
+            //     gr.selectAll("path")
+            //         .data(roadsJSON.features)
+            //         .enter()
+            //         .append("path")
+            //             .attr("class", "road")
+            //             .attr("data-id", function(d) { return d.properties.osm_id; })
+            //             // .attr("stroke-width", function(d) { d.properties.importancescore*0.4 + 1; })
+            //             .attr("stroke-width", function(d) { return roadStrokeWidthByType(d.properties.type);})
+            //             // .attr("d", path);
+            //
+            //     // for each village that is supplied by this route part
+            //     for (var i=0; i<roadsJSON.features.length; i++) {
+            //         var route = roadsJSON.features[i];
+            //         var type = route.properties.type;
+            //
+            //         if (type == 'primary' ||
+            //             type == 'secondary' ||
+            //             type == 'tertiary' ||
+            //             type == 'track' ||
+            //             type == 'path' ||
+            //             type == 'unclassified' ||
+            //             type == 'street') {
+            //                 loadFOS(route.properties.osm_id);
+            //             }
+            //     }
+            //
+            //     update();
+            // });
+            //
+            // function update() {
+            //     gr.selectAll("path")
+            //         .attr("d", path);
+            // }
+            //
+            // map.on("movestart", update);
+            // map.on("moveend",   update);
+            // map.on("move",      update);
         });
 
         function loadFOS(osmID) {
 
-            var url = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/300/?intersect=true';
+            var url = 'http://localhost:61002/api/fos/road/'+osmID+'/350/';
+            // var url = 'http://localhost:61002/api/fos/road/'+osmID+'/400/?intersect=true';
 
             var source = new mapboxgl.GeoJSONSource({
                 data: url

@@ -41,7 +41,7 @@
             // style: 'mapbox://styles/jorditost/cizmzgwci005l2sqjuzfvwzms', // light+streets
             // zoom: 11.5,
             // center: [-72.956, 10.410],
-            center: [-73.0726, 10.3578], // detail
+            center: [-73.0726, 10.3738], // detail
             zoom: 12.7 // detail
         });
 
@@ -146,8 +146,8 @@
 
         function loadRoad(osmID) {
 
-            var url = 'http://jorditost.local:61002/api/roads/'+osmID+'';
-            // var url = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/400/?intersect=true';
+            var url = 'http://localhost:61002/api/roads/'+osmID+'';
+            // var url = 'http://localhost:61002/api/fos/road/'+osmID+'/400/?intersect=true';
 
             var sourceRoad = new mapboxgl.GeoJSONSource({
                 data: url
@@ -175,8 +175,8 @@
 
         function loadFOS(osmID, intersect) {
 
-            var url = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/350/';
-            // var url = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/400/?intersect=true';
+            var url = 'http://localhost:61002/api/fos/road/'+osmID+'/350/';
+            // var url = 'http://localhost:61002/api/fos/road/'+osmID+'/400/?intersect=true';
 
             if (intersect) {
                 url += '?intersect=true';

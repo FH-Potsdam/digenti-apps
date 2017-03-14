@@ -5,18 +5,27 @@
       <title></title>
       <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
-      <script src='../../../lib/d3.min.js' charset="utf-8"></script>
-      <script src='../../../lib/turf.min.js' charset='utf-8'></script>
+      <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+      <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js"></script>
+      <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+      <script src="https://d3js.org/d3.v3.min.js"></script>
+      <!-- <script src='../../../lib/turf.min.js' charset='utf-8'></script> -->
+      <!-- <script src='../../../lib/d3.min.js' charset="utf-8"></script> -->
 
-      <script src="//code.jquery.com/jquery-1.10.2.js"></script>
-      <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
-      <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.css' rel='stylesheet' />
-
-      <link href="../../../app-access/css/app.css" rel="stylesheet" />
-      <!-- <link href="../../digenti-framework/css/main.css" rel="stylesheet" /> -->
       <style media="screen">
+        * {
+          padding: 0;
+          margin: 0;
+          border: 0;
+          outline: none;
+        }
+
+        html, body, #map {
+          width: 100%;
+          height: 100%;
+        }
         path {
-            stroke: #333 !important;
+          stroke: #333 !important;
         }
       </style>
   </head>
@@ -36,12 +45,13 @@
             container: 'map',
             // style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
             // style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi', // light
-            style: 'mapbox://styles/jorditost/ciznb3iyw00642snuu7ivnnfk', // light+nostreets
+            // style: 'mapbox://styles/jorditost/ciznb3iyw00642snuu7ivnnfk', // light+nostreets
+            style: 'mapbox://styles/jorditost/cizo5i3fc00a82ro13xoz7fua', // light+labels
             // style: 'mapbox://styles/jorditost/cizmzgwci005l2sqjuzfvwzms', // light+streets
             // zoom: 11.5,
             // center: [-72.956, 10.410],
-            center: [-73.0948,10.3930],
-            zoom: 15.3
+            center: [-73.06658989487183, 10.41629207822973], // detail
+            zoom: 12.59 // detail
         });
 
         // set-up svg canvas
@@ -64,7 +74,8 @@
         // var gi = svg.append("g").attr("id", "group-isolines"),
         //     gp = svg.append("g").attr("id", "group-places");
 
-        var urlRoad = 'http://jorditost.local:61002/api/roads/336609942';
+        var urlRoad = 'http://localhost:61002/api/route/10.3987,-73.1083/10.4580,-73.0394/';
+        // var urlRoad = 'http://localhost:61002/api/route/10.3910,-73.0271/10.3083,-73.0277/';
         var sourceRoad = new mapboxgl.GeoJSONSource({
             data: urlRoad
         });
@@ -88,7 +99,10 @@
                 }
             });
 
-            // loadFOS(336609942);
+            loadFOS(336609942); //loadRoad(336609942);
+            loadFOS(220087135); //loadRoad(220087135);
+            loadFOS(220088395, true); //loadRoad(220088395);
+
 
             // d3.json("../../../data/roads_aoi.json", function(err, data) {
             //
@@ -134,12 +148,50 @@
             // map.on("movestart", update);
             // map.on("moveend",   update);
             // map.on("move",      update);
+
+            map.on("movestart", update);
+            function update() {
+                console.log("map center: " + map.getCenter() + ", zoom: " + map.getZoom());
+            }
         });
 
-        function loadFOS(osmID) {
+        function loadRoad(osmID) {
 
-            var url = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/350/';
-            // var url = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/400/?intersect=true';
+            var url = 'http://localhost:61002/api/roads/'+osmID+'';
+            // var url = 'http://localhost:61002/api/fos/road/'+osmID+'/400/?intersect=true';
+
+            var sourceRoad = new mapboxgl.GeoJSONSource({
+                data: url
+            });
+            // window.setInterval(function() {
+            //     source.setData(url);
+            // }, 4000);
+
+            map.addSource("road-"+osmID, sourceRoad);
+            map.addLayer({
+                "id": "road-"+osmID,
+                "type": "line",
+                "source": "road-"+osmID,
+                "layout": {
+                    "line-join": "round",
+                    "line-cap": "round"
+                },
+                "paint": {
+                    'line-color': '#333',
+                    'line-opacity': 1,
+                    'line-width': 3
+                }
+            });
+        }
+
+        function loadFOS(osmID, intersect) {
+
+            var url = 'http://localhost:61002/api/fos/road/'+osmID+'/350/';
+            // var url = 'http://localhost:61002/api/fos/road/'+osmID+'/400/?intersect=true';
+
+            if (intersect) {
+                url += '?intersect=true';
+            }
 
             var source = new mapboxgl.GeoJSONSource({
                 data: url
@@ -160,7 +212,7 @@
                     "fill-opacity": 0.8,
                     "fill-antialias": false
                 }
-            });
+            }, 'waterway-river-canal');
             map.addLayer({
                 "id": "fos2-"+osmID,
                 "type": "fill",
@@ -171,7 +223,7 @@
                     "fill-opacity": 0.8,
                     "fill-antialias": false
                 }
-            });
+            }, 'waterway-river-canal');
             map.addLayer({
                 "id": "fos1-"+osmID,
                 "type": "fill",
@@ -182,7 +234,7 @@
                     "fill-opacity": 0.8,
                     "fill-antialias": false
                 }
-            });
+            }, 'waterway-river-canal');
         }
 
         function project(d) {

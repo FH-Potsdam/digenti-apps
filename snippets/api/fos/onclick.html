@@ -74,7 +74,7 @@ map.on('mousemove', function (e) {
 
 function loadFOS(osmID) {
 
-    var url = 'http://jorditost.local:61002/api/fos/place/'+osmID+'/1200';
+    var url = 'http://localhost:61002/api/fos/place/'+osmID+'/1200';
     console.log(url);
     var source = new mapboxgl.GeoJSONSource({
         data: url

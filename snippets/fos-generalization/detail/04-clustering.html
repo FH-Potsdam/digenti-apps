@@ -66,7 +66,7 @@
         // var gi = svg.append("g").attr("id", "group-isolines"),
         //     gp = svg.append("g").attr("id", "group-places");
 
-        var urlRoad = 'http://jorditost.local:61002/api/roads/336609942';
+        var urlRoad = 'http://localhost:61002/api/roads/336609942';
         var sourceRoad = new mapboxgl.GeoJSONSource({
             data: urlRoad
         });
@@ -140,8 +140,8 @@
 
         function loadFOS(osmID) {
 
-            var url = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/350/';
-            // var url = 'http://jorditost.local:61002/api/fos/road/'+osmID+'/400/?intersect=true';
+            var url = 'http://localhost:61002/api/fos/road/'+osmID+'/350/';
+            // var url = 'http://localhost:61002/api/fos/road/'+osmID+'/400/?intersect=true';
 
             // Define a callback function to process the response.
             var onFOSResult = function(featureCollection) {

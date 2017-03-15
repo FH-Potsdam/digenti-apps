@@ -51,7 +51,6 @@
                 url: "http://localhost:61002/api/route/10.3910,-73.0271/10.3507,-73.0444/",
                 success: function (routeFeature) {
                     console.log("Route loaded!");
-
                     // Road source
                     var fc = turf.featureCollection([routeFeature]);
                     map.addSource('route', {
@@ -100,6 +99,9 @@
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
                 success: function (fosFC) {
+                    console.log("FOS loaded");
+                    console.log(fosFC);
+
                     drawFOS(fosFC, 1);
                 },
                 error: function(error) {

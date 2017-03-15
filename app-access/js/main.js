@@ -12,21 +12,9 @@
 /* exported repositionLabels */
 
 
-//////////
-// Vars
-//////////
-
-var map;
-var svg;
-var settlementPointLayer;
-var lineFunction;
-var places_aoi, street_points_aoi;
-// var routesArray = [];
-
-// Global routes JSON
-var routesJSON = {};
-routesJSON.routes = [];
-routesJSON.missing = [];
+//////////////
+// App Vars
+//////////////
 
 // app-array, holds state vars of the app
 var app  = {};
@@ -42,7 +30,39 @@ app.selectedSettlements = [];
 var smpos = [];
 
 
+///////////////////
+// Map / d3 vars
+///////////////////
+
+var map;
+var svg;
+var settlementPointLayer;
+var lineFunction;
+
+
+///////////////////
+// Data vars
+///////////////////
+
+var places_aoi, street_points_aoi;
+// var routesArray = [];
+
+// Global array with all GeoJSON routes, as they are returned from the API
+var routesGeoJSON = turf.featureCollection([]);
+
+// Global routes JSON
+var routesJSON = {};
+routesJSON.routes = [];
+routesJSON.missing = [];
+
+// Active elements
+var routeGeoJSON, activeRouteObj, activeMissingObj;
+
+
+//////////////////
 // DOM Elements
+//////////////////
+
 var $body,
     $nav,
     $infoBox,
@@ -779,22 +799,23 @@ function drawMicrovis(d) {
 
     d3.selectAll("#microvis svg").remove();
 
-    // Get route data
-    var routeObj = getElementByPlaceID(d.properties.osm_id, routesJSON.routes);
-    // routeData = routeJSON.route.geometry.coordinates;
-
-    // Get missing profile
-    var missingObj = getElementByPlaceID(d.properties.osm_id, routesJSON.missing);
-    // missingData = missingJSON.missing;
+    // This happens now in clickCallback
+    // // Get route data
+    // var activeRouteObj = getElementByPlaceID(d.properties.osm_id, routesJSON.routes);
+    // // routeData = routeJSON.route.geometry.coordinates;
+    //
+    // // Get missing profile
+    // var activeMissingObj = getElementByPlaceID(d.properties.osm_id, routesJSON.missing);
+    // // missingData = missingJSON.missing;
 
     // Add route stats
-    $infoBox.find("#microvis-route-stats").empty().append(routeObj.route.distance/1000 + " km | " + parseInt(routeObj.route.travelTime/60) + " min");
+    $infoBox.find("#microvis-route-stats").empty().append(activeRouteObj.route.distance/1000 + " km | " + parseInt(activeRouteObj.route.travelTime/60) + " min");
 
     // Draw route
     // drawRoute(d, routeData);
 
     // Draw elevation profile
-    drawElevationProfile(d, routeObj, missingObj);
+    drawElevationProfile(d, activeRouteObj, activeMissingObj);
 }
 
 // Domains
@@ -823,7 +844,7 @@ function drawElevationProfile(placeObj, routeObj, missingObj) {
     microvisWidth = parseInt(d3.select('#info #microvis').style("width"), 10);
     microvisHeight = parseInt(d3.select('#info .content').style("height"), 10) - 80;
 
-    console.log("w: " + microvisWidth + ", h: " + microvisHeight);
+    // console.log("w: " + microvisWidth + ", h: " + microvisHeight);
 
     // Size of the graphic (without margins)
     graphWidth = microvisWidth - margin.left - margin.right;
@@ -875,7 +896,7 @@ function drawElevationProfile(placeObj, routeObj, missingObj) {
     // Start with data
     /////////////////////
 
-    console.log("length: " + routeData.length + ", missing length: " + missingData.length + " min: " + d3.min(totalData, function(d) { return d.properties.elevation; }) + ", max: " + d3.max(totalData, function(d) { return d.properties.elevation; }));
+    // console.log("length: " + routeData.length + ", missing length: " + missingData.length + " min: " + d3.min(totalData, function(d) { return d.properties.elevation; }) + ", max: " + d3.max(totalData, function(d) { return d.properties.elevation; }));
 
     //////////
     // Axis
@@ -1158,6 +1179,86 @@ function resizeRoute() {
 }
 
 
+///////////////////
+// FOS Functions
+///////////////////
+
+function loadFOSByLineString(lineString, id) {
+
+    console.log("load FOS by GeoJSON LineString");
+    console.log(app.config.apiBase + "/fos/route/");
+    console.log(lineString);
+
+    var params = {
+        feature: JSON.stringify(lineString),
+        buffer: config.threat.buffer,
+        intersect: config.threat.intersect
+    };
+
+    $.ajax({
+        method: "POST",
+        url: app.config.apiBase + "/fos/route/",
+        data: JSON.stringify(params),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (fosFC) {
+            console.log("FOS loaded");
+            console.log(fosFC);
+
+            drawFOS(fosFC, id);
+        },
+        error: function(error) {
+            console.log(JSON.stringify(error));
+        }
+    });
+}
+
+function drawFOS(fosFC, id) {
+
+    if (!map.getSource("fos-"+id)) {
+        map.addSource('fos-'+id, {
+           type: 'geojson',
+           data: fosFC
+        });
+    } else {
+        map.getSource("fos-"+id).setData(fosFC);
+    }
+
+    map.addLayer({
+        "id": "fos3-"+id,
+        "type": "fill",
+        "source": "fos-"+id,
+        "filter": ["==", "fos", 3],
+        "paint": {
+            "fill-color": "#F7D57F",
+            "fill-opacity": 0.8,
+            "fill-antialias": false
+        }
+    });
+    map.addLayer({
+        "id": "fos2-"+id,
+        "type": "fill",
+        "source": "fos-"+id,
+        "filter": ["==", "fos", 2],
+        "paint": {
+            "fill-color": "#F5A623",
+            "fill-opacity": 0.8,
+            "fill-antialias": false
+        }
+    });
+    map.addLayer({
+        "id": "fos1-"+id,
+        "type": "fill",
+        "source": "fos-"+id,
+        "filter": ["==", "fos", 1],
+        "paint": {
+            "fill-color": "#ED5D5A",
+            "fill-opacity": 0.8,
+            "fill-antialias": false
+        }
+    });
+}
+
 ///////////////////////////////
 // Settlement Click Callback
 ///////////////////////////////
@@ -1208,10 +1309,21 @@ function clickCallback(d) {
         var route = d3.select("#routesfromvalledupar g[data-id='"+d.properties.osm_id+"']")
         route.moveToFront();
 
+        // Mark settlement as active
         app.selectedSettlements.push(d.properties.osm_id);
 
         // This class is used for CSS control
         svg.classed("detail", true);
+
+        // Get current route and missing profile
+        activeRouteObj = getElementByPlaceID(d.properties.osm_id, routesJSON.routes);
+        activeMissingObj = getElementByPlaceID(d.properties.osm_id, routesJSON.missing);
+
+        // Load FOS along route
+        if (config.threat.show) {
+            routeGeoJSON = getGeoJSONFeatureByPlaceID(d.properties.osm_id, routesGeoJSON);
+            loadFOSByLineString(routeGeoJSON, "route");
+        }
 
         // show the info box
         showInfoBox(d);

@@ -90,6 +90,44 @@
               }
           };
 
+        //   var lineString = {
+        //     "type": "Feature",
+        //     "properties": {},
+        //     "geometry": {
+        //       "type": "LineString",
+        //       "coordinates": [
+        //         [
+        //           -73.08156967163086,
+        //           10.394075118042263
+        //         ],
+        //         [
+        //           -73.0764627456665,
+        //           10.39327310593904
+        //         ],
+        //         [
+        //           -73.07384490966797,
+        //           10.393610795496638
+        //         ],
+        //         [
+        //           -73.07011127471922,
+        //           10.390824845730142
+        //         ],
+        //         [
+        //           -73.06041240692139,
+        //           10.387870023379497
+        //         ],
+        //         [
+        //           -73.05749416351318,
+        //           10.38871426118764
+        //         ],
+        //         [
+        //           -73.05539131164551,
+        //           10.387701175544223
+        //         ]
+        //       ]
+        //     }
+        //   };
+
         map.on('load', function () {
 
             // Source
@@ -135,6 +173,8 @@
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
                 success: function (fosFC) {
+                    console.log("FOS loaded");
+                    console.log(fosFC);
                     drawFOS(fosFC, 1);
                 },
                 error: function(error) {

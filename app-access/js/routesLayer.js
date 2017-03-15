@@ -4,6 +4,7 @@
 /*global alert:true */
 /*global project:true */
 /*global updateSettlementPointLayer:true */
+/*global routesGeoJSON:true */
 /*global routesJSON:true */
 /*global lineFunction:true */
 /*global repositionLabels:true */
@@ -106,6 +107,10 @@ function routesLayer() {
                 // If the response is an array, in the first position you find the route and in the second a featured collection with the sliced route with elevation.
                 var r = isSliced ? response[0] : response;
 
+                // Set place ID as route ID and save it into the feature collection
+                r.properties.id = placeID;
+                routesGeoJSON.features.push(r);
+
                 // initialize route from response
                 var route = {
                         init: function() {
@@ -132,7 +137,7 @@ function routesLayer() {
                 // All routes retrieved
                 if (routesJSON.routes.length === geojson.features.length) {
 
-                    console.log(routesJSON);
+                    // console.log(routesJSON);
 
                     // Make ajax Call to API to get route parts
                     $.ajax({
@@ -163,6 +168,9 @@ function routesLayer() {
                 console.log("ROUTING CACHED");
                 //processRoute(routesArray[placeID]);
             } else {
+
+                // console.log("settlement: " +  placeID + ", route: " + app.config.apiBase + "/route/"+start+"/"+end+"/?profile=true");
+
                 // call API
                 $.ajax({
                     dataType: "json",

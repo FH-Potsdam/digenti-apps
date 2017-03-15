@@ -23,9 +23,9 @@ config.coordHomeBase = "10.471667,-73.25";
 
 // Show threat data
 config.threat = {};
-config.threat.show = false;
+config.threat.show = true;
 config.threat.buffer = 350;
-config.threat.intersect = true;
+config.threat.intersect = false;
 
 // Settlements mode
 config.multipleSettlements = false;

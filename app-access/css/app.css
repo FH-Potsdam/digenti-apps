@@ -304,9 +304,9 @@ button {
 #map-features.detail #routesfromvalledupar > g.selected-settlement path.route {
   stroke: #dadff0; }
 #map-features.detail #missinginfrastructure .village-group {
-  opacity: 0.3; }
+  opacity: 0.25; }
 #map-features.detail #settlement-point-layer > * {
-  opacity: 0.5; }
+  opacity: 0.4; }
 
 path {
   vector-effect: non-scaling-stroke;

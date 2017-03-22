@@ -1,0 +1,31 @@
+{
+"type": "FeatureCollection",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+
+"features": [
+{ "type": "Feature", "properties": { "osm_id": "468769318", "name": "Manaure Balcón del Cesar", "type": "town", "population": 6883 }, "geometry": { "type": "Point", "coordinates": [ -73.027069899999987, 10.3910411, 757.8865356445312 ] } },
+{ "type": "Feature", "properties": { "osm_id": "2292338307", "name": "San José del Oriente", "type": "village", "population": 1498 }, "geometry": { "type": "Point", "coordinates": [ -73.044403399999979, 10.3506951, 741.1632690429688 ] } },
+{ "type": "Feature", "properties": { "osm_id": "2292338308", "name": "San José del Oriente - Betania", "type": "village", "population": 1046 }, "geometry": { "type": "Point", "coordinates": [ -73.0529662, 10.3490937, 741.1632690429688 ] } },
+{ "type": "Feature", "properties": { "osm_id": "703273764", "name": "San Diego", "type": "town", "population": 2552 }, "geometry": { "type": "Point", "coordinates": [ -73.1807288, 10.3336928, 100 ] } },
+
+{ "type": "Feature", "properties": { "osm_id": "703170190", "name": "La Jagua del Pilar", "type": "town", "population": 2490 }, "geometry": { "type": "Point", "coordinates": [ -73.070995599999975, 10.5102023, 203.64219665527344 ] } },
+{ "type": "Feature", "properties": { "osm_id": "703378951", "name": "El Plan", "type": "village", "population": 242 }, "geometry": { "type": "Point", "coordinates": [ -73.039424, 10.4580497, 557.3360595703125 ] } },
+{ "type": "Feature", "properties": { "osm_id": "703273611", "name": "Vda-Resguardo Caño Padilla", "type": "village", "population": 93 }, "geometry": { "type": "Point", "coordinates": [ -73.083120099999988, 10.2968203, 1058.419677734375 ] } },
+{ "type": "Feature", "properties": { "osm_id": "1184555661", "name": "Resguardo indígena La Laguna", "type": "village", "population": 182 }, "geometry": { "type": "Point", "coordinates": [ -73.0276838, 10.3083374, 1710.653076171875 ] } },
+
+{ "type": "Feature", "properties": { "osm_id": "703273765", "name": "Caracoli Hueco", "type": "hamlet", "population": 75 }, "geometry": { "type": "Point", "coordinates": [ -73.118906, 10.3043226, 761.9884033203125 ] } },
+{ "type": "Feature", "properties": { "osm_id": "703273768", "name": "El Silenio", "type": "hamlet", "population": 75 }, "geometry": { "type": "Point", "coordinates": [ -73.024731799999984, 10.2916755, 2196.0478515625 ] } },
+{ "type": "Feature", "properties": { "osm_id": "703273775", "name": "Los Deseos", "type": "hamlet", "population": 75 }, "geometry": { "type": "Point", "coordinates": [ -73.093140299999988, 10.3244605, 644.829345703125 ] } },
+{ "type": "Feature", "properties": { "osm_id": "703273778", "name": "Tierra Nueva", "type": "hamlet", "population": 75 }, "geometry": { "type": "Point", "coordinates": [ -73.034950499999979, 10.3170803, 1425.001708984375 ] } },
+{ "type": "Feature", "properties": { "osm_id": "703273788", "name": "La Laguna", "type": "hamlet", "population": 75 }, "geometry": { "type": "Point", "coordinates": [ -73.029493599999967, 10.3160915, 1401.6741943359375 ] } },
+{ "type": "Feature", "properties": { "osm_id": "703378936", "name": "El Canada", "type": "hamlet", "population": 75 }, "geometry": { "type": "Point", "coordinates": [ -73.026718799999969, 10.367748, 1022.1810302734375 ] } },
+{ "type": "Feature", "properties": { "osm_id": "703378956", "name": "La Montaña", "type": "hamlet", "population": 75 }, "geometry": { "type": "Point", "coordinates": [ -73.112622, 10.4339683, 236.99404907226562 ] } },
+{ "type": "Feature", "properties": { "osm_id": "703378980", "name": "San Martin", "type": "hamlet", "population": 75 }, "geometry": { "type": "Point", "coordinates": [ -72.9456789, 10.40252, 1882.43994140625 ] } },
+{ "type": "Feature", "properties": { "osm_id": "703378982", "name": "El Pintado", "type": "hamlet", "population": 75 }, "geometry": { "type": "Point", "coordinates": [ -72.924673799999979, 10.4036554, 1951.1683349609375 ] } },
+{ "type": "Feature", "properties": { "osm_id": "3436479985", "name": null, "type": "hamlet", "population": 75 }, "geometry": { "type": "Point", "coordinates": [ -73.0008688, 10.2933213, 1614.745361328125 ] } },
+
+{ "type": "Feature", "properties": { "osm_id": "703378938", "name": "Hacienda Casaalegria", "type": "locality", "population": 10 }, "geometry": { "type": "Point", "coordinates": [ -73.110021599999982, 10.4502935, 163.3650665283203 ] } },
+{ "type": "Feature", "properties": { "osm_id": "703378961", "name": "Hacienda Las Marias", "type": "locality", "population": 10 }, "geometry": { "type": "Point", "coordinates": [ -73.116667199999966, 10.5106823, 146.28976440429688 ] } },
+{ "type": "Feature", "properties": { "osm_id": "703378963", "name": "Hacienda La Cecilia", "type": "locality", "population": 10 }, "geometry": { "type": "Point", "coordinates": [ -73.112622, 10.5171835, 150.26974487304688 ] } }
+]
+}

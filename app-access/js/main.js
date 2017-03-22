@@ -44,7 +44,7 @@ var lineFunction;
 // Data vars
 ///////////////////
 
-var places_aoi, street_points_aoi;
+var places_aoi;
 // var routesArray = [];
 
 // Global array with all GeoJSON routes, as they are returned from the API
@@ -176,17 +176,17 @@ function init() {
 
                 // Load json data
                 d3.queue()
-                	.defer(d3.json, '../../data/places_aoi.json')
-                    .defer(d3.json, '../../data/street_points_aoi.json')
+                	.defer(d3.json, '../../data/' + app.config.data.places)
+                	// .defer(d3.json, '../../data/places_aoi_dane.json')
+                    // .defer(d3.json, '../../data/street_points_aoi.json')
                     // all jsons are loaded
-                    .await(function(error, data1, data2) {
+                    .await(function(error, data1) {
 
                         // that shouldn't happen
                         if (error) throw error;
 
                         // push data from json in global vars
                         places_aoi = data1;
-                        street_points_aoi = data2;
 
                         // draw the map, finally
                         mapDraw(places_aoi);
@@ -320,8 +320,8 @@ function mapDraw(geojson) {
             .attr("r", function(d) { return app.config.circleRadius * getPopulationFactor(d.properties); })
             .on("click", function(d) {
                 // var currentSettlement = d3.select(this);
-                // currentSettlement.classed("selected", !currentSettlement.classed("selected")); // This is done inside clickCallback(d) now
-                clickCallback(d);
+                // currentSettlement.classed("selected", !currentSettlement.classed("selected")); // This is done inside onSettlementClicked(d) now
+                onSettlementClicked(d);
             })
             .attr("data-id", function(d) { return d.properties.osm_id; })
             .each(function(d) {
@@ -758,6 +758,7 @@ function showInfoBox(d) {
 
     // Show item in legend
     $("#legend .legend-item.isolines").removeClass("hide");
+    $("#legend .legend-item.threat").removeClass("hide");
 
     // Check isolines
     var hasIsolines = app.layers['isolines'].layer.hasIsolines(d.properties.osm_id);
@@ -774,9 +775,12 @@ function showInfoBox(d) {
 
     $infoBox.find(".close").one("click", function() {
         hideInfoBox();
+        hideFOS("route");
         deactivateSelectedSettlements();
-        // Show item in legend
+
+        // Hide isolines item in legend
         $("#legend .legend-item.isolines").addClass("hide");
+        $("#legend .legend-item.threat").addClass("hide");
     });
 }
 
@@ -799,7 +803,7 @@ function drawMicrovis(d) {
 
     d3.selectAll("#microvis svg").remove();
 
-    // This happens now in clickCallback
+    // This happens now in onSettlementClicked
     // // Get route data
     // var activeRouteObj = getElementByPlaceID(d.properties.osm_id, routesJSON.routes);
     // // routeData = routeJSON.route.geometry.coordinates;
@@ -1213,50 +1217,77 @@ function loadFOSByLineString(lineString, id) {
     });
 }
 
+function hideFOS(id) {
+
+    if (!map.getSource("fos-"+id)) return;
+    //
+    // removeFOSLayers(id);
+    // map.removeSource("fos-"+id);
+
+    map.setLayoutProperty("fos1-"+id, 'visibility', 'none');
+    map.setLayoutProperty("fos2-"+id, 'visibility', 'none');
+    map.setLayoutProperty("fos3-"+id, 'visibility', 'none');
+}
+
+// function removeFOSLayers(id) {
+//     map.removeLayer("fos1-"+id);
+//     map.removeLayer("fos2-"+id);
+//     map.removeLayer("fos3-"+id);
+// }
+
 function drawFOS(fosFC, id) {
 
+    // Add source if exists
     if (!map.getSource("fos-"+id)) {
         map.addSource('fos-'+id, {
            type: 'geojson',
            data: fosFC
         });
+    // If source exists, set data
     } else {
         map.getSource("fos-"+id).setData(fosFC);
     }
 
-    map.addLayer({
-        "id": "fos3-"+id,
-        "type": "fill",
-        "source": "fos-"+id,
-        "filter": ["==", "fos", 3],
-        "paint": {
-            "fill-color": "#F7D57F",
-            "fill-opacity": 0.8,
-            "fill-antialias": false
-        }
-    });
-    map.addLayer({
-        "id": "fos2-"+id,
-        "type": "fill",
-        "source": "fos-"+id,
-        "filter": ["==", "fos", 2],
-        "paint": {
-            "fill-color": "#F5A623",
-            "fill-opacity": 0.8,
-            "fill-antialias": false
-        }
-    });
-    map.addLayer({
-        "id": "fos1-"+id,
-        "type": "fill",
-        "source": "fos-"+id,
-        "filter": ["==", "fos", 1],
-        "paint": {
-            "fill-color": "#ED5D5A",
-            "fill-opacity": 0.8,
-            "fill-antialias": false
-        }
-    });
+    // Only add layers first time
+    if (!map.getLayer("fos1-"+id)) {
+        map.addLayer({
+            "id": "fos3-"+id,
+            "type": "fill",
+            "source": "fos-"+id,
+            "filter": ["==", "fos", 3],
+            "paint": {
+                "fill-color": "#F7D57F",
+                "fill-opacity": 0.8,
+                "fill-antialias": false
+            }
+        });
+        map.addLayer({
+            "id": "fos2-"+id,
+            "type": "fill",
+            "source": "fos-"+id,
+            "filter": ["==", "fos", 2],
+            "paint": {
+                "fill-color": "#F5A623",
+                "fill-opacity": 0.8,
+                "fill-antialias": false
+            }
+        });
+        map.addLayer({
+            "id": "fos1-"+id,
+            "type": "fill",
+            "source": "fos-"+id,
+            "filter": ["==", "fos", 1],
+            "paint": {
+                "fill-color": "#ED5D5A",
+                "fill-opacity": 0.8,
+                "fill-antialias": false
+            }
+        });
+    } else {
+        map.setLayoutProperty("fos1-"+id, 'visibility', 'visible');
+        map.setLayoutProperty("fos2-"+id, 'visibility', 'visible');
+        map.setLayoutProperty("fos3-"+id, 'visibility', 'visible');
+    }
 }
 
 ///////////////////////////////
@@ -1270,7 +1301,7 @@ d3.selection.prototype.moveToFront = function() {
 };
 
 // This callback is called when clicking on a location
-function clickCallback(d) {
+function onSettlementClicked(d) {
 
     // Check if settlement is already active
     if ($.inArray(d.properties.osm_id, app.selectedSettlements) >= 0) {
@@ -1292,7 +1323,7 @@ function clickCallback(d) {
         // loadFOS(d.properties.osm_id)
 
         // var currentSettlement = d3.select(this);
-        // currentSettlement.classed("selected", !currentSettlement.classed("selected")); // This is done inside clickCallback(d) now
+        // currentSettlement.classed("selected", !currentSettlement.classed("selected")); // This is done inside onSettlementClicked(d) now
 
         // Deactivate active settlements, if only one is configured
         if (!app.config.multipleSettlements) {
@@ -1321,6 +1352,8 @@ function clickCallback(d) {
 
         // Load FOS along route
         if (config.threat.show) {
+            hideFOS("route");
+
             routeGeoJSON = getGeoJSONFeatureByPlaceID(d.properties.osm_id, routesGeoJSON);
             loadFOSByLineString(routeGeoJSON, "route");
         }
@@ -1359,9 +1392,11 @@ function clickCallback(d) {
 
         app.layout = calculateLayoutVars();
         hideInfoBox(d);
+        hideFOS("route");
 
-        // Show item in legend
+        // Hide isolines item in legend
         $("#legend .legend-item.isolines").addClass("hide");
+        $("#legend .legend-item.threat").addClass("hide");
 
         update(app.config.transitionTime);
 

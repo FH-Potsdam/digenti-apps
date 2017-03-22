@@ -9,6 +9,10 @@ config.tabletop = false;
 // DIGENTI API
 config.apiBase = "http://localhost:61002/api";
 
+// Datasets
+config.data = {};
+config.data.places = 'places_aoi_dane.json';
+
 // Map config
 config.map = {};
 config.map.zoom = 11.2;

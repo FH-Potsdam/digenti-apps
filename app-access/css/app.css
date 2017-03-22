@@ -730,6 +730,17 @@ body.tabletop {
     #legend [class*=" graphic-"] span {
       position: absolute;
       white-space: nowrap; }
+  #legend .graphic-population {
+    background-image: url("../img/legend-population.svg");
+    background-position: left top;
+    background-repeat: no-repeat;
+    display: block;
+    width: 125px;
+    height: 90px;
+    -moz-background-size: contain;
+    -o-background-size: contain;
+    -webkit-background-size: contain;
+    background-size: contain; }
   #legend .graphic-routes {
     background-image: url("../img/legend-route.svg");
     background-position: left top;

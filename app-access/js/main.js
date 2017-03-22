@@ -316,8 +316,8 @@ function mapDraw(geojson) {
         .data(places_aoi.features)
         .enter()
         .append("circle")
-            .attr("class", "village")
-            .attr("r", function(d) { return app.config.circleRadius * getPopulationFactor(d.properties); })
+            .attr("class", function(d) { return "village " + d.properties.type; })
+            .attr("r", function(d) { return app.config.circleRadius + getPopulationFactor(d.properties); })
             .on("click", function(d) {
                 // var currentSettlement = d3.select(this);
                 // currentSettlement.classed("selected", !currentSettlement.classed("selected")); // This is done inside onSettlementClicked(d) now

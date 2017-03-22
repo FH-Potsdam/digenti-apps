@@ -185,6 +185,11 @@
     }
 
     // Graphics
+    .graphic-population {
+        @include background-image('../img/legend-population.svg', left top);
+        @include block(125px, 90px);
+        @include background-size(contain);
+    }
     .graphic-routes {
         @include background-image('../img/legend-route.svg', left top);
         @include block(85%, 213px);

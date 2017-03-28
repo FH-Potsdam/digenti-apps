@@ -12,3 +12,4 @@ app-*/config.js
 **.sass-cache**
 
 .codekit-cache
+app-access/config.js

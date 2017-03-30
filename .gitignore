@@ -13,4 +13,5 @@ app-*/config.js
 
 .codekit-cache
 
+app-access/min/
 app-access/config.js

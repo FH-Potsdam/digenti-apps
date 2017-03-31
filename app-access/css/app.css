@@ -30,7 +30,7 @@ html {
 
 body.dark {
   background: #191F23;
-  color: #fff;
+  color: #dadff0;
   -webkit-font-smoothing: antialiased; }
 
 html, body, #wrapper {
@@ -63,6 +63,12 @@ h4 {
   .dark .sub, .dark
   .details {
     color: #868b90; }
+  .sub > span,
+  .details > span {
+    color: #000; }
+    .dark .sub > span, .dark
+    .details > span {
+      color: #dadff0; }
 
 button, select, input, label {
   font-family: "Source Sans Pro", sans-serif;
@@ -326,7 +332,7 @@ text {
   font-family: "Source Sans Pro", sans-serif;
   fill: #000; }
   .dark text {
-    fill: #fff; }
+    fill: #dadff0; }
   text.title, text .title {
     font-weight: 700; }
 
@@ -617,8 +623,9 @@ body.tabletop {
         color: #3dbee7; }
     #info #reachability .hide {
       display: none; }
-    #info #reachability .no-reachable {
-      color: #ff5050; }
+
+.no-reachable {
+  color: #ff5050 !important; }
 
 #filters {
   top: 1vw;

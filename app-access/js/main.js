@@ -813,7 +813,19 @@ function drawMicrovis(d) {
     // // missingData = missingJSON.missing;
 
     // Add route stats
-    $infoBox.find("#microvis-route-stats").empty().append(activeRouteObj.route.distance/1000 + " km | " + parseInt(activeRouteObj.route.travelTime/60) + " min");
+    console.log(activeRouteObj);
+    console.log(activeMissingObj);
+
+    var statsText = "<span>" + activeRouteObj.route.distance/1000 + " km,  " + parseInt(activeRouteObj.route.travelTime/60) + " min" + "</span>";
+
+    if (!activeMissingObj) {
+        statsText += " to the settlement"
+    } else {
+        var dist = activeMissingObj.missing.properties.distance/1000;
+        dist = Math.round(dist * 10) / 10;
+        statsText += " till the end of the road | <span class='no-reachable'>" + dist + " km</span> from road to settlement"
+    }
+    $infoBox.find("#microvis-route-stats").html(statsText);
 
     // Draw route
     // drawRoute(d, routeData);

@@ -305,6 +305,8 @@ button {
   #map-features > g.disabled > g {
     opacity: 0;
     pointer-events: none; }
+  #map-features > g.hide {
+    display: none; }
 #map-features.detail #routesfromvalledupar > g path.route {
   stroke: #191F23; }
 #map-features.detail #routesfromvalledupar > g.selected-settlement path.route {
@@ -627,6 +629,9 @@ body.tabletop {
 .no-reachable {
   color: #ff5050 !important; }
 
+.time {
+  color: #3dbee7 !important; }
+
 #filters {
   top: 1vw;
   right: 1vw;
@@ -701,6 +706,7 @@ body.tabletop {
     font-size: 1.143rem;
     margin-bottom: 0; }
   #legend .legend-item {
+    position: relative;
     -moz-transition: opacity 0.5s ease;
     -o-transition: opacity 0.5s ease;
     -webkit-transition: opacity 0.5s ease;
@@ -721,6 +727,10 @@ body.tabletop {
     #legend .legend-item.hide {
       opacity: 0;
       pointer-events: none; }
+    #legend .legend-item input[type="checkbox"] {
+      position: absolute;
+      top: 16px;
+      right: 16px; }
   #legend [class^="graphic-"],
   #legend [class*=" graphic-"] {
     position: relative;
@@ -737,6 +747,9 @@ body.tabletop {
     #legend [class*=" graphic-"] span {
       position: absolute;
       white-space: nowrap; }
+    #legend [class^="graphic-"].hide,
+    #legend [class*=" graphic-"].hide {
+      display: none; }
   #legend .graphic-population {
     background-image: url("../img/legend-population.svg");
     background-position: left top;

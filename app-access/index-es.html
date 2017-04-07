@@ -3,7 +3,7 @@
 
     <head>
         <meta charset=utf-8 />
-        <title>DIGENTI – Accessibility</title>
+        <title>DIGENTI – Accesibilidad</title>
         <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
         <!-- Mapbox libs -->
@@ -32,12 +32,12 @@
     <body>
         <div id="page-title">
             <h1>DIGENTI</h1>
-            <h2>Accessibility</h2>
+            <h2>Accesibilidad</h2>
         </div>
         <div id="view">
             <div class="button-wrapper">
-                <button id="toggle-view" name="toggle-view" class="view smallmultiplesview" onclick="toggleViews()">Compare</button>
-                <label for="toggle-view">Compare</label>
+                <button id="toggle-view" name="toggle-view" class="view smallmultiplesview" onclick="toggleViews()">Comparar</button>
+                <label for="toggle-view">Comparar</label>
             </div>
         </div>
         <!-- <div id="nav" class="modal">
@@ -67,17 +67,17 @@
                     </div>
                 </div>
                 <div id="microvis">
-                    <h3>Route from Valledupar</h3>
+                    <h3>Ruta desde Valledupar</h3>
                     <div id="microvis-route-stats" class="details"></div>
                     <div class="microvis-wrap">
                         <div id="microvis-route-profile"></div>
                     </div>
                 </div>
                 <div id="reachability">
-                    <h3>Settlement reachability</h3>
+                    <h3>Accesibilidad</h3>
                     <div class="isolines-wrap">
                         <div class="details">
-                            On the map, area from which the settlement is reachable by road within:
+                            En el mapa, area desde la cual el centro poblado es accesible en menos de:
                         </div>
                         <div class="range-wrapper">
                             <input id="range__slider" type="range" min="15" max="45" value="30" step="15" oninput="rangeSliderInput()" />
@@ -85,7 +85,7 @@
                         </div>
                     </div>
                     <div class="no-reachable hide">
-                        Not reachable directly by road.
+                        No accesible directamente por carretera.
                     </div>
                 </div>
             </div>
@@ -95,47 +95,57 @@
 
         <div id="legend" class="modal">
             <div>
-                <h2>Legend</h2>
+                <h2>Leyenda</h2>
             </div>
             <div class="legend-item">
-                <h4>Routes</h4>
+                <h4>Rutas</h4>
                 <div class="graphic-routes">
-                    <span class="valledupar">Valledupar<span class="sub">Origin</span></span>
-                    <span class="road">Existing route</span>
-                    <span class="road-end">Road end</span>
-                    <span class="missing-road">Missing road</span>
-                    <span class="settlement">Settlement<span class="sub">Destination</span></span>
+                    <span class="valledupar">Valledupar<span class="sub">Origen</span></span>
+                    <span class="road">Ruta por carretera</span>
+                    <span class="road-end">Fin de carretera</span>
+                    <span class="missing-road">Tramo faltante</span>
+                    <span class="settlement">Centro poblado<span class="sub">Destino</span></span>
                 </div>
             </div>
             <div class="legend-item">
-                <h4>Road load</h4>
+                <h4>Carga del tramo</h4>
                 <!-- <p class="desc">
                     Number of settlements served by the road section.
                 </p> -->
                 <div class="graphic-road-load">
-                    <span class="high sub">High</span>
-                    <span class="low sub">Low</span>
+                    <span class="high sub">Alta</span>
+                    <span class="low sub">Baja</span>
                 </div>
             </div>
             <div class="legend-item">
-                <h4>Population</h4>
+                <h4>Población</h4>
                 <div class="graphic-population"></div>
             </div>
             <div class="legend-item isolines hide">
-                <h4>Reachability</h4>
+                <h4>Accesibilidad</h4>
                 <input type="checkbox" name="show-isolines" id="show-isolines">
                 <!-- <p class="desc">
-                    Area from which the settlement is reachable by road within a given time.
+                    Area desde la cual el centro poblado es accesible en menos de un tiempo determinado.
                 </p> -->
                 <div class="graphic-isoline"></div>
+                <!-- <div class="range-wrapper">
+                    <input id="range__slider" type="range" min="15" max="45" value="30" step="15" oninput="rangeSliderInput()" />
+                    <label id="range__text">30 min</label>
+                </div> -->
             </div>
+            <!-- <div class="legend-item threat hide">
+                <h4>Amenaza</h4>
+                <input type="checkbox" name="show-threat" id="show-threat" checked="">
+                <p class="desc">
+                </p>
+            </div> -->
         </div>
 
         <div id="filters" class="modal disabled">
             <div id="orderby">
-                <h4>Order by</h4>
-                <button class="orderby size active" onclick="reorderSmallMultiples('size')">Size</button>
-                <button class="orderby distance" onclick="reorderSmallMultiples('distance')">Distance</button>
+                <h4>Ordenar por</h4>
+                <button class="orderby size active" onclick="reorderSmallMultiples('size')">Tamaño</button>
+                <button class="orderby distance" onclick="reorderSmallMultiples('distance')">Distancia</button>
             </div>
         </div>
 
@@ -150,7 +160,7 @@
 
         <!-- DIGENTI Framework and main app scripts -->
         <script src="../digenti-framework/js/min/digenti-framework-min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="js/main.js" type="text/javascript" charset="utf-8"></script>
+        <script src="js/main-es.js" type="text/javascript" charset="utf-8"></script>
         <!-- <script src="js/min/main-min.js" type="text/javascript" charset="utf-8"></script> -->
     </body>
 

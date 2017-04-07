@@ -138,6 +138,7 @@
 
     .legend-item {
         // margin-bottom: 35px;
+        position: relative;
 
         h3, h4 {
             margin-bottom: 4px;
@@ -165,6 +166,12 @@
             @include hide(0);
             // display: none;
         }
+
+        input[type="checkbox"] {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+        }
     }
 
     [class^="graphic-"],
@@ -181,6 +188,10 @@
         span {
             position: absolute;
             white-space: nowrap;
+        }
+
+        &.hide {
+            display: none;
         }
     }
 

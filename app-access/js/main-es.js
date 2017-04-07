@@ -770,18 +770,18 @@ function showInfoBox(d) {
 
     if (!$infoBox) $infoBox = $("#info");
 
-    var placeType = d.properties.type;
-    // if (d.properties.type == "town") placeType = "pueblo";
-    // else if (d.properties.type == "village") placeType = "pueblo";
-    // else if (d.properties.type == "hamlet") placeType = "aldea";
+    var placeType = "localidad";
+    if (d.properties.type == "town") placeType = "pueblo";
+    else if (d.properties.type == "village") placeType = "pueblo";
+    else if (d.properties.type == "hamlet") placeType = "aldea";
 
     if (d.properties.name == "Vda-Resguardo Caño Padilla" ||
-        d.properties.name == "Resguardo indígena La Laguna") placeType = "indigenous reserve";
+        d.properties.name == "Resguardo indígena La Laguna") placeType = "resgardo indígena";
 
 
     // Get data
     $infoBox.find("#basic-info .title").text(d.properties.name);
-    $infoBox.find("#basic-info .details").text(String(placeType).capitalize() + ", " + getPlacePopulation(d.properties) + " inhabitants")
+    $infoBox.find("#basic-info .details").text(String(placeType).capitalize() + ", " + getPlacePopulation(d.properties) + " habitantes")
     // $infoBox.find(".description").html();
     // $infoBox.find(".type").next('dd').text(String(d.properties.type).capitalize());
     // $infoBox.find(".population").next('dd').text(getPlacePopulation(d.properties));
@@ -849,11 +849,11 @@ function drawMicrovis(d) {
     var statsText = "<span>" + activeRouteObj.route.distance/1000 + " km,</span> <span class='time'>" + parseInt(activeRouteObj.route.travelTime/60) + " min" + "</span>";
 
     if (!activeMissingObj) {
-        statsText += " to the settlement"
+        statsText += " hasta el centro poblado"
     } else {
         var dist = activeMissingObj.missing.properties.distance/1000;
         dist = Math.round(dist * 10) / 10;
-        statsText += " till the end of the road | <span class='no-reachable'>" + dist + " km</span> from road to settlement"
+        statsText += " hasta el final de la carretera | <span class='no-reachable'>" + dist + " km</span> de la carretera hasta el centro poblado"
     }
     $infoBox.find("#microvis-route-stats").html(statsText);
 

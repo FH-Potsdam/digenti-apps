@@ -227,10 +227,10 @@ function mapDraw(geojson) {
         style: baseMap,
         zoom: app.config.map.zoom,
         // zoom: 11.4,
-        center: app.config.map.center,
+        center: app.config.map.center
         // center: [-73.12, 10.410],
-        // pitch: 45 // pitch in degrees
-        // bearing: -60 // bearing in degrees
+        // pitch: 40, // pitch in degrees
+        // bearing: 20 // bearing in degrees
 
     });
 

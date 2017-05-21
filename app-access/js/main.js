@@ -20,7 +20,7 @@
 var app  = {};
 app.view = "";
 app.mode = "";
-app.orderby = "size";
+app.orderby = "distance"; //"size";
 // app.layout = calculateLayoutVars(); // After jQuery on ready
 app.layers = [];
 app.villagePositions = [];
@@ -65,6 +65,8 @@ var routeGeoJSON, activeRouteObj, activeMissingObj;
 
 var $body,
     $nav,
+    $pageTitle,
+    $legend,
     $infoBox,
     $rangeSlider,
     $rangeText;
@@ -92,6 +94,8 @@ $(document).ready(function() {
     // Init DOM Elements
     $body = $('body');
     $nav = $("#nav");
+    $pageTitle = $("#page-title");
+    $legend = $("#legend");
     $infoBox = $("#info");
 
     // Calculate layout vars
@@ -282,7 +286,12 @@ function mapDraw(geojson) {
                         .y(function(d) { return project(d).y; })
                         .interpolate("linear");
 
-
+    // Initialize the Layers by calling their individual init functions
+    for (var key in app.layers) {
+        if (app.layers.hasOwnProperty(key)) {
+            app.layers[key].layer.init(svg, geojson);
+        }
+    }
 
     // Initialize the labelLayer
     labelLayer = svg.append("g").attr("id", "label-layer");
@@ -294,12 +303,23 @@ function mapDraw(geojson) {
             .attr("class", "")
             .attr("data-id", function(d) { return d.properties.osm_id; })
             .each(function() {
-                var current_el = d3.select(this);
-                current_el.append("text").append("tspan")
+                var current_el = d3.select(this),
+                    current_el_text = current_el.append("text");
+
+                current_el_text.append("tspan")
+                    .attr("class", "title")
                     .text(function(d) { return d.properties.name; })
                     .style("opactity", 0)
                     .attr("class", "title")
-                    .attr("y", "132");
+                    .attr("x", "-4")
+                    .attr("y", "45");
+
+                current_el_text.append("tspan")
+                    .attr("class", "desc")
+                    .text(" m to street")
+                    .attr("x", "-4")
+                    .attr("y", "45")
+                    .attr("dy", "1.2em");
 
                 if (app.config.layoutdebug === true) {
                     current_el.append("rect").attr("class", "layoutdebug");
@@ -328,28 +348,21 @@ function mapDraw(geojson) {
                 app.villagePositionsMap[d.properties.osm_id].y = project(d.geometry.coordinates).y;
             });
 
-    // Initialize the Layers by calling their individual init functions
-    for (var key in app.layers) {
-        if (app.layers.hasOwnProperty(key)) {
-            app.layers[key].layer.init(svg, geojson);
-        }
-    }
-
-    // event handler for basemap_select-UI-Element
-    $("#basemap_select").change(function() {
-        switchBasemap($(this).val());
-    });
-
     settlementPointLayer.moveToFront();
 
-    // Function to change the basemap
-    function switchBasemap(layer) {
-        if      (layer === 'DIGENTI')       { map.setStyle('mapbox://styles/jorditost/cipseaugm001ycunimvr00zea'); }
-        else if (layer === 'DIGENTI-Light') { map.setStyle('mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi'); }
-        else if (layer === 'DIGENTI-Dark')  { map.setStyle('mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t'); }
-        else if (layer === 'fos-outdoor')   { map.setStyle('mapbox://styles/jorditost/cip44ooh90013cjnkmwmwd2ft'); }
-        else                                { map.setStyle('mapbox://styles/mapbox/' + layer); }
-    }
+    // // event handler for basemap_select-UI-Element
+    // $("#basemap_select").change(function() {
+    //     switchBasemap($(this).val());
+    // });
+    //
+    // // Function to change the basemap
+    // function switchBasemap(layer) {
+    //     if      (layer === 'DIGENTI')       { map.setStyle('mapbox://styles/jorditost/cipseaugm001ycunimvr00zea'); }
+    //     else if (layer === 'DIGENTI-Light') { map.setStyle('mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi'); }
+    //     else if (layer === 'DIGENTI-Dark')  { map.setStyle('mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t'); }
+    //     else if (layer === 'fos-outdoor')   { map.setStyle('mapbox://styles/jorditost/cip44ooh90013cjnkmwmwd2ft'); }
+    //     else                                { map.setStyle('mapbox://styles/mapbox/' + layer); }
+    // }
 
     update(0);
 
@@ -362,19 +375,19 @@ function initMapLayersControl() {
     app.config.showIsolines = $("#show-isolines").is(":checked");
 
     if (!app.config.showIsolines) {
-        $("#legend .legend-item .graphic-isoline").addClass("hide");
+        $legend.find(".legend-item .graphic-isoline").addClass("hide");
         // $("g#isolines").addClass("disabled");
         d3.selectAll("g#isolines").classed("hide", true);
         $infoBox.find("#reachability").hide();
     }
     $("#show-isolines").click(function() {
         if ($(this).is(":checked")) {
-            $("#legend .legend-item .graphic-isoline").removeClass("hide");
+            $legend.find(".legend-item .graphic-isoline").removeClass("hide");
             // $("g#isolines").removeClass("disabled");
             d3.selectAll("g#isolines").classed("hide", false);
             $infoBox.find("#reachability").show();
         } else {
-            $("#legend .legend-item .graphic-isoline").addClass("hide");
+            $legend.find(".legend-item .graphic-isoline").addClass("hide");
             // $("g#isolines").addClass("disabled");
             d3.selectAll("g#isolines").classed("hide", true);
             $infoBox.find("#reachability").hide();
@@ -427,6 +440,7 @@ function update(transition_time) {
     }
 
     // update settlementPointLayer to reanrange the settlement circles
+    // Called after the calc() to know the position of circles
     updateSettlementPointLayer(transition_time);
 
     // rendering the layer views by calling each layers render function
@@ -438,11 +452,7 @@ function update(transition_time) {
 
     // Reposition the Labels
     renderLabels(transition_time);
-
 }
-
-
-
 
 
 
@@ -510,6 +520,8 @@ function triggerMapView() {
     showMap();
     enableMapInteraction();
 
+    $legend.removeClass("hide");
+
     app.view = "";
     update(app.config.transitionTime);
 }
@@ -522,6 +534,8 @@ function triggerSmallMultiplesView() {
 
     hideMap();
     disableMapInteraction();
+
+    $legend.addClass("hide");
 
     app.view = "smallmultiples";
     update(app.config.transitionTime);
@@ -617,8 +631,7 @@ function renderLabels(transition_time) {
                 .style("opacity", 0);
     }
 
-    //repositionLabels(transition_time);
-
+    repositionLabels(transition_time);
 }
 
 
@@ -634,7 +647,7 @@ function repositionLabels(transition_time) {
             .duration(transition_time)
                 .style("opacity", 1)
                 .attr("transform", function() {
-                    return "translate("+ smpos[current_id].x +","+ smpos[current_id].y +")";
+                    return "translate("+ app.villagePositions[current_id].x +","+ app.villagePositions[current_id].y +")";
                 });
 
     });
@@ -655,14 +668,23 @@ function calculateLayoutVars() {
     layoutVars.cols = 6;
 
     // width of navigation bar at left side of the viewport
-    if ($nav) {
+    if ($nav.length > 0) {
         layoutVars.navWidth = Math.round($nav.width());
-    } else {
+    } else if ($("#nav").length > 0) {
         layoutVars.navWidth = Math.round($("#nav").width());
+    // if #nav doesn't exist, get page title width
+    } else if ($pageTitle.length > 0) {
+        layoutVars.navWidth = Math.round($pageTitle.outerWidth(true));
+    } else {
+        layoutVars.navWidth = Math.round($("#page-title").outerWidth(true));
     }
 
+    // legend width
+    if ($legend.length == 0) { $legend = $('#legend'); }
+    layoutVars.legendWidth = Math.round($legend.width());
+
     // Check info box
-    if ($infoBox) { $infoBox = $("#info"); }
+    if ($infoBox.length == 0) { $infoBox = $("#info"); }
     var infoBoxVisible = $infoBox.hasClass("show");
 
     layoutVars.infoHeight = Math.round(parseInt($infoBox.height(), 10));
@@ -677,11 +699,12 @@ function calculateLayoutVars() {
     // layoutVars.microvisHeight = parseInt($infoBox.find('.content').height()) - 40;
 
     // calculate offset of small multiples from viewport
-    layoutVars.offsetLeft = layoutVars.navWidth + 50;
+    layoutVars.offsetLeft = layoutVars.navWidth + 60;
     layoutVars.offsetTop = Math.round(layoutVars.w*0.01);
+
     layoutVars.offsetBottom = Math.round(layoutVars.offsetTop + layoutVars.infoHeight);
-    layoutVars.offsetRight = Math.round(layoutVars.offsetTop);
-    // layoutVars.offsetRight = Math.round(layoutVars.offsetTop + layoutVars.infoWidth);
+    layoutVars.offsetRight = 0;
+    // layoutVars.offsetRight = Math.round(layoutVars.offsetTop + layoutVars.legendWidth);
 
     // caclulate gaps between single elements
     layoutVars.gapX = Math.round(layoutVars.w*0.008);
@@ -790,8 +813,8 @@ function showInfoBox(d) {
     drawMicrovis(d);
 
     // Show item in legend
-    $("#legend .legend-item.isolines").removeClass("hide");
-    $("#legend .legend-item.threat").removeClass("hide");
+    $legend.find(".legend-item.isolines").removeClass("hide");
+    $legend.find(".legend-item.threat").removeClass("hide");
 
     // Check isolines
     var hasIsolines = app.layers['isolines'].layer.hasIsolines(d.properties.osm_id);
@@ -812,8 +835,8 @@ function showInfoBox(d) {
         deactivateSelectedSettlements();
 
         // Hide isolines item in legend
-        $("#legend .legend-item.isolines").addClass("hide");
-        $("#legend .legend-item.threat").addClass("hide");
+        $legend.find(".legend-item.isolines").addClass("hide");
+        $legend.find(".legend-item.threat").addClass("hide");
     });
 }
 
@@ -1406,12 +1429,12 @@ function onSettlementClicked(d) {
         // Check isolines
         $("#show-isolines").click(function() {
             if ($(this).is(":checked")) {
-                $("#legend .legend-item .graphic-isoline").removeClass("hide");
+                $legend.find(".legend-item .graphic-isoline").removeClass("hide");
                 // $("g#isolines").removeClass("disabled");
                 d3.selectAll("g#isolines").classed("hide", false);
                 $infoBox.find("#reachability").show();
             } else {
-                $("#legend .legend-item .graphic-isoline").addClass("hide");
+                $legend.find(".legend-item .graphic-isoline").addClass("hide");
                 // $("g#isolines").addClass("disabled");
                 d3.selectAll("g#isolines").classed("hide", true);
                 $infoBox.find("#reachability").hide();
@@ -1452,8 +1475,8 @@ function onSettlementClicked(d) {
         hideFOS("route");
 
         // Hide isolines item in legend
-        $("#legend .legend-item.isolines").addClass("hide");
-        $("#legend .legend-item.threat").addClass("hide");
+        $legend.find(".legend-item.isolines").addClass("hide");
+        $legend.find(".legend-item.threat").addClass("hide");
 
         update(app.config.transitionTime);
 

@@ -21,7 +21,7 @@
 { "type": "Feature", "properties": { "osm_id": "703378956", "name": "La Montaña", "type": "hamlet", "population": 75 }, "geometry": { "type": "Point", "coordinates": [ -73.112622, 10.4339683, 236.99404907226562 ] } },
 { "type": "Feature", "properties": { "osm_id": "703378980", "name": "San Martin", "type": "hamlet", "population": 75 }, "geometry": { "type": "Point", "coordinates": [ -72.9456789, 10.40252, 1882.43994140625 ] } },
 { "type": "Feature", "properties": { "osm_id": "703378982", "name": "El Pintado", "type": "hamlet", "population": 75 }, "geometry": { "type": "Point", "coordinates": [ -72.924673799999979, 10.4036554, 1951.1683349609375 ] } },
-{ "type": "Feature", "properties": { "osm_id": "3436479985", "name": null, "type": "hamlet", "population": 75 }, "geometry": { "type": "Point", "coordinates": [ -73.0008688, 10.2933213, 1614.745361328125 ] } },
+{ "type": "Feature", "properties": { "osm_id": "3436479985", "name": "Aldea sin nombre", "type": "hamlet", "population": 75 }, "geometry": { "type": "Point", "coordinates": [ -73.0008688, 10.2933213, 1614.745361328125 ] } },
 
 { "type": "Feature", "properties": { "osm_id": "703273786", "name": "Bella Vista", "type": "locality", "population": null }, "geometry": { "type": "Point", "coordinates": [ -73.055387899999971, 10.3590905, 745.393310546875 ] } },
 { "type": "Feature", "properties": { "osm_id": "703378938", "name": "Hacienda Casaalegria", "type": "locality", "population": null }, "geometry": { "type": "Point", "coordinates": [ -73.110021599999982, 10.4502935, 163.3650665283203 ] } },

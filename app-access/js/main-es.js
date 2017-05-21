@@ -20,7 +20,7 @@
 var app  = {};
 app.view = "";
 app.mode = "";
-app.orderby = "size";
+app.orderby = "distance"; //"size"
 // app.layout = calculateLayoutVars(); // After jQuery on ready
 app.layers = [];
 app.villagePositions = [];

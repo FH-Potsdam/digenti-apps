@@ -307,6 +307,10 @@ button {
     pointer-events: none; }
   #map-features > g.hide {
     display: none; }
+  #map-features > g#routesfromvalledupar > g {
+    transition: none !important; }
+  #map-features > g#label-layer {
+    transition: none !important; }
 #map-features.detail #routesfromvalledupar > g path.route {
   stroke: #191F23; }
 #map-features.detail #routesfromvalledupar > g.selected-settlement path.route {
@@ -696,6 +700,9 @@ body.tabletop {
   right: 10px;
   width: 150px;
   background: transparent; }
+  #legend.hide {
+    opacity: 0;
+    pointer-events: none; }
   #legend > div {
     padding: 12px 15px;
     border-top: 2px solid #242E34;

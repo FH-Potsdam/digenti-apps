@@ -43,7 +43,8 @@ function missingInfrastructureLayer() {
     // DEPRECATED this.active = true;
     this.factor = 0;
     // position of vis in smallmultiple-container
-    this.positionSmallVisY = app.layout.heightperelement - 40;
+    // this.positionSmallVisY = app.layout.offsetTop;
+    this.positionSmallVisY = 0.3*app.layout.heightperelement;
     this.distance_threshold = 100;
 
 
@@ -129,13 +130,21 @@ function missingInfrastructureLayer() {
                     .attr("data-transformX", village_group_x)
                     .attr("data-transformY", village_group_y);
 
-                var cx = 8;
-                if (d.properties.connections.distance_to_street > 0) { cx = 2*parent.faktor*d.properties.connections.distance_to_street; }
+                // Position of
+                // var cx = 8;
+                var cx = 0;
+                if (d.properties.connections.distance_to_street > 0) {
+                    cx = 2*parent.faktor*d.properties.connections.distance_to_street;
+                    village_group.attr("data-cx", cx);
+                }
 
                 //if (parent.active) {
-                    app.villagePositions[village_group.attr("data-id")] = {};
-                    app.villagePositions[village_group.attr("data-id")].x = village_group_x + cx;
-                    app.villagePositions[village_group.attr("data-id")].y = village_group_y + parent.positionSmallVisY;
+                var groupID = village_group.attr("data-id");
+                app.villagePositions[groupID] = {
+                        x: village_group_x,
+                        // x: village_group_x + cx,
+                        y: village_group_y + parent.positionSmallVisY
+                    };
                 //}
 
                 if (app.orderby === "size") {
@@ -146,18 +155,8 @@ function missingInfrastructureLayer() {
                 }
 
             });
-
         }
-
-
     };
-
-
-
-
-
-
-
 
 
 
@@ -170,12 +169,6 @@ function missingInfrastructureLayer() {
         this.calc();
         this.render(transition_time);
     };
-
-
-
-
-
-
 
 
 
@@ -200,33 +193,33 @@ function missingInfrastructureLayer() {
                         .attr("height", app.layout.heightperelement);
                 }
 
+                // Move entire group
                 current_el
                     .transition()
                     .duration(transition_time)
                         //.style("opacity", 1)
-                        .attr("transform", "translate(" + current_el.attr("data-transformX") + "," + current_el.attr("data-transformY") + ")");
+                    .attr("transform", "translate(" + current_el.attr("data-transformX") + "," + current_el.attr("data-transformY") + ")");
 
+                // Render line and road dot if any
+                if (d.properties.connections.distance_to_street > parent.distance_threshold) {
 
-                        if (d.properties.connections.distance_to_street > parent.distance_threshold) {
+                    current_el.select(".nearest-road")
+                        .transition()
+                        .duration(transition_time)
+                            //.style("opacity", 1)
+                            .attr("cy", parent.positionSmallVisY)
+                            .attr("cx", current_el.attr("data-cx"));
+                            // .attr("cx", 0);
 
-                            current_el.select(".nearest-road")
-                                .transition()
-                                .duration(transition_time)
-                                    //.style("opacity", 1)
-                                    .attr("cy", parent.positionSmallVisY)
-                                    .attr("cx", 0);
-
-                            current_el.select("line")
-                                .transition()
-                                .duration(transition_time)
-                                    .attr("x1", 0)
-                                    .attr("y1", parent.positionSmallVisY)
-                                    .attr("x2", 2*parent.faktor*d.properties.connections.distance_to_street)
-                                    .attr("y2", parent.positionSmallVisY);
-
-
-                        }
-
+                    current_el.select("line")
+                        .transition()
+                        .duration(transition_time)
+                            .attr("x1", current_el.attr("data-cx"))
+                            .attr("y1", parent.positionSmallVisY)
+                            .attr("x2", 0)
+                            // .attr("x2", 2*parent.faktor*d.properties.connections.distance_to_street)
+                            .attr("y2", parent.positionSmallVisY);
+                }
             });
 
         // Map with missing infrastructure
@@ -424,19 +417,23 @@ function missingInfrastructureLayer() {
                         distance_to_street = d.properties.connections.distance_to_street;
                     }
 
-                    /*var current_el_text = current_el.append("text").attr("y", "0");
 
-                    current_el_text.append("tspan")
-                        .text(d.properties.name)
-                        .attr("class", "title")
-                        .attr("x", 0)
-                        .attr("dy", "0");
+                    // Update text label
+                    var label = d3.select("#label-layer > g[data-id='"+d.properties.osm_id+"']");
+                    label.select("text .desc").text(Math.round(distance_to_street)+"m to next road");
 
-                    current_el_text.append("tspan")
-                        .text(Math.round(distance_to_street)+" m to street")
-                        .attr("x", 0)
-                        .attr("dy", "1em");*/
-
+                    // var current_el_text = current_el.append("text").attr("y", "0");
+                    //
+                    // current_el_text.append("tspan")
+                    //     .text(d.properties.name)
+                    //     .attr("class", "title")
+                    //     .attr("x", 0)
+                    //     .attr("dy", "0");
+                    //
+                    // current_el_text.append("tspan")
+                    //     .text(Math.round(distance_to_street)+" m to street")
+                    //     .attr("x", 0)
+                    //     .attr("dy", "1.2em");
                 });
 
                 parent.update(0);

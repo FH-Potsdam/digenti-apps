@@ -308,7 +308,7 @@ function routesLayer() {
                 current_el
                     .transition()
                     .duration(transition_time)
-                        //.style("opacity", 1)
+                        .style("opacity", 0)
                         .attr("transform", function() {
                             return "translate("+ smpos[current_id].x +","+ smpos[current_id].y +") scale("+parent.scaleFactor+")";
                         });
@@ -326,7 +326,7 @@ function routesLayer() {
                     current_el
                         .transition()
                         .duration(transition_time)
-                            //.style("opacity", 1)
+                            .style("opacity", 1)
                             .attr("transform", "");
                 }
 

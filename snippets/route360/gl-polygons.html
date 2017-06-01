@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!--  Include jquery - required for XHR requests -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <!--  Include mapboxgl javascript and css -->
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v0.31.0/mapbox-gl.js"></script>
+    <script src="https://unpkg.com/@turf/turf@3.5.2/turf.min.js"></script>
+    <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v0.31.0/mapbox-gl.css" rel="stylesheet">
+    <!--  Include r360.js -->
+    <script src="https://releases.route360.net/r360-js/latest.js"></script>
+    <style>
+        html, body { width: 100%; height: 100%; margin: 0; }
+        #map { width: 100%; height: 100%; }
+        .marker-inner {
+            background-color: #fff; border: #fff 2px solid;
+            border-radius: 50% 50% 50% 0; position: relative;
+            cursor: pointer; box-shadow: 1px 1px 1px;
+            height: 30px; width: 30px; margin: -15px 0 0 -15px;
+            background-size: cover; transform: rotate(-45deg);
+        }
+        .marker-inner .marker-image {
+            background-image: url(https://avatars0.githubusercontent.com/u/7941990?v=3&s=30);
+            transform: rotate(45deg); height: 30px; width: 30px;
+        }
+    </style>
+</head>
+<body>
+    <!--  where the map will live  -->
+    <div id="map"></div>
+
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+        // define a pair of coordinates, where the map should be centered
+        // and should serve a the source for polygonization
+        var lnglat = [13.37, 52.51];
+        var travelTimes = [300,600,900,1200,1500,1800];
+
+        // add the map and set the initial center to berlin
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/light-v9',
+            zoom: 12,
+            pitch: 45,
+            center: lnglat,
+            attributionControl: false
+        })
+        .addControl(new mapboxgl.NavigationControl())
+        .addControl(new mapboxgl.AttributionControl({ compact: true }));
+
+        function markerDiv() {
+            var el = document.createElement('div');
+            var inner = document.createElement('div');
+            var img = document.createElement('div');
+            el.className = 'marker';
+            inner.className = 'marker-inner';
+            img.className = 'marker-image';
+            inner.appendChild(img);
+            el.appendChild(inner);
+            return el;
+        }
+
+        // you need to define some options for the polygon service
+        // for more travel options check out the other tutorials
+        var travelOptions = r360.travelOptions();
+        // please contact us and request your own key if you don't already have one
+        travelOptions.setServiceKey('DT3FNPKM410XMLW1KECLKHZ');
+        // set the service url for your area
+        travelOptions.setServiceUrl('https://service.route360.net/germany/');
+        // we only have one source which is the marker we just added
+        travelOptions.addSource({ lat: lnglat[1], lon: lnglat[0], id: 1 });
+
+        // we want to have a single polygon for 30 minutes
+        travelOptions.setTravelTimes(travelTimes);
+        // go by foot
+        travelOptions.setTravelType('walk');
+        // request geojson
+        travelOptions.setPolygonSerializer('geojson');
+        // simplify polygons a bit to increase perf
+        travelOptions.setSimplifyMeter(200);
+        // wgs84
+        travelOptions.setSrid(4326);
+
+        // ~150m in longitudinal degrees at 52° latitude
+        var bufferLengthsMeters = r360.Util.metersInDegrees(150, lnglat[1]);
+        travelOptions.setBuffer(Math.round(bufferLengthsMeters.lng * 1000) / 1000); // round to thousands
+
+        // height stops function
+        function getHeightStops(travelTimes, heightFactor) {
+            return [
+                [travelTimes[0], travelTimes.length * (10 * heightFactor)],
+                [travelTimes[travelTimes.length - 1], travelTimes.length * heightFactor]
+            ]
+        }
+
+        // color stop function
+        function getColorStops(times) {
+            var colors = r360.config.defaultTravelTimeControlOptions.travelTimes.map(function(time, idx) {
+                return [times[idx], time.color];
+            });
+            return colors;
+        }
+
+        map.on('load', function() {
+            var marker = new mapboxgl.Marker(markerDiv(), {
+                offset: [0, -25]
+            });
+            marker.setLngLat(lnglat).addTo(map);
+            // call the r360°- service
+            r360.PolygonService.getTravelTimePolygons(travelOptions, function(geojsonPolygons) {
+                // get bounds for fiiting view
+
+                console.log(JSON.stringify(geojsonPolygons));
+
+                var bbox = turf.bbox(geojsonPolygons);
+
+                map.addLayer({
+                    'id': 'polygons',
+                    'type': 'fill-extrusion',
+                    'source': {
+                        'type': 'geojson',
+                        'data': geojsonPolygons
+                    },
+                    'layout': {},
+                    'paint': {
+                        'fill-extrusion-base': 0,
+                        'fill-extrusion-height': {
+                            'property': 'time',
+                            'stops': getHeightStops(travelTimes, 2)
+                        },
+                        'fill-extrusion-color': {
+                            'property': 'time',
+                            'stops': getColorStops(travelTimes)
+                        },
+                        'fill-extrusion-opacity': .5
+                    }
+                });
+
+                map.fitBounds(bbox, {padding: 20});
+            });
+        })
+    </script>
+</body>
+</html>

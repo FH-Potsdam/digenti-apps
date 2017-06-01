@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <!--  Include leaflet javascript and css -->
+  <link rel="stylesheet" href="https://npmcdn.com/leaflet@0.7.7/dist/leaflet.css">
+  <script src="https://npmcdn.com/leaflet@0.7.7/dist/leaflet.js"></script>
+  <!--  Include r360.js -->
+  <script src="https://releases.route360.net/r360-js/latest.js"></script>
+
+  <style>
+    html, body { width: 100%; height: 100%; margin: 0; font-family: sans-serif; }
+    #map { width: 100%; height: 100%; }
+  </style>
+</head>
+
+<body>
+  <!--  where the map will live  -->
+  <div id="map"></div>
+
+  <script>
+    $(document).ready(function() {
+
+      var latlons = {
+        map: [52.51, 13.37],
+        src1: [52.50086, 13.36581],
+        trg1: [52.52562, 13.30195],
+        trg2: [52.51998, 13.41714]
+      };
+
+        // Colombia
+        //   var latlons = {
+        //     map: [10.396649985086201, -73.12911987304688],
+        //     src1: [10.465277124451058, -73.25366020202637],
+        //     trg1: [10.39124696092799, -73.02680969238281],
+        //     trg2: [10.308290398840045, -73.02775382995605]
+        // };
+
+      // add the map and set the initial center to berlin
+      var map = L.map('map').setView(latlons.map, 12);
+
+      // attribution to give credit to OSM map data and VBB for public transportation
+      var attribution ="<a href='https://www.mapbox.com/about/maps/' target='_blank'>© Mapbox © OpenStreetMap</a> | ÖPNV Daten © <a href='https://www.vbb.de/de/index.html' target='_blank'>VBB</a> | developed by <a href='https://www.route360.net/de/' target='_blank'>Route360°</a>";
+
+      // initialise the base map
+      // note that mapbox is a subscription service, and you need a mapID to use it
+      // feel free to use any basemap you want... http://leafletjs.com/plugins.html#basemap-providers
+
+      L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A',
+          { maxZoom: 18, attribution: attribution }).addTo(map);
+    //   L.tileLayer('https://a.tiles.mapbox.com/v3/{mapID}/{z}/{x}/{y}.png',
+    //       { maxZoom: 18, attribution: attribution, mapID: 'mapbox.mapbox-streets-v10' }).addTo(map);
+
+      // create a target marker icon to be able to distingush source and targets
+      var redIcon = L.icon({
+        iconUrl: 'http://assets.route360.net/leaflet-extras/marker-icon-red.png',
+        shadowUrl: 'http://assets.route360.net/leaflet-extras/marker-shadow.png',
+        iconAnchor: [12, 45],
+        popupAnchor: [0, -35]
+      });
+
+      // create a source and a two target markers and add them to the map
+      var sourceMarker1 = L.marker(latlons.src1, { draggable : true }).addTo(map);
+      var targetMarker1 = L.marker(latlons.trg1, { icon: redIcon, draggable : true }).addTo(map);
+      var targetMarker2 = L.marker(latlons.trg2, { icon: redIcon, draggable : true }).addTo(map);
+
+      // add a layer in which we will paint the route
+      var routeLayer = L.featureGroup().addTo(map);
+
+      var getRoutes = function() {
+
+        routeLayer.clearLayers();
+
+        // you need to define some options for the polygon service
+        // for more travel options check out the other tutorials
+        var travelOptions = r360.travelOptions();
+        // we only have one source which is the marker we just added
+        // travelOptions.addSource({ lat: latlons.src1[0], lon: latlons.src1[1], id: 1 });
+        travelOptions.addSource(sourceMarker1);
+
+        // add two targets to the options
+        // travelOptions.addTarget({ lat: latlons.trg1[0], lon: latlons.trg1[1], id: 2 });
+        // travelOptions.addTarget({ lat: latlons.trg2[0], lon: latlons.trg2[1], id: 3 });
+        travelOptions.addTarget(targetMarker1);
+        travelOptions.addTarget(targetMarker2);
+        // set the travel type to transit
+        travelOptions.setTravelType('transit');
+        // no alternative route recommendations - this is for pro/advanced plans only
+        travelOptions.setRecommendations(-1);
+        // please contact us and request your own key
+        travelOptions.setServiceKey('DT3FNPKM410XMLW1KECLKHZ');
+        // set the service url for your area
+        travelOptions.setServiceUrl('https://service.route360.net/germany/');
+        // travelOptions.setServiceUrl('https://service.route360.net/south_america/')
+        ;
+
+        // start the service
+        r360.RouteService.getRoutes(travelOptions, function(routes) {
+
+          // one route for each source and target combination
+          routes.forEach(function(route) {
+              console.log(JSON.stringify(route));
+
+            r360.LeafletUtil.fadeIn(routeLayer, route, 1000, "travelDistance");
+          });
+        });
+      }
+
+      getRoutes();
+
+      sourceMarker1.on('dragend', getRoutes);
+      targetMarker1.on('dragend', getRoutes);
+      targetMarker2.on('dragend', getRoutes);
+    });
+  </script>
+</body>
+</html>

@@ -56,7 +56,7 @@ routesJSON.routes = [];
 routesJSON.missing = [];
 
 // Active elements
-var routeGeoJSON, activeRouteObj, activeMissingObj;
+var activeSettlementGeoJSON, activeRouteGeoJSON, activeRouteObj, activeMissingObj;
 
 
 //////////////////
@@ -267,7 +267,7 @@ function mapDraw(geojson) {
 
 
     // add navigation control to our map
-    map.addControl(new mapboxgl.Navigation());
+    // map.addControl(new mapboxgl.Navigation());
 
     // add some event handlers to our map
     map.on("viewreset", update);
@@ -1412,15 +1412,19 @@ function onSettlementClicked(d) {
         svg.classed("detail", true);
 
         // Get current route and missing profile
+
+        // Object with paths
         activeRouteObj = getElementByPlaceID(d.properties.osm_id, routesJSON.routes);
         activeMissingObj = getElementByPlaceID(d.properties.osm_id, routesJSON.missing);
+
+        // In GeoJSON format
+        activeSettlementGeoJSON = getGeoJSONFeatureByPlaceID(d.properties.osm_id, places_aoi);
+        activeRouteGeoJSON = getGeoJSONFeatureByPlaceID(d.properties.osm_id, routesGeoJSON);
 
         // Load FOS along route
         if (config.threat.show) {
             hideFOS("route");
-
-            routeGeoJSON = getGeoJSONFeatureByPlaceID(d.properties.osm_id, routesGeoJSON);
-            loadFOSByLineString(routeGeoJSON, "route");
+            loadFOSByLineString(activeRouteGeoJSON, "route");
         }
 
         // show the info box
@@ -1439,6 +1443,18 @@ function onSettlementClicked(d) {
                 d3.selectAll("g#isolines").classed("hide", true);
                 $infoBox.find("#reachability").hide();
             }
+        });
+
+
+
+        // Fit bounds to active route
+        var features = turf.featureCollection([activeRouteGeoJSON, activeSettlementGeoJSON])
+        var bbox = turf.bbox(features);
+        // map.fitBounds(bbox, {
+        //   padding: 200
+        // });
+        map.fitBounds(bbox, {
+          padding: {top: 100, bottom: 200, left: 100, right: 180}
         });
     }
 

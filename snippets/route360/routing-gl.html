@@ -1,0 +1,123 @@
+<!DOCTYPE html >
+<html>
+  <head>
+      <meta charset="utf-8" />
+      <title>Route360° API Example – Routes</title>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+      <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+      <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v0.37.0/mapbox-gl.css" rel="stylesheet" />
+      <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v0.37.0/mapbox-gl.js"></script>
+      <!--  Include r360.js -->
+      <script src="https://releases.route360.net/r360-js/latest.js"></script>
+
+      <style media="screen">
+          body { margin:0; padding:0; }
+          #map { position:absolute; top:0; bottom:0; width:100%; }
+      </style>
+  </head>
+  <body>
+    <div id="map">
+    </div>
+    <script>
+        var latlons = {
+            map: [52.51, 13.37],
+            src1: [52.50086, 13.36581],
+            trg1: [52.52562, 13.30195],
+            trg2: [52.51998, 13.41714]
+        };
+
+        // add the map and set the initial center to berlin
+    	mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+        var map = new mapboxgl.Map({
+            container: 'map', // container id
+            style: 'mapbox://styles/mapbox/streets-v9', //stylesheet location
+            center: latlons.map.reverse(), // starting position
+            zoom: 12 // starting zoom
+        });
+
+        // create a target marker icon to be able to distingush source and targets
+        // create a DOM element for the marker
+        var redIcon = document.createElement('div');
+        redIcon.className = 'marker';
+        redIcon.style.backgroundImage = 'url(http://assets.route360.net/leaflet-extras/marker-icon-red.png)';
+        redIcon.style.width = '25px';
+        redIcon.style.height = '41px';
+
+
+        // var redIcon = L.icon({
+        //   iconUrl: 'http://assets.route360.net/leaflet-extras/marker-icon-red.png',
+        //   shadowUrl: 'http://assets.route360.net/leaflet-extras/marker-shadow.png',
+        //   iconAnchor: [12, 45],
+        //   popupAnchor: [0, -35]
+        // });
+
+        // create a source and a two target markers and add them to the map
+        var sourceMarker1 = createMarker(latlons.src1.reverse());
+        var targetMarker1 = createMarker(latlons.trg1.reverse());
+        var targetMarker2 = createMarker(latlons.trg2.reverse());
+
+        // // create a source and a two target markers and add them to the map
+        // var sourceMarker1 = L.marker(latlons.src1, { draggable : true }).addTo(map);
+        // var targetMarker1 = L.marker(latlons.trg1, { icon: redIcon, draggable : true }).addTo(map);
+        // var targetMarker2 = L.marker(latlons.trg2, { icon: redIcon, draggable : true }).addTo(map);
+
+        // add a layer in which we will paint the route
+        // var routeLayer = L.featureGroup().addTo(map);
+
+        var getRoutes = function() {
+            // routeLayer.clearLayers();
+
+            // you need to define some options for the polygon service
+            // for more travel options check out the other tutorials
+            var travelOptions = r360.travelOptions();
+            // we only have one source which is the marker we just added
+            travelOptions.addSource(sourceMarker1);
+            // add two targets to the options
+            travelOptions.addTarget(targetMarker1);
+            travelOptions.addTarget(targetMarker2);
+            // set the travel type to transit
+            travelOptions.setTravelType('transit');
+            // no alternative route recommendations - this is for pro/advanced plans only
+            travelOptions.setRecommendations(-1);
+            // please contact us and request your own key
+            travelOptions.setServiceKey('DT3FNPKM410XMLW1KECLKHZ');
+            // set the service url for your area
+            travelOptions.setServiceUrl('https://service.route360.net/germany/');
+
+            // start the service
+            r360.RouteService.getRoutes(travelOptions, function(routes) {
+                // one route for each source and target combination
+                // routes.forEach(function(route) {
+                //     r360.LeafletUtil.fadeIn(routeLayer, route, 1000, "travelDistance");
+                // });
+            });
+        }
+
+        getRoutes();
+
+        // sourceMarker1.on('dragend', getRoutes);
+        // targetMarker1.on('dragend', getRoutes);
+        // targetMarker2.on('dragend', getRoutes);
+
+        function createMarker(lnglat) {
+            // create a DOM element for the marker
+            var el = document.createElement('div');
+            el.className = 'marker';
+            el.style.backgroundImage = 'url(http://assets.route360.net/leaflet-extras/marker-icon-red.png)';
+            el.style.width = '25px';
+            el.style.height = '41px';
+
+            // el.addEventListener('click', function() {
+            //     window.alert("hallo");
+            // });
+
+            // add marker to map
+            return new mapboxgl.Marker(el, {offset: [-12, -20]})
+                .setLngLat(lnglat)
+                .addTo(map);
+        }
+
+
+    </script>
+  </body>
+</html>

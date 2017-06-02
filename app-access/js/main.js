@@ -126,6 +126,8 @@ $(document).ready(function() {
             $body.addClass('tabletop');
         }
 
+        if (typeof app.config.noUI !== 'undefined' && app.config.noUI === true) $body.addClass("no-ui");
+
         // Log the configuration for informational purposes
         console.log("Current config follows in next line:");
         console.log(app);
@@ -1454,7 +1456,7 @@ function onSettlementClicked(d) {
         //   padding: 200
         // });
         map.fitBounds(bbox, {
-          padding: {top: 100, bottom: 200, left: 100, right: 180}
+          padding: {top: 100, bottom: 240, left: 100, right: 180}
         });
     }
 

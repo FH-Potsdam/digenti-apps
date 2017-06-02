@@ -32,6 +32,8 @@ body.dark {
   background: #191F23;
   color: #dadff0;
   -webkit-font-smoothing: antialiased; }
+body.no-ui .modal, body.no-ui #view, body.no-ui #page-title {
+  display: none !important; }
 
 html, body, #wrapper {
   width: 100%;
@@ -103,7 +105,7 @@ button {
     .missing-mode button:hover, .missing-mode button.active {
       background-color: #ff5050; }
     .infrastructure-mode button:hover, .infrastructure-mode button.active {
-      background-color: #dadff0; }
+      background-color: #464b57; }
   button:disabled {
     background-color: #eee !important;
     cursor: default; }
@@ -312,9 +314,11 @@ button {
   #map-features > g#label-layer {
     transition: none !important; }
 #map-features.detail #routesfromvalledupar > g path.route {
-  stroke: #191F23; }
+  stroke: #e0e0e0; }
+  .dark #map-features.detail #routesfromvalledupar > g path.route {
+    stroke: #191F23; }
 #map-features.detail #routesfromvalledupar > g.selected-settlement path.route {
-  stroke: #dadff0; }
+  stroke: #464b57; }
 #map-features.detail #missinginfrastructure .village-group {
   opacity: 0.25; }
 #map-features.detail #settlement-point-layer > * {
@@ -328,7 +332,9 @@ path {
   stroke-linecap: round;
   transition: stroke 0.4s, stroke-width 0.4s; }
   path.route, path.distance {
-    stroke: #dadff0; }
+    stroke: #464b57; }
+    .dark path.route, .dark path.distance {
+      stroke: #dadff0; }
   path.time {
     stroke: #3dbee7; }
   path.foot {
@@ -387,7 +393,7 @@ text {
   transform-origin: 50% 50%; }
 
 .route-dots {
-  fill: #dadff0;
+  fill: #464b57;
   fill-opacity: 0.5; }
 
 .route-lines {
@@ -432,10 +438,10 @@ text {
   stroke-linejoin: round;
   stroke-linecap: round;
   stroke-width: 3;
-  stroke: #dadff0;
+  stroke: #464b57;
   fill: none; }
   #microvis .profile.route {
-    stroke: #dadff0; }
+    stroke: #464b57; }
   #microvis .profile.missing {
     stroke: #ff5050;
     stroke-dasharray: 0px 6px; }
@@ -698,15 +704,15 @@ body.tabletop {
 #legend {
   top: 10px;
   right: 10px;
-  width: 150px;
-  background: transparent; }
+  width: 150px; }
   #legend.hide {
     opacity: 0;
     pointer-events: none; }
   #legend > div {
     padding: 12px 15px;
-    border-top: 2px solid #242E34;
-    background: #191F23; }
+    border-top: 2px solid #464b57; }
+    #legend > div .dark {
+      border-top-color: #242E34; }
     #legend > div:first-child {
       border-top: 0; }
   #legend h2 {

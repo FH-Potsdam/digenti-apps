@@ -20,6 +20,7 @@ config.map.center = [-73.09, 10.422];
 
 // Theme
 config.theme = "dark"; // Possible values: 'light', 'dark'. Default: 'light'
+config.noUI = false;
 
 // Routes origin
 config.coordHomeBase = "10.471667,-73.25";

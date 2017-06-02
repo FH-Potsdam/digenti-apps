@@ -115,7 +115,7 @@
     top: 10px;
     right: 10px;
     width: $legend-width;
-    background: transparent;
+    // background: transparent;
 
     &.hide {
         @include hide(0);
@@ -123,8 +123,11 @@
 
     & > div {
         padding: 12px 15px;
-        border-top: 2px solid $color-ui-dark;
-        background: $color-blue-darkest;
+        border-top: 2px solid $color-ui;
+        .dark {
+            border-top-color: $color-ui-dark;
+        }
+        // background: $color-blue-darkest;
 
         &:first-child {
             border-top: 0;

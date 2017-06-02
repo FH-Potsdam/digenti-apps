@@ -21,20 +21,22 @@
   <script>
     $(document).ready(function() {
 
-      var latlons = {
-        map: [52.51, 13.37],
-        src1: [52.50086, 13.36581],
-        trg1: [52.52562, 13.30195],
-        trg2: [52.51998, 13.41714]
-      };
+    // var serviceUrl = 'https://service.route360.net/germany/'
+    //   var latlons = {
+    //     map: [52.51, 13.37],
+    //     src1: [52.50086, 13.36581],
+    //     trg1: [52.52562, 13.30195],
+    //     trg2: [52.51998, 13.41714]
+    //   };
 
         // Colombia
-        //   var latlons = {
-        //     map: [10.396649985086201, -73.12911987304688],
-        //     src1: [10.465277124451058, -73.25366020202637],
-        //     trg1: [10.39124696092799, -73.02680969238281],
-        //     trg2: [10.308290398840045, -73.02775382995605]
-        // };
+        var serviceUrl = 'https://service.route360.net/south_america/'
+        var latlons = {
+            map: [10.396649985086201, -73.12911987304688],
+            src1: [10.465277124451058, -73.25366020202637],
+            trg1: [10.39124696092799, -73.02680969238281],
+            trg2: [10.308290398840045, -73.02775382995605]
+        };
 
       // add the map and set the initial center to berlin
       var map = L.map('map').setView(latlons.map, 12);
@@ -46,7 +48,7 @@
       // note that mapbox is a subscription service, and you need a mapID to use it
       // feel free to use any basemap you want... http://leafletjs.com/plugins.html#basemap-providers
 
-      L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A',
+      L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A',
           { maxZoom: 18, attribution: attribution }).addTo(map);
     //   L.tileLayer('https://a.tiles.mapbox.com/v3/{mapID}/{z}/{x}/{y}.png',
     //       { maxZoom: 18, attribution: attribution, mapID: 'mapbox.mapbox-streets-v10' }).addTo(map);
@@ -84,13 +86,14 @@
         travelOptions.addTarget(targetMarker1);
         travelOptions.addTarget(targetMarker2);
         // set the travel type to transit
-        travelOptions.setTravelType('transit');
+        travelOptions.setTravelType('car');
+        // travelOptions.setTravelType('transit');
         // no alternative route recommendations - this is for pro/advanced plans only
         travelOptions.setRecommendations(-1);
         // please contact us and request your own key
         travelOptions.setServiceKey('DT3FNPKM410XMLW1KECLKHZ');
         // set the service url for your area
-        travelOptions.setServiceUrl('https://service.route360.net/germany/');
+        travelOptions.setServiceUrl(serviceUrl);
         // travelOptions.setServiceUrl('https://service.route360.net/south_america/')
         ;
 

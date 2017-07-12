@@ -31,20 +31,31 @@
     <div id="map"></div>
 
     <script>
+        var serviceKey = 'DT3FNPKM410XMLW1KECLKHZ';
+        var serviceUrl = 'https://service.route360.net/south_america/';
+
         mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+
         // define a pair of coordinates, where the map should be centered
         // and should serve a the source for polygonization
-        var lnglat = [13.37, 52.51];
+        var latlons = {
+            map: [10.396649985086201, -73.12911987304688],
+            trg1: [10.39124696092799, -73.02680969238281],  // Manaure
+            src1: [10.350721304758554, -73.04586410522461], // San José
+            src2: [10.459706482425446, -73.03865432739258], // El Plan
+            src3: [10.465277124451058, -73.25366020202637]  // Valledupar
+        };
+        var lnglat = [latlons.trg1[1], latlons.trg1[0]];
         var travelTimes = [300,600,900,1200,1500,1800];
 
         // add the map and set the initial center to berlin
         var map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/light-v9',
-            zoom: 12,
-            pitch: 45,
-            center: lnglat,
-            attributionControl: false
+            style: 'mapbox://styles/mapbox/outdoors-v10',
+            zoom: 11,
+            // pitch: 45,
+            center: [latlons.map[1], latlons.map[0]],
+            // attributionControl: false
         })
         .addControl(new mapboxgl.NavigationControl())
         .addControl(new mapboxgl.AttributionControl({ compact: true }));
@@ -65,16 +76,16 @@
         // for more travel options check out the other tutorials
         var travelOptions = r360.travelOptions();
         // please contact us and request your own key if you don't already have one
-        travelOptions.setServiceKey('DT3FNPKM410XMLW1KECLKHZ');
+        travelOptions.setServiceKey(serviceKey);
         // set the service url for your area
-        travelOptions.setServiceUrl('https://service.route360.net/germany/');
+        travelOptions.setServiceUrl(serviceUrl);
         // we only have one source which is the marker we just added
         travelOptions.addSource({ lat: lnglat[1], lon: lnglat[0], id: 1 });
 
         // we want to have a single polygon for 30 minutes
         travelOptions.setTravelTimes(travelTimes);
         // go by foot
-        travelOptions.setTravelType('walk');
+        travelOptions.setTravelType('car');
         // request geojson
         travelOptions.setPolygonSerializer('geojson');
         // simplify polygons a bit to increase perf
@@ -83,7 +94,7 @@
         travelOptions.setSrid(4326);
 
         // ~150m in longitudinal degrees at 52° latitude
-        var bufferLengthsMeters = r360.Util.metersInDegrees(150, lnglat[1]);
+        var bufferLengthsMeters = r360.Util.metersInDegrees(250, lnglat[1]);
         travelOptions.setBuffer(Math.round(bufferLengthsMeters.lng * 1000) / 1000); // round to thousands
 
         // height stops function
@@ -115,6 +126,23 @@
 
                 var bbox = turf.bbox(geojsonPolygons);
 
+                // map.addLayer({
+                //     'id': 'polygons',
+                //     'type': 'fill',
+                //     'source': {
+                //         'type': 'geojson',
+                //         'data': geojsonPolygons
+                //     },
+                //     'layout': {},
+                //     'paint': {
+                //         'fill-color': {
+                //             'property': 'time',
+                //             'stops': getColorStops(travelTimes)
+                //         },
+                //         'fill-opacity': .5
+                //     }
+                // });
+
                 map.addLayer({
                     'id': 'polygons',
                     'type': 'fill-extrusion',
@@ -137,7 +165,7 @@
                     }
                 });
 
-                map.fitBounds(bbox, {padding: 20});
+                // map.fitBounds(bbox, {padding: 200});
             });
         })
     </script>

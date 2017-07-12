@@ -51,17 +51,19 @@
         // Mapbox
         ////////////
 
-    	mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+        mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
         var map = new mapboxgl.Map({
             container: 'map',
             // style: 'mapbox://styles/jorditost/cir1xojwe0020chknbi0y2d5t', // dark
             // style: 'mapbox://styles/jorditost/ciqc61l3p0023dunqn9e5t4zi', // light
-            style: 'mapbox://styles/jorditost/ciznb3iyw00642snuu7ivnnfk', // light+nostreets
+            // style: 'mapbox://styles/jorditost/ciznb3iyw00642snuu7ivnnfk', // light+nostreets
+            style: 'mapbox://styles/jorditost/cizo5i3fc00a82ro13xoz7fua', // light+labels
             // style: 'mapbox://styles/jorditost/cizmzgwci005l2sqjuzfvwzms', // light+streets
             // zoom: 11.5,
             // center: [-72.956, 10.410],
-            center: [-73.0770699,10.3890411], // detail
-            zoom: 13.6 // detail
+            center: [-73.0726, 10.3738], // detail
+            zoom: 13.1 // detail
+            zoom: 12.7 // detail
         });
 
         // set-up svg canvas

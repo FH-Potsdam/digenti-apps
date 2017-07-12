@@ -20,22 +20,16 @@
 
   <script>
     $(document).ready(function() {
-
-    // var serviceUrl = 'https://service.route360.net/germany/'
-    //   var latlons = {
-    //     map: [52.51, 13.37],
-    //     src1: [52.50086, 13.36581],
-    //     trg1: [52.52562, 13.30195],
-    //     trg2: [52.51998, 13.41714]
-    //   };
+        var serviceKey = 'DT3FNPKM410XMLW1KECLKHZ';
 
         // Colombia
         var serviceUrl = 'https://service.route360.net/south_america/'
         var latlons = {
             map: [10.396649985086201, -73.12911987304688],
-            src1: [10.465277124451058, -73.25366020202637],
-            trg1: [10.39124696092799, -73.02680969238281],
-            trg2: [10.308290398840045, -73.02775382995605]
+            trg1: [10.39124696092799, -73.02680969238281],  // Manaure
+            src1: [10.350721304758554, -73.04586410522461], // San José
+            src2: [10.459706482425446, -73.03865432739258], // El Plan
+            src3: [10.465277124451058, -73.25366020202637]  // Valledupar
         };
 
       // add the map and set the initial center to berlin
@@ -62,12 +56,17 @@
       });
 
       // create a source and a two target markers and add them to the map
-      var sourceMarker1 = L.marker(latlons.src1, { draggable : true }).addTo(map);
       var targetMarker1 = L.marker(latlons.trg1, { icon: redIcon, draggable : true }).addTo(map);
-      var targetMarker2 = L.marker(latlons.trg2, { icon: redIcon, draggable : true }).addTo(map);
+      var sourceMarker1 = L.marker(latlons.src1, { draggable : true }).addTo(map);
+      var sourceMarker2 = L.marker(latlons.src2, { draggable : true }).addTo(map);
+      var sourceMarker3 = L.marker(latlons.src3, { draggable : true }).addTo(map);
 
       // add a layer in which we will paint the route
       var routeLayer = L.featureGroup().addTo(map);
+
+      // create the layer to add the polygons
+      var polygonLayer = r360.leafletPolygonLayer().addTo(map);
+      polygonLayer.opacity = .6;
 
       var getRoutes = function() {
 
@@ -76,22 +75,26 @@
         // you need to define some options for the polygon service
         // for more travel options check out the other tutorials
         var travelOptions = r360.travelOptions();
-        // we only have one source which is the marker we just added
-        // travelOptions.addSource({ lat: latlons.src1[0], lon: latlons.src1[1], id: 1 });
-        travelOptions.addSource(sourceMarker1);
 
         // add two targets to the options
+        travelOptions.addTarget(targetMarker1);
+        // travelOptions.addTarget(targetMarker2);
         // travelOptions.addTarget({ lat: latlons.trg1[0], lon: latlons.trg1[1], id: 2 });
         // travelOptions.addTarget({ lat: latlons.trg2[0], lon: latlons.trg2[1], id: 3 });
-        travelOptions.addTarget(targetMarker1);
-        travelOptions.addTarget(targetMarker2);
+
+        // we only have one source which is the marker we just added
+        travelOptions.addSource(sourceMarker1);
+        travelOptions.addSource(sourceMarker2);
+        travelOptions.addSource(sourceMarker3);
+        // travelOptions.addSource({ lat: latlons.src1[0], lon: latlons.src1[1], id: 1 });
+
         // set the travel type to transit
         travelOptions.setTravelType('car');
         // travelOptions.setTravelType('transit');
         // no alternative route recommendations - this is for pro/advanced plans only
         travelOptions.setRecommendations(-1);
         // please contact us and request your own key
-        travelOptions.setServiceKey('DT3FNPKM410XMLW1KECLKHZ');
+        travelOptions.setServiceKey(serviceKey);
         // set the service url for your area
         travelOptions.setServiceUrl(serviceUrl);
         // travelOptions.setServiceUrl('https://service.route360.net/south_america/')
@@ -102,18 +105,58 @@
 
           // one route for each source and target combination
           routes.forEach(function(route) {
-              console.log(JSON.stringify(route));
-
+            //   console.log(JSON.stringify(route));
             r360.LeafletUtil.fadeIn(routeLayer, route, 1000, "travelDistance");
           });
         });
       }
 
-      getRoutes();
+      var getPolygons = function() {
 
-      sourceMarker1.on('dragend', getRoutes);
-      targetMarker1.on('dragend', getRoutes);
-      targetMarker2.on('dragend', getRoutes);
+          polygonLayer.clearLayers();
+
+          var travelOptions = r360.travelOptions();
+
+          // we want to have polygons for 5, 10, 15, 20, 25, 30 minutes
+          travelOptions.setTravelTimes([300, 600, 900, 1200, 1500]);
+
+          // please contact us and request your own key if you don't already have one
+          travelOptions.setServiceKey(serviceKey);
+          // set the service url for your area
+          travelOptions.setServiceUrl(serviceUrl);
+          // we only have one source which is the marker we just added
+          travelOptions.addSource(sourceMarker1);
+          travelOptions.addSource(sourceMarker2);
+          travelOptions.addSource(sourceMarker3);
+          // use distance as opposed to time
+          // travelOptions.setEdgeWeight('distance');
+          // go by foot
+          travelOptions.setTravelType('car');
+
+          // intersection means that areas are marker in a certain color
+          // if they are reach from both locations in the same time
+        //   travelOptions.setIntersectionMode('union');
+
+          // call the r360°- service
+          r360.PolygonService.getTravelTimePolygons(travelOptions, function(polygons) {
+
+            // add the returned polygons to the polygon layer
+            // and zoom the map to fit the polygons perfectly
+            polygonLayer.clearAndAddLayers(polygons, false);
+          });
+      }
+
+      updateRouting();
+
+      targetMarker1.on('dragend', updateRouting);
+      sourceMarker1.on('dragend', updateRouting);
+      sourceMarker2.on('dragend', updateRouting);
+      sourceMarker3.on('dragend', updateRouting);
+
+      function updateRouting() {
+          getRoutes();
+          getPolygons();
+      }
     });
   </script>
 </body>

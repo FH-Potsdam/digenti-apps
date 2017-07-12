@@ -33,9 +33,9 @@
         var serviceUrl = 'https://service.route360.net/south_america/'
         var latlons = {
             map: [10.396649985086201, -73.12911987304688],
-            src1: [10.465277124451058, -73.25366020202637],
-            trg1: [10.39124696092799, -73.02680969238281],
-            trg2: [10.308290398840045, -73.02775382995605]
+            src1: [10.348188277191909, -73.04998397827148],
+            trg1: [10.30833262149157, -73.0275821685791],
+            trg2: [10.28177345687272, -73.00020217895508]
         };
 
       // add the map and set the initial center to berlin
@@ -48,7 +48,7 @@
       // note that mapbox is a subscription service, and you need a mapID to use it
       // feel free to use any basemap you want... http://leafletjs.com/plugins.html#basemap-providers
 
-      L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/outdoors-v10/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A',
+      L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/outdoors-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A',
           { maxZoom: 18, attribution: attribution }).addTo(map);
     //   L.tileLayer('https://a.tiles.mapbox.com/v3/{mapID}/{z}/{x}/{y}.png',
     //       { maxZoom: 18, attribution: attribution, mapID: 'mapbox.mapbox-streets-v10' }).addTo(map);
@@ -86,7 +86,7 @@
         travelOptions.addTarget(targetMarker1);
         travelOptions.addTarget(targetMarker2);
         // set the travel type to transit
-        travelOptions.setTravelType('car');
+        travelOptions.setTravelType('walk');
         // travelOptions.setTravelType('transit');
         // no alternative route recommendations - this is for pro/advanced plans only
         travelOptions.setRecommendations(-1);

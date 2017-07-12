@@ -319,6 +319,8 @@ button {
     stroke: #191F23; }
 #map-features.detail #routesfromvalledupar > g.selected-settlement path.route {
   stroke: #464b57; }
+  .dark #map-features.detail #routesfromvalledupar > g.selected-settlement path.route {
+    stroke: #dadff0; }
 #map-features.detail #missinginfrastructure .village-group {
   opacity: 0.25; }
 #map-features.detail #settlement-point-layer > * {
@@ -442,6 +444,8 @@ text {
   fill: none; }
   #microvis .profile.route {
     stroke: #464b57; }
+    .dark #microvis .profile.route {
+      stroke: #dadff0; }
   #microvis .profile.missing {
     stroke: #ff5050;
     stroke-dasharray: 0px 6px; }

@@ -723,11 +723,7 @@ body.tabletop {
     font-size: 1.143rem;
     margin-bottom: 0; }
   #legend .legend-item {
-    position: relative;
-    -moz-transition: opacity 0.5s ease;
-    -o-transition: opacity 0.5s ease;
-    -webkit-transition: opacity 0.5s ease;
-    transition: opacity 0.5s ease; }
+    position: relative; }
     #legend .legend-item h3, #legend .legend-item h4 {
       margin-bottom: 4px; }
     #legend .legend-item .desc, #legend .legend-item span {
@@ -743,7 +739,8 @@ body.tabletop {
       margin-bottom: 0; }
     #legend .legend-item.hide {
       opacity: 0;
-      pointer-events: none; }
+      pointer-events: none;
+      height: 0; }
     #legend .legend-item input[type="checkbox"] {
       position: absolute;
       top: 16px;

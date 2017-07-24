@@ -1357,6 +1357,83 @@ function drawFOS(fosFC, id) {
     }
 }
 
+
+/////////////////////////////
+// Landing Sites Functions
+/////////////////////////////
+
+function loadLandingSites(place, id) {
+
+    console.log("load Landing Sites by Lat/Lon");
+    console.log(app.config.apiBase + "/specialareas/"+config.landing.ndviThres+"/"+config.landing.gradientThres+"/point/"+place.geometry.coordinates[1]+","+place.geometry.coordinates[0]+"/"+config.landing.buffer);
+
+    // var params = {
+    //     feature: JSON.stringify(lineString),
+    //     buffer: config.threat.buffer,
+    //     intersect: config.threat.intersect
+    // };
+
+    $.ajax({
+        method: "GET",
+        url: app.config.apiBase + "/specialareas/"+config.landing.ndviThres+"/"+config.landing.gradientThres+"/point/"+place.geometry.coordinates[1]+","+place.geometry.coordinates[0]+"/"+config.landing.buffer,
+        // data: JSON.stringify(params),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (landingFC) {
+            console.log("Landing sites loaded");
+            console.log(landingFC);
+
+            drawLandingSites(landingFC, id);
+        },
+        error: function(error) {
+            console.log(JSON.stringify(error));
+        }
+    });
+}
+
+function hideLandingSites(id) {
+
+    if (!map.getSource("landing-"+id)) return;
+
+    map.setLayoutProperty("landing-"+id, 'visibility', 'none');
+}
+
+function drawLandingSites(landingFC, id) {
+
+    // Add source if exists
+    if (!map.getSource("landing-"+id)) {
+        map.addSource('landing-'+id, {
+           type: 'geojson',
+           data: landingFC
+        });
+    // If source exists, set data
+    } else {
+        map.getSource("landing-"+id).setData(landingFC);
+    }
+
+    // Only add layers first time
+    if (!map.getLayer("landing-"+id)) {
+        map.addLayer({
+            "id": "landing-"+id,
+            "type": "fill",
+            "source": "landing-"+id,
+            "layout": {
+                "visibility" : "none"
+            },
+            "paint": {
+                "fill-color": "#099",
+                "fill-opacity": 0.3
+            }
+        });
+    } else {
+        var showLanding = $("#show-landing").is(":checked")
+
+        map.setLayoutProperty("landing-"+id, 'visibility', showLanding ? 'visible' : 'none');
+        // map.setLayoutProperty("landing-"+id, 'visibility', 'visible');
+    }
+}
+
+
 ///////////////////////////////
 // Settlement Click Callback
 ///////////////////////////////
@@ -1429,11 +1506,34 @@ function onSettlementClicked(d) {
             loadFOSByLineString(activeRouteGeoJSON, "route");
         }
 
+        // Load landing sites around settlement
+        if (config.landing.show) {
+            hideLandingSites("place");
+            loadLandingSites(d, "place");
+
+            $("#show-landing").unbind("click").click(function() {
+
+                var clickedLayer = "landing-place";
+
+                var visibility = map.getLayoutProperty(clickedLayer, 'visibility');
+
+                console.log("click " + visibility);
+
+                if (visibility === 'visible') {
+                    map.setLayoutProperty(clickedLayer, 'visibility', 'none');
+                    this.className = '';
+                } else {
+                    this.className = 'active';
+                    map.setLayoutProperty(clickedLayer, 'visibility', 'visible');
+                }
+            });
+        }
+
         // show the info box
         showInfoBox(d);
 
         // Check isolines
-        $("#show-isolines").click(function() {
+        $("#show-isolines").unbind("click").click(function() {
             if ($(this).is(":checked")) {
                 $legend.find(".legend-item .graphic-isoline").removeClass("hide");
                 // $("g#isolines").removeClass("disabled");
@@ -1447,17 +1547,13 @@ function onSettlementClicked(d) {
             }
         });
 
-
-
         // Fit bounds to active route
-        var features = turf.featureCollection([activeRouteGeoJSON, activeSettlementGeoJSON])
-        var bbox = turf.bbox(features);
+        // var features = turf.featureCollection([activeRouteGeoJSON, activeSettlementGeoJSON])
+        // var bbox = turf.bbox(features);
+
         // map.fitBounds(bbox, {
-        //   padding: 200
+        //   padding: {top: 100, bottom: 240, left: 100, right: 180}
         // });
-        map.fitBounds(bbox, {
-          padding: {top: 100, bottom: 240, left: 100, right: 180}
-        });
     }
 
     // check if any settlement is active

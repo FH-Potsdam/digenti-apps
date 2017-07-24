@@ -168,9 +168,10 @@
             margin-bottom: 0;
         }
 
-        @include transition(opacity 0.5s ease);
+        // @include transition(opacity 0.5s ease);
         &.hide {
             @include hide(0);
+            height: 0;
             // display: none;
         }
 

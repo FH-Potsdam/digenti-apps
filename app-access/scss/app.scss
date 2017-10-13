@@ -17,7 +17,6 @@
 @import '../../digenti-framework/scss/base-app';
 
 
-
 //////////////////
 // Main sidebar
 //////////////////
@@ -112,10 +111,16 @@
 ////////////
 
 #legend {
-    top: 10px;
-    right: 10px;
+    right: $legend-padding;
+}
+
+#layers {
+    right: 2*$legend-padding + $legend-width;
+}
+
+.legend-modal {
+    top: $legend-padding;
     width: $legend-width;
-    // background: transparent;
 
     &.hide {
         @include hide(0);
@@ -127,24 +132,18 @@
         .dark {
             border-top-color: $color-ui-dark;
         }
-        // background: $color-blue-darkest;
 
         &:first-child {
             border-top: 0;
-            // padding-bottom: 4px;
-            // background-color: #111;
-            // background-color: $color-ui-dark;
         }
     }
 
     h2 {
         font-size: $font-size-h3;
         margin-bottom: 0;
-        // margin-bottom: 20px;
     }
 
     .legend-item {
-        // margin-bottom: 35px;
         position: relative;
 
         h3, h4 {
@@ -156,7 +155,6 @@
             span {
                 font-weight: normal;
                 display: block;
-                // font-size: 1em;
             }
         }
 
@@ -172,12 +170,12 @@
         &.hide {
             @include hide(0);
             height: 0;
-            // display: none;
+            padding: 0;
         }
 
         input[type="checkbox"] {
             position: absolute;
-            top: 16px;
+            top: 20px;
             right: 16px;
         }
     }
@@ -266,8 +264,12 @@
     }
 
     .graphic-isoline {
-        @include background-image('../img/legend-isoline.svg', left top);
-        @include block(100%, 78px);
+        @include background-image('../img/layers-isoline.svg', left top);
+        @include block(100%, 65px);
+    }
+    .graphic-landing {
+        @include background-image('../img/layers-landing.svg', center top);
+        @include block(100%, 60px);
     }
 }
 

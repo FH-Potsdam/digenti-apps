@@ -29,6 +29,7 @@
         <!-- App styles. DIGENTI Framework is loaded inside with SASS -->
         <!-- <link href="../digenti-framework/css/main.css" rel="stylesheet" /> -->
         <link href="css/app.css" rel="stylesheet" />
+
     </head>
 
     <body>
@@ -76,10 +77,10 @@
                     </div>
                 </div>
                 <div id="reachability">
-                    <h3>Settlement reachability</h3>
+                    <h3>Reachability by road</h3>
                     <div class="isolines-wrap">
                         <div class="details">
-                            On the map, area from which the settlement is reachable by road within:
+                            Configure isochrone travel times:
                         </div>
                         <div class="range-wrapper">
                             <input id="range__slider" type="range" min="15" max="45" value="30" step="15" oninput="rangeSliderInput()" />
@@ -90,12 +91,31 @@
                         Not reachable directly by road.
                     </div>
                 </div>
+                <!-- <div id="landing-sites">
+                    <h3>Helicopter Landing Sites</h3>
+                    <div class="isolines-wrap">
+                        <div class="details">
+                            Configure landing site estimation by setting vegetation density (NDVI) and hillslope gradient
+                        </div>
+                        <div class="range-wrapper">
+                            <input id="range__slider" type="range" min="15" max="45" value="30" step="15" oninput="rangeSliderInput()" />
+                            <label id="range__text">30 min</label>
+                        </div>
+                        <div class="range-wrapper">
+                            <input id="range__slider" type="range" min="15" max="45" value="30" step="15" oninput="rangeSliderInput()" />
+                            <label id="range__text">30 min</label>
+                        </div>
+                    </div>
+                    <div class="no-reachable hide">
+                        Not reachable directly by road.
+                    </div>
+                </div> -->
             </div>
 
             <span class="close"></span>
         </div>
 
-        <div id="legend" class="modal">
+        <div id="legend" class="legend-modal modal">
             <div>
                 <h2>Legend</h2>
             </div>
@@ -123,20 +143,27 @@
                 <h4>Population</h4>
                 <div class="graphic-population"></div>
             </div>
-            <div class="legend-item isolines hide">
+        </div>
+
+        <div id="layers" class="legend-modal modal hide">
+            <div>
+                <h2>Layers</h2>
+            </div>
+            <div class="legend-item isolines">
                 <h4>Reachability</h4>
                 <input type="checkbox" name="show-isolines" id="show-isolines">
-                <!-- <p class="desc">
+                <p class="desc">
                     Area from which the settlement is reachable by road within a given time.
-                </p> -->
-                <div class="graphic-isoline"></div>
+                </p>
+                <div class="graphic graphic-isoline"></div>
             </div>
-            <div class="legend-item isolines hide">
+            <div class="legend-item landing">
                 <h4>Helicopter <br>landing sites</h4>
                 <input type="checkbox" name="show-landing" id="show-landing">
                 <p class="desc">
-                    Estimated potential landing sites (by combining vegetation density and hillslope gradient).
+                    Estimated potential landing sites using satellite data.
                 </p>
+                <div class="graphic graphic-landing"></div>
             </div>
         </div>
 

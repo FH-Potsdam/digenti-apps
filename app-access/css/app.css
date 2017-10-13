@@ -632,7 +632,7 @@ body.tabletop {
       #info #microvis .microvis-wrap #microvis-route-stats {
         margin-top: -10px; }
   #info #reachability {
-    width: 180px; }
+    width: 200px; }
     #info #reachability .details {
       margin-bottom: 10px; }
       #info #reachability .details span {
@@ -706,47 +706,53 @@ body.tabletop {
     display: block; }
 
 #legend {
+  right: 10px; }
+
+#layers {
+  right: 170px; }
+
+.legend-modal {
   top: 10px;
-  right: 10px;
   width: 150px; }
-  #legend.hide {
+  .legend-modal.hide {
     opacity: 0;
     pointer-events: none; }
-  #legend > div {
+  .legend-modal > div {
     padding: 12px 15px;
     border-top: 2px solid #464b57; }
-    #legend > div .dark {
+    .legend-modal > div .dark {
       border-top-color: #242E34; }
-    #legend > div:first-child {
+    .legend-modal > div:first-child {
       border-top: 0; }
-  #legend h2 {
+  .legend-modal h2 {
     font-size: 1.143rem;
     margin-bottom: 0; }
-  #legend .legend-item {
+  .legend-modal .legend-item {
     position: relative; }
-    #legend .legend-item h3, #legend .legend-item h4 {
+    .legend-modal .legend-item h3, .legend-modal .legend-item h4 {
       margin-bottom: 4px; }
-    #legend .legend-item .desc, #legend .legend-item span {
+    .legend-modal .legend-item .desc, .legend-modal .legend-item span {
       font-size: 0.857rem; }
-      #legend .legend-item .desc span, #legend .legend-item span span {
+      .legend-modal .legend-item .desc span, .legend-modal .legend-item span span {
         font-weight: normal;
         display: block; }
-    #legend .legend-item .desc {
+    .legend-modal .legend-item .desc {
       color: #333; }
-      .dark #legend .legend-item .desc {
+      .dark .legend-modal .legend-item .desc {
         color: #868b90; }
-    #legend .legend-item:last-child {
+    .legend-modal .legend-item:last-child {
       margin-bottom: 0; }
-    #legend .legend-item.hide {
+    .legend-modal .legend-item.hide {
       opacity: 0;
       pointer-events: none;
-      height: 0; }
-    #legend .legend-item input[type="checkbox"] {
+      height: 0;
+      padding: 0; }
+    .legend-modal .legend-item input[type="checkbox"] {
       position: absolute;
-      top: 16px;
+      top: 20px;
       right: 16px; }
-  #legend [class^="graphic-"],
-  #legend [class*=" graphic-"] {
+  .legend-modal [class^="graphic-"],
+  .legend-modal [class*=" graphic-"] {
     position: relative;
     max-width: 100%;
     -moz-background-size: contain;
@@ -757,14 +763,14 @@ body.tabletop {
     margin-bottom: 5px;
     margin-left: auto;
     margin-right: auto; }
-    #legend [class^="graphic-"] span,
-    #legend [class*=" graphic-"] span {
+    .legend-modal [class^="graphic-"] span,
+    .legend-modal [class*=" graphic-"] span {
       position: absolute;
       white-space: nowrap; }
-    #legend [class^="graphic-"].hide,
-    #legend [class*=" graphic-"].hide {
+    .legend-modal [class^="graphic-"].hide,
+    .legend-modal [class*=" graphic-"].hide {
       display: none; }
-  #legend .graphic-population {
+  .legend-modal .graphic-population {
     background-image: url("../img/legend-population.svg");
     background-position: left top;
     background-repeat: no-repeat;
@@ -775,7 +781,7 @@ body.tabletop {
     -o-background-size: contain;
     -webkit-background-size: contain;
     background-size: contain; }
-  #legend .graphic-routes {
+  .legend-modal .graphic-routes {
     background-image: url("../img/legend-route.svg");
     background-position: left top;
     background-repeat: no-repeat;
@@ -788,24 +794,24 @@ body.tabletop {
     background-size: inherit;
     margin-top: 15px;
     padding-bottom: 15px; }
-    #legend .graphic-routes > span {
+    .legend-modal .graphic-routes > span {
       left: 22px; }
-      #legend .graphic-routes > span span {
+      .legend-modal .graphic-routes > span span {
         margin-top: -2px; }
-    #legend .graphic-routes .valledupar {
+    .legend-modal .graphic-routes .valledupar {
       top: -3px;
       font-weight: bold; }
-    #legend .graphic-routes .road {
+    .legend-modal .graphic-routes .road {
       top: 57px; }
-    #legend .graphic-routes .road-end {
+    .legend-modal .graphic-routes .road-end {
       top: 120px;
       font-weight: bold; }
-    #legend .graphic-routes .missing-road {
+    .legend-modal .graphic-routes .missing-road {
       top: 160px; }
-    #legend .graphic-routes .settlement {
+    .legend-modal .graphic-routes .settlement {
       top: 200px;
       font-weight: bold; }
-  #legend .graphic-road-load {
+  .legend-modal .graphic-road-load {
     background-image: url("../img/legend-road-load.svg");
     background-position: left top;
     background-repeat: no-repeat;
@@ -813,19 +819,26 @@ body.tabletop {
     width: 100%;
     height: 20px;
     padding-bottom: 25px; }
-    #legend .graphic-road-load > span {
+    .legend-modal .graphic-road-load > span {
       bottom: 0px; }
-    #legend .graphic-road-load .high {
+    .legend-modal .graphic-road-load .high {
       left: 0; }
-    #legend .graphic-road-load .low {
+    .legend-modal .graphic-road-load .low {
       right: 0; }
-  #legend .graphic-isoline {
-    background-image: url("../img/legend-isoline.svg");
+  .legend-modal .graphic-isoline {
+    background-image: url("../img/layers-isoline.svg");
     background-position: left top;
     background-repeat: no-repeat;
     display: block;
     width: 100%;
-    height: 78px; }
+    height: 65px; }
+  .legend-modal .graphic-landing {
+    background-image: url("../img/layers-landing.svg");
+    background-position: center top;
+    background-repeat: no-repeat;
+    display: block;
+    width: 100%;
+    height: 60px; }
 
 #isolines-ui #range__slider {
   display: block;

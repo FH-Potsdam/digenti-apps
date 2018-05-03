@@ -250,9 +250,9 @@ function mapDraw(geojson) {
     map.keyboard.disable();
     map.boxZoom.disable();
 
-    // disable right click
+    // Disable right-click context menus
     if (config.tabletop) {
-        //$(document).bind('contextmenu', function (e) { e.preventDefault(); });
+        $(document).bind('contextmenu', function (e) { e.preventDefault(); });
     }
 
     // Disable Browser zoom

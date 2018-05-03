@@ -558,7 +558,11 @@ body.tabletop {
     -ms-user-select: none;
     /* IE 10+ */
     user-select: none;
-    /* Likely future */ }
+    /* Likely future */
+    -ms-touch-action: manipulation !important;
+    /* IE10  */
+    touch-action: manipulation !important;
+    /* IE11+ */ }
 
 .modal {
   padding: 0;
@@ -666,12 +670,6 @@ body.tabletop {
 
 .mapboxgl-ctrl {
   display: none; }
-
-a, button, svg, canvas, * {
-  -ms-touch-action: manipulation !important;
-  /* IE10  */
-  touch-action: manipulation !important;
-  /* IE11+ */ }
 
 #view {
   position: fixed;

@@ -295,6 +295,7 @@ function mapDraw(geojson) {
     for (var key in app.layers) {
         if (app.layers.hasOwnProperty(key)) {
             app.layers[key].layer.init(svg, geojson);
+            //console.log("init layer ");
         }
     }
 

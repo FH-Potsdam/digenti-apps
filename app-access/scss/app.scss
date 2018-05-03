@@ -18,8 +18,8 @@
 
 
 a, button, svg, canvas, *{
-	-ms-touch-action: manipulation;	/* IE10  */
-	touch-action: manipulation;		/* IE11+ */
+	-ms-touch-action: manipulation !important;	/* IE10  */
+	touch-action: manipulation !important;		/* IE11+ */
 }
 
 //////////////////

@@ -668,9 +668,9 @@ body.tabletop {
   display: none; }
 
 a, button, svg, canvas, * {
-  -ms-touch-action: manipulation;
+  -ms-touch-action: manipulation !important;
   /* IE10  */
-  touch-action: manipulation;
+  touch-action: manipulation !important;
   /* IE11+ */ }
 
 #view {

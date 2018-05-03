@@ -667,6 +667,12 @@ body.tabletop {
 .mapboxgl-ctrl {
   display: none; }
 
+a, button, svg, canvas, * {
+  -ms-touch-action: manipulation;
+  /* IE10  */
+  touch-action: manipulation;
+  /* IE11+ */ }
+
 #view {
   position: fixed;
   bottom: 0;

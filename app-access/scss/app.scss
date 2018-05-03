@@ -17,6 +17,11 @@
 @import '../../digenti-framework/scss/base-app';
 
 
+a, button, svg, canvas, *{
+	-ms-touch-action: manipulation;	/* IE10  */
+	touch-action: manipulation;		/* IE11+ */
+}
+
 //////////////////
 // Main sidebar
 //////////////////

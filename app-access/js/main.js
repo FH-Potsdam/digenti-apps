@@ -160,10 +160,12 @@ function init() {
         },
         success: function() {
 
+            console.log("DIGENTI API is available and ready for use");
+
             // API is availabel -> go on
 
             // Include scripts of layer modules
-            $.when(
+            /*$.when(
                 $.getScript( "js/routesLayer.js" ),
                 $.getScript( "js/missingInfrastructureLayer.js" ),
                 $.getScript( "js/isolinesLayer.js" ),
@@ -197,8 +199,28 @@ function init() {
                         // draw the map, finally
                         mapDraw(places_aoi);
                     });
-            });
+            });*/
 
+            // Load json data
+
+            console.log("BEFORE DATA LOAD");
+
+            d3.json('../../data/' + app.config.data.places, function(error, data) {
+
+                console.log("hi hi hi hi hi");
+                if (error) {
+                    console.log("some error here");
+                    throw error;
+                }
+
+                // push data from json in global vars
+                places_aoi = data;
+
+                console.log(places_aoi);
+
+                // draw the map, finally
+                mapDraw(places_aoi);
+            });
         }
     });
 
@@ -250,6 +272,7 @@ function mapDraw(geojson) {
     map.keyboard.disable();
     map.boxZoom.disable();
 
+    console.log("we are still here");
     // Disable right-click context menus
     if (config.tabletop) {
         $(document).bind('contextmenu', function (e) { e.preventDefault(); });
@@ -274,12 +297,18 @@ function mapDraw(geojson) {
     // add navigation control to our map
     // map.addControl(new mapboxgl.Navigation());
 
+    console.log("BEFORE EVENT HANDLING");
+
     // add some event handlers to our map
     map.on("viewreset", update);
     map.on("moveend",   update);
     map.on("move",      update);
     map.on("load",      hideSplashScreen);
 
+    console.log("hide splash screen");
+    hideSplashScreen();
+
+    console.log("before d3 DRAW");
 
     // Create d3 canvas on map canvas container. This will hold our visual elements
     svg = d3.select(map.getCanvasContainer()).append("svg").attr("id", "map-features");

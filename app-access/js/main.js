@@ -165,7 +165,7 @@ function init() {
             // API is availabel -> go on
 
             // Include scripts of layer modules
-            /*$.when(
+            $.when(
                 $.getScript( "js/routesLayer.js" ),
                 $.getScript( "js/missingInfrastructureLayer.js" ),
                 $.getScript( "js/isolinesLayer.js" ),
@@ -199,13 +199,13 @@ function init() {
                         // draw the map, finally
                         mapDraw(places_aoi);
                     });
-            });*/
+            });
 
             // Load json data
 
-            console.log("BEFORE DATA LOAD");
+            //console.log("BEFORE DATA LOAD");
 
-            d3.json('../../data/' + app.config.data.places, function(error, data) {
+            /*d3.json('../../data/' + app.config.data.places, function(error, data) {
 
                 console.log("hi hi hi hi hi");
                 if (error) {
@@ -218,9 +218,11 @@ function init() {
 
                 console.log(places_aoi);
 
+                //hideSplashScreen();
+
                 // draw the map, finally
                 mapDraw(places_aoi);
-            });
+            });*/
         }
     });
 
@@ -231,12 +233,13 @@ function init() {
  * hides the splash screen
  */
 function hideSplashScreen() {
+    console.log("HIDE LOADER");
     // fade splash screen out
     $("#loader").removeClass("show");
     // hide the splash screen html element
-    setTimeout(function() {
+    //setTimeout(function() {
         $("#loader").removeClass("displayed");
-    }, 1000);
+    //}, 1000);
 }
 
 
@@ -487,9 +490,16 @@ function update(transition_time) {
         }
     }
 
+    /***************************/
+    /* HERE IS THE BUG!!!      */
+    /***************************/
+
     // Necessary to show villages when no mode is selected
     if (app.view !== "smallmultiples") {
-        app.villagePositions = app.villagePositionsMap.slice();
+        console.log("VILLAGE POSITIONS");
+        var helper = app.villagePositionsMap;
+        app.villagePositions = app.villagePositionsMap;
+        //app.villagePositions = app.villagePositionsMap.slice();
     }
 
     // update settlementPointLayer to reanrange the settlement circles
@@ -657,7 +667,6 @@ function updateSettlementPointLayer(transition_time) {
         var current_id = current_el.attr("data-id");
 
         if (isDefined(app.villagePositions[current_id])) {
-
             current_el
                 .transition()
                 .duration(transition_time)

@@ -23,8 +23,8 @@
               -ms-user-select: none;      /* IE 10+ */
               user-select: none;          /* Likely future */
 
-              -ms-touch-action: manipulation !important;	/* IE10  */
-              touch-action: manipulation !important;		/* IE11+ */
+              -ms-touch-action: none !important;	/* IE10  */
+              touch-action: none !important;		/* IE11+ */
           }
 
           svg {
@@ -112,12 +112,12 @@
         var view = "map";
 
         // Set-up map
-    	mapboxgl.accessToken = 'pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A';
+    	mapboxgl.accessToken = "pk.eyJ1Ijoiam9yZGl0b3N0IiwiYSI6ImQtcVkyclEifQ.vwKrOGZoZSj3N-9MB6FF_A";
         var map = new mapboxgl.Map({
-            container: 'map',
-            style: 'mapbox://styles/mapbox/outdoors-v9',
+            container: "map",
+            style: "mapbox://styles/mapbox/outdoors-v9",
             zoom: 11.5,
-            center: [13.4426, 52.5100],
+            center: [13.4426, 52.5100]
         });
 
 

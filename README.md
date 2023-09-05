@@ -10,14 +10,12 @@ Moreover, the repository includes a set of snippets and examples, including rout
 
 The Accessibility Interface is located in `app-access`.
 
-## Remote sensing-based Routing
-
 The interface visualizes for each settlement:
 
 - Accessibility by road (vehicle)
 - Accessibility by path (walk)
 
-*Area accessibility overview:*
+*Overview of the accessibility of each settlement in the area:*
 <img width="1324" alt="Area accessibility overview" src="https://github.com/FH-Potsdam/digenti-apps/assets/859148/a3c1888d-97e3-4ff5-b827-a7b4095f8646">
 
 *Reachability of a settlement by road with time isolines:*

@@ -24,13 +24,7 @@ If **not directly accessible** by road:
     - Walkable areas (%, polygons)
 - Landing areas (within a distance from the settlement)
 
-More info here:
-
-- [Remote sensing-based accessibility](https://www.dropbox.com/s/rrpx3w3mq2a8qfh/160621_Remote_Sensing_based_Routing.pdf?dl=0)
-
-## Risk Interface
-
-The Accessibility Interface is located in `app-risk`.
+<img width="758" alt="DIGENTI_RemoteSensingRouting" src="https://github.com/FH-Potsdam/digenti-apps/assets/859148/6cad906f-8e7e-4f75-8b20-2f6689599f70">
 
 ## Dependencies
 

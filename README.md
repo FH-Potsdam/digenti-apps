@@ -10,21 +10,28 @@ Moreover, the repository includes a set of snippets and examples, including rout
 
 The Accessibility Interface is located in `app-access`.
 
-For each settlement, with standard routing:
+## Remote sensing-based Routing
+
+The interface visualizes for each settlement:
 
 - Accessibility by road (vehicle)
 - Accessibility by path (walk)
 
-If **not directly accessible** by road:
+<img width="1324" alt="Area accessibility overview" src="https://github.com/FH-Potsdam/digenti-apps/assets/859148/a3c1888d-97e3-4ff5-b827-a7b4095f8646">
+<img width="1324" alt="Settlement reachability" src="https://github.com/FH-Potsdam/digenti-apps/assets/859148/ebcceaae-66e4-49a1-a45e-c1bfbf73f287">
 
-- Get nearest road
+If a settlement is **not directly accessible** by road:
+
+- Provide accessibility data to the nearest road:
     - Distance
     - Elevation profile
     - Passable areas (%, polygons)
     - Walkable areas (%, polygons)
-- Landing areas (within a distance from the settlement)
+- Helicopter landing areas (within a given distance from the settlement)
 
-<img width="758" alt="DIGENTI_RemoteSensingRouting" src="https://github.com/FH-Potsdam/digenti-apps/assets/859148/6cad906f-8e7e-4f75-8b20-2f6689599f70">
+<img width="1324" alt="Missing settlement reachability" src="https://github.com/FH-Potsdam/digenti-apps/assets/859148/6dbadf05-6ff5-44c5-a57c-228c4fcf6836">
+<img width="1324" alt="Potential helicopter landing sites" src="https://github.com/FH-Potsdam/digenti-apps/assets/859148/638af0bf-cf43-4a32-ae99-fb404623cae2">
+<img width="685" alt="DIGENTI_RemoteSensingRouting" src="https://github.com/FH-Potsdam/digenti-apps/assets/859148/ccda1126-f827-4644-840e-dd3da3f23620">
 
 ## Dependencies
 

@@ -17,8 +17,12 @@ The interface visualizes for each settlement:
 - Accessibility by road (vehicle)
 - Accessibility by path (walk)
 
-<img width="1324" alt="Area accessibility overview" src="https://github.com/FH-Potsdam/digenti-apps/assets/859148/a3c1888d-97e3-4ff5-b827-a7b4095f8646">
-<img width="1324" alt="Settlement reachability" src="https://github.com/FH-Potsdam/digenti-apps/assets/859148/ebcceaae-66e4-49a1-a45e-c1bfbf73f287">
+<figure>
+    <img width="1324" alt="Area accessibility overview" src="https://github.com/FH-Potsdam/digenti-apps/assets/859148/a3c1888d-97e3-4ff5-b827-a7b4095f8646">
+    <figcaption>Area accessibility overview<figcaption>
+<figure> 
+
+    <img width="1324" alt="Settlement reachability" src="https://github.com/FH-Potsdam/digenti-apps/assets/859148/ebcceaae-66e4-49a1-a45e-c1bfbf73f287">
 
 If a settlement is **not directly accessible** by road:
 

@@ -30,15 +30,14 @@ If a settlement is **not directly accessible** by road:
     - Walkable areas (%, polygons)
 2. Provide helicopter landing areas (within a given distance from the settlement)
 
-*Routing concept based on remote sensing data:*
-<img width="685" alt="DIGENTI_RemoteSensingRouting" src="https://github.com/FH-Potsdam/digenti-apps/assets/859148/ccda1126-f827-4644-840e-dd3da3f23620">
-
 *Data to the settlement's nearest road:*
 <img width="1324" alt="Missing settlement reachability" src="https://github.com/FH-Potsdam/digenti-apps/assets/859148/6dbadf05-6ff5-44c5-a57c-228c4fcf6836">
 
 *Potential helicopter landing sites around a settlement:*
 <img width="1324" alt="Potential helicopter landing sites" src="https://github.com/FH-Potsdam/digenti-apps/assets/859148/638af0bf-cf43-4a32-ae99-fb404623cae2">
 
+*Summary of the remote sensing data-based routing concept:*
+<img width="685" alt="DIGENTI_RemoteSensingRouting" src="https://github.com/FH-Potsdam/digenti-apps/assets/859148/ccda1126-f827-4644-840e-dd3da3f23620">
 
 ## Dependencies
 

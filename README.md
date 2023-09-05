@@ -1,9 +1,10 @@
 # DIGENTI Apps
 
-Routing experiments combining a routing API and remote sensing data.
+Open-source web-based tool for area accessibility assessment in the context of disaster management – based on satellite data and geovisualization.
 
+The tool gives an overview of the accessibility of the settlements in the [Area of Interest in Colombia](https://docs.google.com/document/d/15N1pgERY4TUcnvck36jJFi3MvAZuxh8J-mOUpWDt-_w/edit?usp=sharing) using a routing API and remote sensing data.
 
-This interfaces gives an overview of the accessibility of the settlements in the [Area of Interest in Colombia](https://docs.google.com/document/d/15N1pgERY4TUcnvck36jJFi3MvAZuxh8J-mOUpWDt-_w/edit?usp=sharing) using a routing API and remote sensing data.
+Moreover, the repository includes a set of snippets and examples, including routing experiments combining a routing API and remote sensing data.
 
 ## Accessibility Interface
 
@@ -30,6 +31,21 @@ More info here:
 ## Risk Interface
 
 The Accessibility Interface is located in `app-risk`.
+
+## Dependencies
+
+This is the client part of a modular architecture. In order to access the satellite data you'll need to install the following packages:
+
+- [DIGENTI Framework: Libs, commons and utils](https://github.com/FH-Potsdam/digenti-framework)
+- [DIGENTI Server and REST API](https://github.com/FH-Potsdam/digenti-api)
+- [PostGRE / PostGIS Database](https://redmine.geoway.de/projects/digenti/wiki/Notes)
+
+## Docs
+
+Further information of the project can be found in the following research articles and documentation:
+
+- [Project Documentation](https://github.com/FH-Potsdam/digenti-doc)
+- [Visualization and Interaction with Multiple Devices. A Case Study on Reachability of Remote Areas for Emergency Management – Jordi Tost & Frank Heidmann, i-com Journal of Interactive Media](https://doi.org/10.1515/icom-2017-0027)
 
 ## Data
 
